@@ -419,9 +419,9 @@ public class InvisibleEndUnit extends Unit implements Drawc, Hitboxc, Itemsc, Co
                 return;
             }
 
-            float nextAmount = Math.min(amount, aType.maxDamageTaken);
-            if (amount > aType.resistStart) {
-                float a = amount - aType.resistStart;
+            float nextAmount = Math.min(amount, aType.maxDamageTaken());
+            if (amount > aType.resistStart()) {
+                float a = amount - aType.resistStart();
                 this.resist += a;
                 if (Float.isInfinite(this.resist)) {
                     this.resist = Float.MAX_VALUE;
@@ -434,12 +434,12 @@ public class InvisibleEndUnit extends Unit implements Drawc, Hitboxc, Itemsc, Co
                 this.aggressionTime = 300.0F;
             }
 
-            if (amount > aType.damageThreshold) {
-                float in = 1.0F - aType.curveType.apply(Mathf.clamp((amount - aType.damageThreshold) / (aType.maxDamageThreshold - aType.damageThreshold)));
+            if (amount > aType.damageThreshold()) {
+                float in = 1.0F - aType.curveType().apply(Mathf.clamp((amount - aType.damageThreshold()) / (aType.maxDamageThreshold() - aType.damageThreshold())));
                 nextAmount *= in;
             }
 
-            amount = nextAmount / (this.resist * aType.resistScl + 1.0F);
+            amount = nextAmount / (this.resist * aType.resistScl() + 1.0F);
             this.invFrames[this.invIndex] = aType.invincibilityDuration;
             if (this.invTimer <= 0.0F) {
                 ++this.invIndex;
@@ -1703,7 +1703,7 @@ public class InvisibleEndUnit extends Unit implements Drawc, Hitboxc, Itemsc, Co
             }
 
             if (this.resistTime <= 0.0F) {
-                this.resist -= this.resistMax / aType.resistDuration;
+                this.resist -= this.resistMax / aType.resistDuration();
                 this.resist = Math.max(this.resist, 0.0F);
             } else {
                 this.resistTime -= Time.delta;
@@ -2433,7 +2433,7 @@ public class InvisibleEndUnit extends Unit implements Drawc, Hitboxc, Itemsc, Co
         AntiCheatVariables a = ((UnityUnitType)this.type).antiCheatType;
         float mass = this.mass();
         float len = Tmp.v1.set(x, y).len();
-        float scl = 1.0F / (this.resist * a.resistScl + 1.0F);
+        float scl = 1.0F / (this.resist * a.resistScl() + 1.0F);
         if (len > mass * 3.0F) {
             float l = len - mass * 3.0F + 1.0F;
             scl *= 1.0F / (l * l);

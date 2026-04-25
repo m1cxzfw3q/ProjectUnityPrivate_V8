@@ -379,27 +379,27 @@ public class TentacleInvisibleEndUnit extends Unit implements Drawc, Hitboxc, It
                 return;
             }
 
-            float nextAmount = Math.min(amount, aType.maxDamageTaken);
-            if (amount > aType.resistStart) {
-                float a = amount - aType.resistStart;
+            float nextAmount = Math.min(amount, aType.maxDamageTaken());
+            if (amount > aType.resistStart()) {
+                float a = amount - aType.resistStart();
                 this.resist += a;
                 if (Float.isInfinite(this.resist)) {
                     this.resist = Float.MAX_VALUE;
                 }
 
                 this.resistMax = Math.max(this.resistMax, this.resist);
-                this.resistTime = aType.resistTime;
+                this.resistTime = aType.resistTime();
                 this.aggression += Math.min(a / (this.trueMaxHealth / 5.0F), 1.5F);
                 this.aggression = Math.min(this.aggression, 4.0F);
                 this.aggressionTime = 300.0F;
             }
 
-            if (amount > aType.damageThreshold) {
-                float in = 1.0F - aType.curveType.apply(Mathf.clamp((amount - aType.damageThreshold) / (aType.maxDamageThreshold - aType.damageThreshold)));
+            if (amount > aType.damageThreshold()) {
+                float in = 1.0F - aType.curveType().apply(Mathf.clamp((amount - aType.damageThreshold()) / (aType.maxDamageThreshold() - aType.damageThreshold())));
                 nextAmount *= in;
             }
 
-            amount = nextAmount / (this.resist * aType.resistScl + 1.0F);
+            amount = nextAmount / (this.resist * aType.resistScl() + 1.0F);
             this.invFrames[this.invIndex] = aType.invincibilityDuration;
             if (this.invTimer <= 0.0F) {
                 ++this.invIndex;
@@ -804,7 +804,7 @@ public class TentacleInvisibleEndUnit extends Unit implements Drawc, Hitboxc, It
         AntiCheatVariables a = ((UnityUnitType)this.type).antiCheatType;
         float mass = this.mass();
         float len = Tmp.v1.set(x, y).len();
-        float scl = 1.0F / (this.resist * a.resistScl + 1.0F);
+        float scl = 1.0F / (this.resist * a.resistScl() + 1.0F);
         if (len > mass * 3.0F) {
             float l = len - mass * 3.0F + 1.0F;
             scl *= 1.0F / (l * l);
@@ -1746,7 +1746,7 @@ public class TentacleInvisibleEndUnit extends Unit implements Drawc, Hitboxc, It
             }
 
             if (this.resistTime <= 0.0F) {
-                this.resist -= this.resistMax / aType.resistDuration;
+                this.resist -= this.resistMax / aType.resistDuration();
                 this.resist = Math.max(this.resist, 0.0F);
             } else {
                 this.resistTime -= Time.delta;
