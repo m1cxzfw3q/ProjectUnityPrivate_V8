@@ -424,8 +424,7 @@ public class HitFx {
     });
     public static Effect soulConcentrateHit = new Effect(30.0F, (e) -> {
         Object data$temp = e.data;
-        if (data$temp instanceof Long) {
-            Long data = (Long)data$temp;
+        if (data$temp instanceof Long data) {
             float initRad = Float2.x(data);
             float scl = Float2.y(data);
             float radius = initRad * scl;

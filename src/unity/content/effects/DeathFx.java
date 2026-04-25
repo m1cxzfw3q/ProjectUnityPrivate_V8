@@ -26,7 +26,7 @@ import unity.util.Utils;
 public final class DeathFx {
     public static final Effect monolithSoulDeath = new Effect(64.0F, (e) -> {
         Draw.color(UnityPal.monolith, UnityPal.monolithDark, e.fin());
-        Angles.randLenVectors((long)e.id, 27, e.finpow() * 56.0F, (x, y) -> Fill.circle(e.x + x, e.y + y, 0.5F + e.fout() * 2.5F));
+        Angles.randLenVectors(e.id, 27, e.finpow() * 56.0F, (x, y) -> Fill.circle(e.x + x, e.y + y, 0.5F + e.fout() * 2.5F));
         e.scaled(48.0F, (i) -> {
             Lines.stroke(i.fout() * 2.5F, UnityPal.monolithLight);
             Lines.circle(e.x, e.y, i.fin(Interp.pow10Out) * 32.0F);
@@ -34,7 +34,7 @@ public final class DeathFx {
             Fill.circle(e.x, e.y, thick / 2.0F);
 
             for(int t = 0; t < 4; ++t) {
-                Drawf.tri(e.x, e.y, thick, thick * 14.0F, Mathf.randomSeed((long)(e.id + 1), 360.0F) + 90.0F * (float)t + i.finpow() * 60.0F * (float)Mathf.sign(e.id % 2 == 0));
+                Drawf.tri(e.x, e.y, thick, thick * 14.0F, Mathf.randomSeed(e.id + 1, 360.0F) + 90.0F * (float)t + i.finpow() * 60.0F * (float)Mathf.sign(e.id % 2 == 0));
             }
 
         });
@@ -52,8 +52,7 @@ public final class DeathFx {
     })).layer(115.0F);
     public static final Effect monolithSoulJoin = (new Effect(72.0F, (e) -> {
         Object soul$temp = e.data;
-        if (soul$temp instanceof MonolithSoul) {
-            MonolithSoul soul = (MonolithSoul)soul$temp;
+        if (soul$temp instanceof MonolithSoul soul) {
             Lines.stroke(1.5F, UnityPal.monolith);
             TextureAtlas.AtlasRegion reg = Core.atlas.find("unity-monolith-chain");
             Quat rot = Utils.q1.set(Vec3.Z, e.rotation + 90.0F).mul(Utils.q2.set(Vec3.X, 75.0F));

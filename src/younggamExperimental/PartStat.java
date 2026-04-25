@@ -14,7 +14,7 @@ public class PartStat {
     }
 
     public PartStat(PartStatType category, Object value) {
-        this(category, value, (Cons)null);
+        this(category, value, null);
     }
 
     public String asString() {

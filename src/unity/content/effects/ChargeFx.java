@@ -1,7 +1,5 @@
 package unity.content.effects;
 
-import arc.func.Cons;
-import arc.func.Prov;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
@@ -33,11 +31,13 @@ import unity.util.Utils;
 
 public class ChargeFx {
     private static final Color tmpCol = new Color();
+
     public static Effect greenLaserChargeSmallParent = new ParentEffect(40.0F, 100.0F, (e) -> {
         Draw.color(Pal.heal);
         Lines.stroke(e.fin() * 2.0F);
         Lines.circle(e.x, e.y, e.fout() * 50.0F);
     });
+
     public static Effect greenLaserChargeParent = new ParentEffect(80.0F, 100.0F, (e) -> {
         Draw.color(Pal.heal);
         Lines.stroke(e.fin() * 2.0F);
@@ -51,6 +51,7 @@ public class ChargeFx {
         Fill.circle(e.x, e.y, e.fin() * 10.0F);
         Drawf.light(e.x, e.y, e.fin() * 20.0F, Pal.heal, 0.7F);
     });
+
     public static Effect sagittariusCharge = (new Effect(120.0F, (e) -> {
         float size = e.fin() * 15.0F;
         Draw.color(Pal.heal);
@@ -72,12 +73,14 @@ public class ChargeFx {
         Draw.color(Color.white);
         Fill.circle(e.x, e.y, size * 0.5F);
     })).followParent(true).rotWithParent(true);
+
     public static Effect tenmeikiriChargeEffect = new ParentEffect(40.0F, (e) -> Angles.randLenVectors((long)e.id, 2, 10.0F, 90.0F, (x, y) -> {
         float angle = Mathf.angle(x, y);
         Draw.color(UnityPal.scarColor, UnityPal.endColor, e.fin());
         Lines.stroke(1.5F);
         Lines.lineAngleCenter(e.x + x * e.fout(), e.y + y * e.fout(), angle, e.fslope() * 13.0F);
     }));
+
     public static Effect tenmeikiriChargeBegin = new ParentEffect(158.0F, (e) -> {
         Color[] colors = new Color[]{UnityPal.scarColor, UnityPal.endColor, Color.white};
 
@@ -94,8 +97,8 @@ public class ChargeFx {
 
             Drawf.tri(e.x, e.y, width, length * 1.25F, e.rotation);
         }
-
     });
+
     public static Effect devourerChargeEffect = new ParentEffect(41.0F, (e) -> {
         Color[] colors = new Color[]{UnityPal.scarColor, UnityPal.endColor, Color.white};
 
@@ -106,8 +109,8 @@ public class ChargeFx {
             float spikeIn = e.fslope() * scl * 1.5F;
             UnityDrawf.shiningCircle(e.id * 241, Time.time + (float)i * 3.0F, e.x, e.y, scl * e.fin(), 9, 12.0F, width, spikeIn);
         }
-
     });
+
     public static Effect oppressionCharge = (new Effect(300.0F, 5060.0F, (e) -> {
         Rand r = Utils.seedr;
         Rand r2 = Utils.seedr2;
@@ -252,12 +255,14 @@ public class ChargeFx {
         }
 
     })).followParent(true).rotWithParent(true);
+
     public static Effect wBosonChargeBeginEffect = new Effect(38.0F, (e) -> {
         Draw.color(UnityPal.lightEffect, Pal.lancerLaser, e.fin());
         Fill.circle(e.x, e.y, 3.0F + e.fin() * 6.0F);
         Draw.color(Color.white);
         Fill.circle(e.x, e.y, 1.75F + e.fin() * 5.75F);
     });
+
     public static Effect wBosonChargeEffect = new Effect(24.0F, (e) -> {
         Draw.color(UnityPal.lightEffect, Pal.lancerLaser, e.fin());
         Lines.stroke(1.5F);
@@ -267,30 +272,15 @@ public class ChargeFx {
             Fill.circle(e.x + x, e.y + y, 2.0F + e.fin() * 1.75F);
         });
     });
+
     public static Effect ephmeronCharge = new Effect(80.0F, (e) -> {
         Draw.color(Pal.lancerLaser);
         UnityDrawf.shiningCircle(e.id, Time.time, e.x, e.y, e.fin() * 9.5F, 6, 25.0F, 20.0F, 3.0F * e.fin());
         Draw.color(Color.white);
         UnityDrawf.shiningCircle(e.id, Time.time, e.x, e.y, e.fin() * 7.5F, 6, 25.0F, 20.0F, 2.5F * e.fin());
     });
-    public static Effect tendenceCharge = (new CustomStateEffect(() -> (EffectState)Pools.obtain(State.class, () -> {
-        class State extends EffectState {
-            public void remove() {
-                Object var2 = this.data;
-                if (var2 instanceof MultiTrail.TrailHold[]) {
-                    MultiTrail.TrailHold[] data = (MultiTrail.TrailHold[])var2;
 
-                    for(MultiTrail.TrailHold trail : data) {
-                        Fx.trailFade.at(this.x, this.y, trail.width, UnityPal.monolithLight, trail.trail.copy());
-                    }
-                }
-
-                super.remove();
-            }
-        }
-
-        return new State();
-    }), 40.0F, (e) -> {
+    public static Effect tendenceCharge = (new CustomStateEffect(() -> Pools.obtain(State.class, State::new), 40.0F, (e) -> {
         Object data$temp = e.data;
         if (data$temp instanceof MultiTrail.TrailHold[]) {
             MultiTrail.TrailHold[] data = (MultiTrail.TrailHold[])data$temp;
@@ -336,4 +326,19 @@ public class ChargeFx {
             return state;
         }
     }).followParent(true);
+
+    public static class State extends EffectState {
+        public void remove() {
+            Object var2 = this.data;
+            if (var2 instanceof MultiTrail.TrailHold[]) {
+                MultiTrail.TrailHold[] data = (MultiTrail.TrailHold[])var2;
+
+                for(MultiTrail.TrailHold trail : data) {
+                    Fx.trailFade.at(this.x, this.y, trail.width, UnityPal.monolithLight, trail.trail.copy());
+                }
+            }
+
+            super.remove();
+        }
+    }
 }

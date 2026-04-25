@@ -30,6 +30,7 @@ import mindustry.world.blocks.defense.turrets.LaserTurret;
 import mindustry.world.blocks.defense.turrets.LiquidTurret;
 import mindustry.world.blocks.defense.turrets.Turret;
 import mindustry.world.meta.Stat;
+import unity.content.UnityBullets;
 import unity.world.blocks.defense.turrets.BurstPowerTurret;
 import unity.world.blocks.defense.turrets.GenericTractorBeamTurret;
 import unity.world.meta.DynamicProgression;
@@ -61,7 +62,7 @@ public class SoulTurretBurstPowerTurret extends BurstPowerTurret implements Soul
         this.toColor = Pal.sapBullet;
         this.lerpColor = false;
         this.omni = false;
-        this.defaultBullet = Bullets.standardCopper;
+        this.defaultBullet = UnityBullets.standardCopper;
         this.basicFieldRadius = -1.0F;
         this.bulletData = (b) -> null;
         this.bulletCons = (type, b) -> {

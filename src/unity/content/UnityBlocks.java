@@ -33,6 +33,7 @@ import mindustry.entities.bullet.FlakBulletType;
 import mindustry.entities.bullet.LaserBoltBulletType;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.LightningBulletType;
+import mindustry.entities.pattern.ShootSpread;
 import mindustry.gen.Bullet;
 import mindustry.gen.Hitboxc;
 import mindustry.gen.Sounds;
@@ -53,10 +54,12 @@ import mindustry.world.blocks.environment.Floor;
 import mindustry.world.blocks.environment.OverlayFloor;
 import mindustry.world.blocks.environment.StaticWall;
 import mindustry.world.blocks.production.GenericCrafter;
+import mindustry.world.consumers.ConsumeCoolant;
 import mindustry.world.consumers.ConsumeLiquidFilter;
-import mindustry.world.draw.DrawGlow;
-import mindustry.world.draw.DrawLiquid;
-import mindustry.world.draw.DrawSmelter;
+import mindustry.world.draw.*;
+import unity.v8.DrawGlow;
+import unity.v8.DrawLiquid;
+import unity.v8.DrawSmelter;
 import mindustry.world.meta.BuildVisibility;
 import mindustry.world.meta.Stat;
 import unity.content.effects.ChargeFx;
@@ -91,10 +94,10 @@ import unity.gen.StemGenericCrafter;
 import unity.gen.UnityModels;
 import unity.gen.UnityObjs;
 import unity.gen.UnitySounds;
-import unity.graphics.TexturedTrail;
 import unity.graphics.UnityDrawf;
 import unity.graphics.UnityPal;
 import unity.mod.Faction;
+import unity.world.LightAcceptor;
 import unity.world.LightAcceptorType;
 import unity.world.blocks.GraphBlock;
 import unity.world.blocks.LoreMessageBlock;
@@ -391,485 +394,434 @@ public class UnityBlocks {
     public static Block endGame;
     public static Block tenmeikiri;
 
-    public static void load() {
-        distributionDrill = new DistributionDrill("distribution-drill") {
-            {
-                this.requirements(Category.production, ItemStack.with(new Object[]{Items.copper, 20, Items.silicon, 15, Items.titanium, 20}));
-                this.tier = 3;
-                this.drillTime = 450.0F;
-                this.size = 2;
-                this.consumes.liquid(Liquids.water, 0.06F).boost();
-            }
-        };
-        recursiveReconstructor = new SelectableReconstructor("recursive-reconstructor") {
-            {
-                this.requirements(Category.units, ItemStack.with(new Object[]{Items.graphite, 1600, Items.silicon, 2000, Items.metaglass, 900, Items.thorium, 600, Items.lead, 1200, Items.plastanium, 3600}));
-                this.size = 11;
-                this.liquidCapacity = 360.0F;
-                this.configurable = true;
-                this.constructTime = 20000.0F;
-                this.minTier = 6;
-                this.upgrades.addAll(new UnitType[][]{{UnitTypes.reign, UnityUnitTypes.citadel}, {UnitTypes.toxopid, UnityUnitTypes.araneidae}, {UnitTypes.corvus, UnityUnitTypes.cygnus}, {UnityUnitTypes.rex, UnityUnitTypes.excelsus}, {MonolithUnitTypes.monument, MonolithUnitTypes.colossus}});
-                this.otherUpgrades.add(new UnitType[]{UnityUnitTypes.citadel, UnityUnitTypes.empire}, new UnitType[]{UnityUnitTypes.araneidae, UnityUnitTypes.theraphosidae}, new UnitType[]{MonolithUnitTypes.colossus, MonolithUnitTypes.bastion});
-                this.consumes.power(5.0F);
-                this.consumes.items(ItemStack.with(new Object[]{Items.silicon, 1200, Items.metaglass, 800, Items.thorium, 700, Items.surgeAlloy, 400, Items.plastanium, 600, Items.phaseFabric, 350}));
-                this.consumes.liquid(Liquids.cryofluid, 7.0F);
-            }
-        };
-        irradiator = new Press("irradiator") {
-            {
-                this.requirements(Category.crafting, ItemStack.with(new Object[]{Items.lead, 120, Items.silicon, 80, Items.titanium, 30}));
-                this.outputItem = new ItemStack(UnityItems.irradiantSurge, 3);
-                this.size = 3;
-                this.movementSize = 29.0F;
-                this.fxYVariation = 3.125F;
-                this.craftTime = 50.0F;
-                this.consumes.power(1.2F);
-                this.consumes.items(ItemStack.with(new Object[]{Items.thorium, 5, Items.titanium, 5, Items.surgeAlloy, 1}));
-            }
-        };
-        superCharger = new Reinforcer("supercharger") {
-            {
-                this.requirements(Category.effect, ItemStack.with(new Object[]{Items.titanium, 60, Items.lead, 20, Items.silicon, 30}));
-                this.size = 2;
-                this.itemCapacity = 15;
-                this.laserColor = Items.surgeAlloy.color;
-                this.consumes.power(0.4F);
-                this.consumes.items(ItemStack.with(new Object[]{UnityItems.irradiantSurge, 10}));
-            }
-        };
-        oreNickel = new UnityOreBlock(UnityItems.nickel) {
-            {
-                this.oreScale = 24.77F;
-                this.oreThreshold = 0.913F;
-                this.oreDefault = false;
-            }
-        };
-        oreUmbrium = new UnityOreBlock(UnityItems.umbrium) {
-            {
-                this.oreScale = 23.77F;
-                this.oreThreshold = 0.813F;
-                this.oreDefault = false;
-            }
-        };
-        oreLuminum = new UnityOreBlock(UnityItems.luminum) {
-            {
-                this.oreScale = 23.77F;
-                this.oreThreshold = 0.81F;
-                this.oreDefault = false;
-            }
-        };
-        oreImberium = new UnityOreBlock(UnityItems.imberium) {
-            {
-                this.oreScale = 23.77F;
-                this.oreThreshold = 0.807F;
-                this.oreDefault = false;
-            }
-        };
-        apparition = new ItemTurret("apparition") {
-            {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 350, Items.graphite, 380, Items.silicon, 360, Items.plastanium, 200, Items.thorium, 220, UnityItems.umbrium, 370, Items.surgeAlloy, 290}));
-                this.size = 5;
-                this.health = 3975;
-                this.range = 235.0F;
-                this.reloadTime = 6.0F;
-                this.coolantMultiplier = 0.5F;
-                this.restitution = 0.09F;
-                this.inaccuracy = 3.0F;
-                this.spread = 12.0F;
-                this.shots = 2;
-                this.shootSound = Sounds.shootBig;
-                this.alternate = true;
-                this.recoilAmount = 3.0F;
-                this.rotateSpeed = 4.5F;
-                this.ammo(new Object[]{Items.graphite, UnityBullets.standardDenseLarge, Items.silicon, UnityBullets.standardHomingLarge, Items.pyratite, UnityBullets.standardIncendiaryLarge, Items.thorium, UnityBullets.standardThoriumLarge});
-            }
+    public static ConsumeCoolant consumeCoolant(Block block, float amount, float temp, float flammability){
+        return block.consume(new ConsumeCoolant(amount){{
+            maxFlammability = flammability;
+            maxTemp = temp;
+        }});
+    }
 
-            public void load() {
-                super.load();
-                this.baseRegion = Core.atlas.find("unity-block-" + this.size);
-            }
-        };
-        ghost = new BarrelsItemTurret("ghost") {
-            {
+    public static void load() {
+        distributionDrill = new DistributionDrill("distribution-drill") {{
+            requirements(Category.production, ItemStack.with(Items.copper, 20, Items.silicon, 15, Items.titanium, 20));
+            tier = 3;
+            drillTime = 450.0F;
+            size = 2;
+            consumeLiquid(Liquids.water, 0.06f).boost();
+        }};
+        recursiveReconstructor = new SelectableReconstructor("recursive-reconstructor") {{
+            requirements(Category.units, ItemStack.with(Items.graphite, 1600, Items.silicon, 2000, Items.metaglass, 900, Items.thorium, 600, Items.lead, 1200, Items.plastanium, 3600));
+            size = 11;
+            liquidCapacity = 360f;
+            configurable = true;
+            constructTime = 20000f;
+            minTier = 6;
+            upgrades.addAll(
+                    new UnitType[]{UnitTypes.reign, UnityUnitTypes.citadel},
+                    new UnitType[]{UnitTypes.toxopid, UnityUnitTypes.araneidae},
+                    new UnitType[]{UnitTypes.corvus, UnityUnitTypes.cygnus},
+                    new UnitType[]{UnityUnitTypes.rex, UnityUnitTypes.excelsus},
+                    new UnitType[]{MonolithUnitTypes.monument, MonolithUnitTypes.colossus}
+            );
+            otherUpgrades.add(
+                    new UnitType[]{UnityUnitTypes.citadel, UnityUnitTypes.empire},
+                    new UnitType[]{UnityUnitTypes.araneidae, UnityUnitTypes.theraphosidae},
+                    new UnitType[]{MonolithUnitTypes.colossus, MonolithUnitTypes.bastion}
+            );
+            consumePower(5f);
+            consumeItems(ItemStack.with(Items.silicon, 1200, Items.metaglass, 800, Items.thorium, 700, Items.surgeAlloy, 400, Items.plastanium, 600, Items.phaseFabric, 350));
+            consumeLiquid(Liquids.cryofluid, 7f);
+        }};
+        irradiator = new Press("irradiator") {{
+            requirements(Category.crafting, ItemStack.with(new Object[]{Items.lead, 120, Items.silicon, 80, Items.titanium, 30}));
+            outputItem = new ItemStack(UnityItems.irradiantSurge, 3);
+            size = 3;
+            movementSize = 29f;
+            fxYVariation = 3.125f;
+            craftTime = 50f;
+            consumePower(1.2f);
+            consumeItems(ItemStack.with(Items.thorium, 5, Items.titanium, 5, Items.surgeAlloy, 1));
+        }};
+        superCharger = new Reinforcer("supercharger") {{
+            requirements(Category.effect, ItemStack.with(Items.titanium, 60, Items.lead, 20, Items.silicon, 30));
+            size = 2;
+            itemCapacity = 15;
+            laserColor = Items.surgeAlloy.color;
+            consumePower(0.4f);
+            consumeItems(ItemStack.with(UnityItems.irradiantSurge, 10));
+        }};
+        oreNickel = new UnityOreBlock(UnityItems.nickel) {{
+            oreScale = 24.77F;
+            oreThreshold = 0.913F;
+        }};
+        oreUmbrium = new UnityOreBlock(UnityItems.umbrium) {{
+            oreScale = 23.77F;
+            oreThreshold = 0.813F;
+        }};
+        oreLuminum = new UnityOreBlock(UnityItems.luminum) {{
+            oreScale = 23.77F;
+            oreThreshold = 0.81F;
+        }};
+        oreImberium = new UnityOreBlock(UnityItems.imberium) {{
+            oreScale = 23.77F;
+            oreThreshold = 0.807F;
+        }};
+        apparition = new ItemTurret("apparition") {{
+            requirements(Category.turret, ItemStack.with(Items.copper, 350, Items.graphite, 380, Items.silicon, 360, Items.plastanium, 200, Items.thorium, 220, UnityItems.umbrium, 370, Items.surgeAlloy, 290));
+            size = 5;
+            health = 3975;
+            range = 235.0F;
+            reload = 6.0F;
+            coolantMultiplier = 0.5F;
+            //restitution = 0.09F;
+            inaccuracy = 3.0F;
+            shoot = new ShootSpread(2, 12f);
+            shootSound = Sounds.shootSpectre;
+            recoil = 3.0F;
+            rotateSpeed = 4.5F;
+            ammo(
+                    Items.graphite, UnityBullets.standardDenseLarge,
+                    Items.silicon, UnityBullets.standardHomingLarge,
+                    Items.pyratite, UnityBullets.standardIncendiaryLarge,
+                    Items.thorium, UnityBullets.standardThoriumLarge
+            );
+            ((DrawTurret)drawer).basePrefix = "unity-block-";
+        }};
+        ghost = new BarrelsItemTurret("ghost") {{
                 this.size = 8;
                 this.health = 9750;
                 this.range = 290.0F;
-                this.reloadTime = 9.0F;
+                this.reload = 9.0F;
                 this.coolantMultiplier = 0.5F;
-                this.restitution = 0.08F;
+                //this.restitution = 0.08F;
                 this.inaccuracy = 3.0F;
-                this.shots = 2;
-                this.shootSound = Sounds.shootBig;
-                this.alternate = true;
-                this.recoilAmount = 5.5F;
+                shoot = new ShootSpread(2, 21f);
+                this.shootSound = Sounds.shootSpectre;
+                this.recoil = 5.5F;
                 this.rotateSpeed = 3.5F;
-                this.spread = 21.0F;
                 this.addBarrel(8.0F, 18.75F, 6.0F);
-                this.ammo(new Object[]{Items.graphite, UnityBullets.standardDenseHeavy, Items.silicon, UnityBullets.standardHomingHeavy, Items.pyratite, UnityBullets.standardIncendiaryHeavy, Items.thorium, UnityBullets.standardThoriumHeavy});
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 1150, Items.graphite, 1420, Items.silicon, 960, Items.plastanium, 800, Items.thorium, 1230, UnityItems.darkAlloy, 380}));
-            }
-        };
-        banshee = new BarrelsItemTurret("banshee") {
-            {
+                this.ammo(Items.graphite, UnityBullets.standardDenseHeavy, Items.silicon, UnityBullets.standardHomingHeavy, Items.pyratite, UnityBullets.standardIncendiaryHeavy, Items.thorium, UnityBullets.standardThoriumHeavy);
+                this.requirements(Category.turret, ItemStack.with(Items.copper, 1150, Items.graphite, 1420, Items.silicon, 960, Items.plastanium, 800, Items.thorium, 1230, UnityItems.darkAlloy, 380));
+        }};
+        banshee = new BarrelsItemTurret("banshee") {{
                 this.size = 12;
                 this.health = 22000;
                 this.range = 370.0F;
-                this.reloadTime = 12.0F;
+                this.reload = 12.0F;
                 this.coolantMultiplier = 0.5F;
-                this.restitution = 0.08F;
+                //this.restitution = 0.08F;
                 this.inaccuracy = 3.0F;
-                this.shots = 2;
-                this.shootSound = Sounds.shootBig;
-                this.alternate = true;
-                this.recoilAmount = 5.5F;
+                shoot = new ShootSpread(2, 37f);
+                this.shootSound = Sounds.shootSpectre;
+                this.recoil = 5.5F;
                 this.rotateSpeed = 3.5F;
-                this.spread = 37.0F;
                 this.focus = true;
                 this.addBarrel(23.5F, 36.5F, 9.0F);
                 this.addBarrel(8.5F, 24.5F, 6.0F);
-                this.ammo(new Object[]{Items.graphite, UnityBullets.standardDenseMassive, Items.silicon, UnityBullets.standardHomingMassive, Items.pyratite, UnityBullets.standardIncendiaryMassive, Items.thorium, UnityBullets.standardThoriumMassive});
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 2800, Items.graphite, 2980, Items.silicon, 2300, Items.titanium, 1900, Items.phaseFabric, 1760, Items.thorium, 1780, UnityItems.darkAlloy, 1280}));
-            }
-        };
-        fallout = new LaserTurret("fallout") {
-            {
-                this.size = 5;
-                this.health = 3975;
-                this.range = 215.0F;
-                this.reloadTime = 110.0F;
-                this.coolantMultiplier = 0.8F;
-                this.shootCone = 40.0F;
-                this.shootDuration = 230.0F;
-                this.powerUse = 19.0F;
-                this.shootShake = 3.0F;
-                this.firingMoveFract = 0.2F;
-                this.shootEffect = Fx.shootBigSmoke2;
-                this.recoilAmount = 4.0F;
-                this.shootSound = Sounds.laserbig;
-                this.heatColor = Color.valueOf("e04300");
-                this.rotateSpeed = 3.5F;
-                this.loopSound = Sounds.beam;
-                this.loopSoundVolume = 2.1F;
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 450, Items.lead, 350, Items.graphite, 390, Items.silicon, 360, Items.titanium, 250, UnityItems.umbrium, 370, Items.surgeAlloy, 360}));
-                this.shootType = UnityBullets.falloutLaser;
-                ((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability < 0.1F, 0.58F))).update(false);
+                this.ammo(Items.graphite, UnityBullets.standardDenseMassive, Items.silicon, UnityBullets.standardHomingMassive, Items.pyratite, UnityBullets.standardIncendiaryMassive, Items.thorium, UnityBullets.standardThoriumMassive);
+                this.requirements(Category.turret, ItemStack.with(Items.copper, 2800, Items.graphite, 2980, Items.silicon, 2300, Items.titanium, 1900, Items.phaseFabric, 1760, Items.thorium, 1780, UnityItems.darkAlloy, 1280));
+        }};
+        fallout = new LaserTurret("fallout") {{
+            this.size = 5;
+            this.health = 3975;
+            this.range = 215.0F;
+            this.reload = 110.0F;
+            this.coolantMultiplier = 0.8F;
+            this.shootCone = 40.0F;
+            this.shootDuration = 230.0F;
+            consumePower(19.0F);
+            this.shake = 3.0F;
+            this.firingMoveFract = 0.2F;
+            this.shootEffect = Fx.shootBigSmoke2;
+            this.recoil = 4.0F;
+            this.shootSound = Sounds.shootMeltdown;
+            this.heatColor = Color.valueOf("e04300");
+            this.rotateSpeed = 3.5F;
+            this.loopSound = Sounds.beamMeltdown;
+            this.loopSoundVolume = 2.1F;
+            this.requirements(Category.turret, ItemStack.with(Items.copper, 450, Items.lead, 350, Items.graphite, 390, Items.silicon, 360, Items.titanium, 250, UnityItems.umbrium, 370, Items.surgeAlloy, 360));
+            this.shootType = UnityBullets.falloutLaser;
+            coolant = UnityBlocks.consumeCoolant(this, 0.58f, 0.5f, 0.1f);
+        }};
+        catastrophe = new BigLaserTurret("catastrophe") {{
+            this.size = 8;
+            this.health = 9750;
+            this.range = 300.0F;
+            this.reload = 190.0F;
+            this.coolantMultiplier = 0.6F;
+            this.shootCone = 40.0F;
+            this.shootDuration = 320.0F;
+            consumePower(39.0F);
+            this.shake = 4.0F;
+            this.firingMoveFract = 0.16F;
+            this.shootEffect = Fx.shootBigSmoke2;
+            this.recoil = 7.0F;
+            this.cooldownTime = 1 / 0.012F;
+            this.heatColor = Color.white;
+            this.rotateSpeed = 1.9F;
+            this.shootSound = Sounds.shootMeltdown;
+            this.loopSound = Sounds.beamMeltdown;
+            this.loopSoundVolume = 2.2F;
+            this.requirements(Category.turret, ItemStack.with(Items.copper, 1250, Items.lead, 1320, Items.graphite, 1100, Items.titanium, 1340, Items.surgeAlloy, 1240, Items.silicon, 1350, Items.thorium, 770, UnityItems.darkAlloy, 370));
+            this.shootType = UnityBullets.catastropheLaser;
+            coolant = UnityBlocks.consumeCoolant(this, 1.3f, 0.4f, 0.1f);
+        }};
+        calamity = new BigLaserTurret("calamity") {{
+            this.size = 12;
+            this.health = 22000;
+            this.range = 420.0F;
+            this.reload = 320.0F;
+            this.coolantMultiplier = 0.6F;
+            this.shootCone = 23.0F;
+            this.shootDuration = 360.0F;
+            consumePower(87.0F);
+            this.shake = 4.0F;
+            this.firingMoveFract = 0.09F;
+            this.shootEffect = Fx.shootBigSmoke2;
+            this.recoil = 7.0F;
+            this.cooldownTime = 1 / 0.009F;
+            this.heatColor = Color.white;
+            this.rotateSpeed = 0.97F;
+            this.shootSound = Sounds.shootMeltdown;
+            this.loopSound = Sounds.beamMeltdown;
+            this.loopSoundVolume = 2.6F;
+            this.requirements(Category.turret, ItemStack.with(Items.copper, 2800, Items.lead, 2970, Items.graphite, 2475, Items.titanium, 3100, Items.surgeAlloy, 2790, Items.silicon, 3025, Items.thorium, 1750, UnityItems.darkAlloy, 1250));
+            this.shootType = UnityBullets.calamityLaser;
+            coolant = UnityBlocks.consumeCoolant(this, 2.1f, 0.3f, 0.1f);
+        }};
+        extinction = new BigLaserTurret("extinction") {{
+            this.requirements(Category.turret, ItemStack.with(Items.copper, 3800, Items.lead, 4100, Items.graphite, 3200, Items.titanium, 4200, Items.surgeAlloy, 3800, Items.silicon, 4300, Items.thorium, 2400, UnityItems.darkAlloy, 1700, UnityItems.terminum, 900, UnityItems.terminaAlloy, 500));
+            this.size = 14;
+            this.health = 29500;
+            this.range = 520.0F;
+            this.reload = 380.0F;
+            this.coolantMultiplier = 0.4F;
+            this.shootCone = 12.0F;
+            this.shootDuration = 360.0F;
+            consumePower(175.0F);
+            this.shake = 4.0F;
+            this.firingMoveFract = 0.09F;
+            this.shootEffect = Fx.shootBigSmoke2;
+            this.recoil = 7.0F;
+            this.cooldownTime = 1 / 0.003F;
+            this.heatColor = Color.white;
+            this.rotateSpeed = 0.82F;
+            this.shootSound = UnitySounds.extinctionShoot;
+            this.loopSound = UnitySounds.beamIntenseHighpitchTone;
+            this.loopSoundVolume = 2.0F;
+            this.shootType = UnityBullets.extinctionLaser;
+            coolant = UnityBlocks.consumeCoolant(this, 2.5f, 0.27f, 0.1f);
+        }};
+        darkAlloyForge = new StemGenericCrafter("dark-alloy-forge") {{
+            this.requirements(Category.crafting, ItemStack.with(Items.copper, 30, Items.lead, 25));
+            this.outputItem = new ItemStack(UnityItems.darkAlloy, 3);
+            this.craftTime = 140.0F;
+            this.size = 4;
+            this.ambientSound = UnitySounds.respawning;
+            this.ambientSoundVolume = 0.6F;
+            this.drawer = new DrawSmelter();
+            this.consumeItems(ItemStack.with(Items.lead, 2, Items.silicon, 3, Items.blastCompound, 1, Items.phaseFabric, 1, UnityItems.umbrium, 2));
+            this.consumePower(3.2F);
+            this.update((StemGenericCrafterBuild e) -> {
+                if (e.block.hasConsumers && Mathf.chanceDelta(0.76F)) {
+                    UnityFx.craftingEffect.at(e.x, e.y, Mathf.random(360.0F));
+                }
+            });
+        }};
+        darkWall = new Wall("dark-wall") {{
+            this.requirements(Category.defense, ItemStack.with(UnityItems.umbrium, 6));
+            this.health = 480;
+        }};
+        darkWallLarge = new Wall("dark-wall-large") {{
+            this.requirements(Category.defense, ItemStack.with(UnityItems.umbrium, 24));
+            this.health = 1920;
+            this.size = 2;
+        }};
+        photon = new LaserTurret("photon") {{
+            this.requirements(Category.turret, ItemStack.with(Items.lead, 50, Items.silicon, 35, UnityItems.luminum, 65, Items.titanium, 65));
+            this.size = 2;
+            this.health = 1280;
+            this.reload = 100.0F;
+            this.shootCone = 30.0F;
+            this.range = 120.0F;
+            consumePower(4.5F);
+            this.heatColor = UnityPal.lightHeat;
+            this.loopSound = UnitySounds.respawning;
+            this.shootType = new ContinuousLaserBulletType(16.0F) {{
+                this.incendChance = -1.0F;
+                this.length = 130.0F;
+                this.width = 4.0F;
+                this.colors = new Color[]{Pal.lancerLaser.cpy().a(3.75F), Pal.lancerLaser, Color.white};
+                //this.strokes = new float[]{0.92F, 0.6F, 0.28F};
+                this.lightColor = this.hitColor = Pal.lancerLaser;
+            }};
+            coolant = UnityBlocks.consumeCoolant(this, 0.2f, 0.5f, 0.1f);
+        }};
+        graviton = new LaserTurret("graviton") {{
+            this.requirements(Category.turret, ItemStack.with(Items.lead, 110, Items.graphite, 90, Items.silicon, 70, UnityItems.luminum, 180, Items.titanium, 135));
+            this.size = 3;
+            this.health = 2780;
+            this.reload = 150.0F;
+            this.recoil = 2.0F;
+            this.shootCone = 30.0F;
+            this.range = 230.0F;
+            consumePower(5.75F);
+            this.heatColor = UnityPal.lightHeat;
+            this.loopSound = UnitySounds.xenoBeam;
+            this.shootType = new GravitonLaserBulletType(0.8F) {{
+                this.length = 260.0F;
+                this.knockback = -5.0F;
+                this.incendChance = -1.0F;
+                this.colors = new Color[]{UnityPal.advanceDark.cpy().a(0.1F), Pal.lancerLaser.cpy().a(0.2F)};
+                //this.strokes = new float[]{2.4F, 1.8F};
+            }};
+            coolant = UnityBlocks.consumeCoolant(this, 0.25f, 0.5f, 0.1f);
+        }};
+        electron = new PowerTurret("electron") {{
+            this.requirements(Category.turret, ItemStack.with(Items.lead, 110, Items.silicon, 75, UnityItems.luminum, 165, Items.titanium, 125));
+            this.size = 3;
+            this.health = 2540;
+            this.reload = 60.0F;
+            this.coolantMultiplier = 2.0F;
+            this.range = 170.0F;
+            consumePower(6.6F);
+            this.heatColor = UnityPal.lightHeat;
+            this.shootEffect = ShootFx.blueTriangleShoot;
+            this.shootSound = Sounds.shoot;
+            this.shootType = new BasicBulletType(9.0F, 34.0F, "unity-electric-shell") {{
+                this.lifetime = 22.0F;
+                this.width = 12.0F;
+                this.height = 19.0F;
+                this.shrinkX = this.shrinkY = 0.0F;
+                this.backColor = this.lightColor = this.hitColor = Pal.lancerLaser;
+                this.frontColor = Color.white;
+                this.hitEffect = HitFx.electronHit;
             }
 
-            public void load() {
-                super.load();
-                this.baseRegion = Core.atlas.find("unity-block-" + this.size);
+            public void update(Bullet b) {
+                super.update(b);
+                if (b.timer(0, 2.0F + b.fslope() * 1.5F)) {
+                    UnityFx.blueTriangleTrail.at(b.x, b.y, b.rotation());
+                }
             }
-        };
-        catastrophe = new BigLaserTurret("catastrophe") {
-            {
-                this.size = 8;
-                this.health = 9750;
-                this.range = 300.0F;
-                this.reloadTime = 190.0F;
-                this.coolantMultiplier = 0.6F;
-                this.shootCone = 40.0F;
-                this.shootDuration = 320.0F;
-                this.powerUse = 39.0F;
-                this.shootShake = 4.0F;
-                this.firingMoveFract = 0.16F;
-                this.shootEffect = Fx.shootBigSmoke2;
-                this.recoilAmount = 7.0F;
-                this.cooldown = 0.012F;
-                this.heatColor = Color.white;
-                this.rotateSpeed = 1.9F;
-                this.shootSound = Sounds.laserbig;
-                this.loopSound = Sounds.beam;
-                this.loopSoundVolume = 2.2F;
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 1250, Items.lead, 1320, Items.graphite, 1100, Items.titanium, 1340, Items.surgeAlloy, 1240, Items.silicon, 1350, Items.thorium, 770, UnityItems.darkAlloy, 370}));
-                this.shootType = UnityBullets.catastropheLaser;
-                ((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.4F && liquid.flammability < 0.1F, 1.3F))).update(false);
-            }
-        };
-        calamity = new BigLaserTurret("calamity") {
-            {
-                this.size = 12;
-                this.health = 22000;
-                this.range = 420.0F;
-                this.reloadTime = 320.0F;
-                this.coolantMultiplier = 0.6F;
-                this.shootCone = 23.0F;
-                this.shootDuration = 360.0F;
-                this.powerUse = 87.0F;
-                this.shootShake = 4.0F;
-                this.firingMoveFract = 0.09F;
-                this.shootEffect = Fx.shootBigSmoke2;
-                this.recoilAmount = 7.0F;
-                this.cooldown = 0.009F;
-                this.heatColor = Color.white;
-                this.rotateSpeed = 0.97F;
-                this.shootSound = Sounds.laserbig;
-                this.loopSound = Sounds.beam;
-                this.loopSoundVolume = 2.6F;
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 2800, Items.lead, 2970, Items.graphite, 2475, Items.titanium, 3100, Items.surgeAlloy, 2790, Items.silicon, 3025, Items.thorium, 1750, UnityItems.darkAlloy, 1250}));
-                this.shootType = UnityBullets.calamityLaser;
-                ((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.3F && liquid.flammability < 0.1F, 2.1F))).update(false);
-            }
-        };
-        extinction = new BigLaserTurret("extinction") {
-            {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 3800, Items.lead, 4100, Items.graphite, 3200, Items.titanium, 4200, Items.surgeAlloy, 3800, Items.silicon, 4300, Items.thorium, 2400, UnityItems.darkAlloy, 1700, UnityItems.terminum, 900, UnityItems.terminaAlloy, 500}));
-                this.size = 14;
-                this.health = 29500;
-                this.range = 520.0F;
-                this.reloadTime = 380.0F;
-                this.coolantMultiplier = 0.4F;
-                this.shootCone = 12.0F;
-                this.shootDuration = 360.0F;
-                this.powerUse = 175.0F;
-                this.shootShake = 4.0F;
-                this.firingMoveFract = 0.09F;
-                this.shootEffect = Fx.shootBigSmoke2;
-                this.recoilAmount = 7.0F;
-                this.cooldown = 0.003F;
-                this.heatColor = Color.white;
-                this.rotateSpeed = 0.82F;
-                this.shootSound = UnitySounds.extinctionShoot;
-                this.loopSound = UnitySounds.beamIntenseHighpitchTone;
-                this.loopSoundVolume = 2.0F;
-                this.shootType = UnityBullets.extinctionLaser;
-                ((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.27F && liquid.flammability < 0.1F, 2.5F))).update(false);
-            }
-        };
-        darkAlloyForge = new StemGenericCrafter("dark-alloy-forge") {
-            {
-                this.requirements(Category.crafting, ItemStack.with(new Object[]{Items.copper, 30, Items.lead, 25}));
-                this.outputItem = new ItemStack(UnityItems.darkAlloy, 3);
-                this.craftTime = 140.0F;
-                this.size = 4;
-                this.ambientSound = Sounds.respawning;
-                this.ambientSoundVolume = 0.6F;
-                this.drawer = new DrawSmelter();
-                this.consumes.items(ItemStack.with(new Object[]{Items.lead, 2, Items.silicon, 3, Items.blastCompound, 1, Items.phaseFabric, 1, UnityItems.umbrium, 2}));
-                this.consumes.power(3.2F);
-                this.update((e) -> {
-                    if (e.consValid() && Mathf.chanceDelta((double)0.76F)) {
-                        UnityFx.craftingEffect.at(e.x, e.y, Mathf.random(360.0F));
-                    }
 
-                });
+            };
+        }};
+        proton = new PowerTurret("proton") {{
+            this.requirements(Category.turret, ItemStack.with(Items.lead, 110, Items.silicon, 75, UnityItems.luminum, 165, Items.titanium, 135));
+            this.size = 4;
+            this.health = 2540;
+            this.reload = 60.0F;
+            this.range = 245.0F;
+            this.shootCone = 20.0F;
+            this.heatColor = UnityPal.lightHeat;
+            this.rotateSpeed = 1.5F;
+            this.recoil = 4.0F;
+            consumePower(4.9F);
+            this.targetAir = false;
+            this.cooldownTime = 1 / 0.008F;
+            this.shootEffect = ShootFx.blueTriangleShoot;
+            this.shootType = new ArtilleryBulletType(8.0F, 44.0F, "unity-electric-shell") {{
+                this.lifetime = 35.0F;
+                this.width = 18.0F;
+                this.splashDamage = 23.0F;
+                this.splashDamageRadius = 45.0F;
+                this.height = 27.0F;
+                this.shrinkX = this.shrinkY = 0.0F;
+                this.hitSize = 15.0F;
+                this.hitEffect = HitFx.protonHit;
+                this.hittable = this.collides = false;
+                this.backColor = this.lightColor = this.hitColor = this.lightningColor = Pal.lancerLaser;
+                this.frontColor = Color.white;
+                this.lightning = 3;
+                this.lightningDamage = 18.0F;
+                this.lightningLength = 10;
+                this.lightningLengthRand = 6;
             }
-        };
-        darkWall = new Wall("dark-wall") {
-            {
-                this.requirements(Category.defense, ItemStack.with(new Object[]{UnityItems.umbrium, 6}));
-                this.health = 480;
-            }
-        };
-        darkWallLarge = new Wall("dark-wall-large") {
-            {
-                this.requirements(Category.defense, ItemStack.with(new Object[]{UnityItems.umbrium, 24}));
-                this.health = 1920;
-                this.size = 2;
-            }
-        };
-        photon = new LaserTurret("photon") {
-            {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.lead, 50, Items.silicon, 35, UnityItems.luminum, 65, Items.titanium, 65}));
-                this.size = 2;
-                this.health = 1280;
-                this.reloadTime = 100.0F;
-                this.shootCone = 30.0F;
-                this.range = 120.0F;
-                this.powerUse = 4.5F;
-                this.heatColor = UnityPal.lightHeat;
-                this.loopSound = Sounds.respawning;
-                this.shootType = new ContinuousLaserBulletType(16.0F) {
-                    {
-                        this.incendChance = -1.0F;
-                        this.length = 130.0F;
-                        this.width = 4.0F;
-                        this.colors = new Color[]{Pal.lancerLaser.cpy().a(3.75F), Pal.lancerLaser, Color.white};
-                        this.strokes = new float[]{0.92F, 0.6F, 0.28F};
-                        this.lightColor = this.hitColor = Pal.lancerLaser;
-                    }
-                };
-                ((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability < 0.1F, 0.2F))).update(false);
-            }
-        };
-        graviton = new LaserTurret("graviton") {
-            {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.lead, 110, Items.graphite, 90, Items.silicon, 70, UnityItems.luminum, 180, Items.titanium, 135}));
-                this.size = 3;
-                this.health = 2780;
-                this.reloadTime = 150.0F;
-                this.recoilAmount = 2.0F;
-                this.shootCone = 30.0F;
-                this.range = 230.0F;
-                this.powerUse = 5.75F;
-                this.heatColor = UnityPal.lightHeat;
-                this.loopSound = UnitySounds.xenoBeam;
-                this.shootType = new GravitonLaserBulletType(0.8F) {
-                    {
-                        this.length = 260.0F;
-                        this.knockback = -5.0F;
-                        this.incendChance = -1.0F;
-                        this.colors = new Color[]{UnityPal.advanceDark.cpy().a(0.1F), Pal.lancerLaser.cpy().a(0.2F)};
-                        this.strokes = new float[]{2.4F, 1.8F};
-                    }
-                };
-                ((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability < 0.1F, 0.25F))).update(false);
-            }
-        };
-        electron = new PowerTurret("electron") {
-            {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.lead, 110, Items.silicon, 75, UnityItems.luminum, 165, Items.titanium, 125}));
-                this.size = 3;
-                this.health = 2540;
-                this.reloadTime = 60.0F;
-                this.coolantMultiplier = 2.0F;
-                this.range = 170.0F;
-                this.powerUse = 6.6F;
-                this.heatColor = UnityPal.lightHeat;
-                this.shootEffect = ShootFx.blueTriangleShoot;
-                this.shootSound = Sounds.pew;
-                this.shootType = new BasicBulletType(9.0F, 34.0F, "unity-electric-shell") {
-                    {
-                        this.lifetime = 22.0F;
-                        this.width = 12.0F;
-                        this.height = 19.0F;
-                        this.shrinkX = this.shrinkY = 0.0F;
-                        this.backColor = this.lightColor = this.hitColor = Pal.lancerLaser;
-                        this.frontColor = Color.white;
-                        this.hitEffect = HitFx.electronHit;
-                    }
 
-                    public void update(Bullet b) {
-                        super.update(b);
-                        if (b.timer(0, 2.0F + b.fslope() * 1.5F)) {
-                            UnityFx.blueTriangleTrail.at(b.x, b.y, b.rotation());
-                        }
-
-                    }
-                };
+            public void update(Bullet b) {
+                super.update(b);
+                if (b.timer(0, 2.0F + b.fslope() * 1.5F)) {
+                    UnityFx.blueTriangleTrail.at(b.x, b.y, b.rotation());
+                }
             }
-        };
-        proton = new PowerTurret("proton") {
-            {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.lead, 110, Items.silicon, 75, UnityItems.luminum, 165, Items.titanium, 135}));
-                this.size = 4;
-                this.health = 2540;
-                this.reloadTime = 60.0F;
-                this.range = 245.0F;
-                this.shootCone = 20.0F;
-                this.heatColor = UnityPal.lightHeat;
-                this.rotateSpeed = 1.5F;
-                this.recoilAmount = 4.0F;
-                this.powerUse = 4.9F;
-                this.targetAir = false;
-                this.cooldown = 0.008F;
-                this.shootEffect = ShootFx.blueTriangleShoot;
-                this.shootType = new ArtilleryBulletType(8.0F, 44.0F, "unity-electric-shell") {
-                    {
-                        this.lifetime = 35.0F;
-                        this.width = 18.0F;
-                        this.splashDamage = 23.0F;
-                        this.splashDamageRadius = 45.0F;
-                        this.height = 27.0F;
-                        this.shrinkX = this.shrinkY = 0.0F;
-                        this.hitSize = 15.0F;
-                        this.hitEffect = HitFx.protonHit;
-                        this.hittable = this.collides = false;
-                        this.backColor = this.lightColor = this.hitColor = this.lightningColor = Pal.lancerLaser;
-                        this.frontColor = Color.white;
-                        this.lightning = 3;
-                        this.lightningDamage = 18.0F;
-                        this.lightningLength = 10;
-                        this.lightningLengthRand = 6;
-                    }
 
-                    public void update(Bullet b) {
-                        super.update(b);
-                        if (b.timer(0, 2.0F + b.fslope() * 1.5F)) {
-                            UnityFx.blueTriangleTrail.at(b.x, b.y, b.rotation());
-                        }
-
-                    }
-                };
+            };
+        }};
+        neutron = new PowerTurret("neutron") {{
+            this.requirements(Category.turret, ItemStack.with(Items.lead, 110, Items.silicon, 75, UnityItems.luminum, 165, Items.titanium, 135));
+            this.size = 4;
+            this.health = 2520;
+            this.reload = 10.0F;
+            this.range = 235.0F;
+            this.shootCone = 20.0F;
+            this.heatColor = UnityPal.lightHeat;
+            this.rotateSpeed = 3.9F;
+            this.recoil = 4.0F;
+            consumePower(4.9F);
+            this.cooldownTime = 1 / 0.008F;
+            this.inaccuracy = 3.4F;
+            this.shootEffect = ShootFx.blueTriangleShoot;
+            this.shootType = new FlakBulletType(8.7F, 7.0F) {{
+                this.lifetime = 30.0F;
+                this.width = 8.0F;
+                this.height = 14.0F;
+                this.splashDamage = 28.0F;
+                this.splashDamageRadius = 34.0F;
+                this.shrinkX = this.shrinkY = 0.0F;
+                this.hitSize = 7.0F;
+                this.sprite = "unity-electric-shell";
+                this.hitEffect = HitFx.neutronHit;
+                this.collides = this.collidesGround = true;
+                this.hittable = false;
+                this.backColor = this.lightColor = this.hitColor = Pal.lancerLaser;
+                this.frontColor = Color.white;
             }
-        };
-        neutron = new PowerTurret("neutron") {
-            {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.lead, 110, Items.silicon, 75, UnityItems.luminum, 165, Items.titanium, 135}));
-                this.size = 4;
-                this.health = 2520;
-                this.reloadTime = 10.0F;
-                this.range = 235.0F;
-                this.shootCone = 20.0F;
-                this.heatColor = UnityPal.lightHeat;
-                this.rotateSpeed = 3.9F;
-                this.recoilAmount = 4.0F;
-                this.powerUse = 4.9F;
-                this.cooldown = 0.008F;
-                this.inaccuracy = 3.4F;
-                this.shootEffect = ShootFx.blueTriangleShoot;
-                this.shootType = new FlakBulletType(8.7F, 7.0F) {
-                    {
-                        this.lifetime = 30.0F;
-                        this.width = 8.0F;
-                        this.height = 14.0F;
-                        this.splashDamage = 28.0F;
-                        this.splashDamageRadius = 34.0F;
-                        this.shrinkX = this.shrinkY = 0.0F;
-                        this.hitSize = 7.0F;
-                        this.sprite = "unity-electric-shell";
-                        this.hitEffect = HitFx.neutronHit;
-                        this.collides = this.collidesGround = true;
-                        this.hittable = false;
-                        this.backColor = this.lightColor = this.hitColor = Pal.lancerLaser;
-                        this.frontColor = Color.white;
-                    }
 
-                    public void update(Bullet b) {
-                        super.update(b);
-                        if (b.timer(0, 2.0F + b.fslope() * 1.5F)) {
-                            UnityFx.blueTriangleTrail.at(b.x, b.y, b.rotation());
-                        }
-
-                    }
-                };
+            public void update(Bullet b) {
+                super.update(b);
+                if (b.timer(0, 2.0F + b.fslope() * 1.5F)) {
+                    UnityFx.blueTriangleTrail.at(b.x, b.y, b.rotation());
+                }
             }
-        };
+
+            };
+        }};
         gluon = new PowerTurret("gluon") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.silicon, 300, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 110, UnityItems.lightAlloy, 15}));
+                this.requirements(Category.turret, ItemStack.with(Items.silicon, 300, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 110, UnityItems.lightAlloy, 15));
                 this.size = 4;
                 this.health = 5000;
-                this.reloadTime = 90.0F;
+                this.reload = 90.0F;
                 this.coolantMultiplier = 3.0F;
                 this.shootCone = 30.0F;
                 this.range = 200.0F;
                 this.heatColor = UnityPal.lightHeat;
                 this.rotateSpeed = 4.3F;
-                this.recoilAmount = 2.0F;
-                this.powerUse = 1.9F;
-                this.cooldown = 0.012F;
+                this.recoil = 2.0F;
+                consumePower(1.9F);
+                this.cooldownTime = 1 / 0.012F;
                 this.shootSound = UnitySounds.gluonShoot;
                 this.shootType = UnityBullets.gluonEnergyBall;
             }
         };
         wBoson = new PowerTurret("w-boson") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.silicon, 300, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 110, UnityItems.lightAlloy, 15}));
+                this.requirements(Category.turret, ItemStack.with(Items.silicon, 300, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 110, UnityItems.lightAlloy, 15));
                 this.health = 4000;
                 this.size = 5;
-                this.reloadTime = 90.0F;
+                this.reload = 90.0F;
                 this.range = 250.0F;
                 this.rotateSpeed = 2.5F;
                 this.shootCone = 20.0F;
                 this.heatColor = UnityPal.lightHeat;
-                this.chargeBeginEffect = ChargeFx.wBosonChargeBeginEffect;
-                this.chargeEffect = ChargeFx.wBosonChargeEffect;
-                this.chargeTime = 38.0F;
-                this.cooldown = 0.008F;
-                this.powerUse = 8.6F;
+                //this.chargeBeginEffect = ChargeFx.wBosonChargeBeginEffect;
+                this.shoot.firstShotDelay = 38.0F;
+                this.cooldownTime = 1 / 0.008F;
+                consumePower(8.6F);
                 this.shootType = new DecayBasicBulletType(8.5F, 24.0F) {
                     {
+                        chargeEffect = ChargeFx.wBosonChargeEffect;
                         this.drag = 0.026F;
                         this.lifetime = 48.0F;
                         this.hittable = this.absorbable = this.collides = false;
@@ -919,33 +871,28 @@ public class UnityBlocks {
                         this.fragLifeMax = 1.3F;
                     }
                 };
-            }
-
-            public void load() {
-                super.load();
-                this.baseRegion = Core.atlas.find("unity-block-" + this.size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
         zBoson = new RampupPowerTurret("z-boson") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.silicon, 290, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 120, UnityItems.lightAlloy, 15}));
+                this.requirements(Category.turret, ItemStack.with(Items.silicon, 290, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 120, UnityItems.lightAlloy, 15));
                 this.health = 4000;
                 this.size = 5;
-                this.reloadTime = 40.0F;
+                this.reload = 40.0F;
                 this.range = 230.0F;
                 this.shootCone = 20.0F;
                 this.heatColor = UnityPal.lightHeat;
                 this.coolantMultiplier = 1.9F;
                 this.rotateSpeed = 2.7F;
-                this.recoilAmount = 2.0F;
-                this.restitution = 0.09F;
-                this.cooldown = 0.008F;
-                this.powerUse = 3.6F;
+                this.recoil = 2.0F;
+                //this.restitution = 0.09F;
+                this.cooldownTime = 1 / 0.008F;
+                consumePower(3.6F);
                 this.targetAir = true;
                 this.shootSound = UnitySounds.zbosonShoot;
-                this.alternate = true;
-                this.shots = 2;
-                this.spread = 14.0F;
+                //this.alternate = true;
+                shoot = new ShootSpread(2, 14.0F);
                 this.inaccuracy = 2.3F;
                 this.lightning = true;
                 this.lightningThreshold = 12.0F;
@@ -967,32 +914,27 @@ public class UnityBlocks {
                         this.hittable = false;
                     }
                 };
-            }
-
-            public void load() {
-                super.load();
-                this.baseRegion = Core.atlas.find("unity-block-" + this.size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
         higgsBoson = new PowerTurret("higgs-boson") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.silicon, 290, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 120, UnityItems.lightAlloy, 20}));
+                this.requirements(Category.turret, ItemStack.with(Items.silicon, 290, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 120, UnityItems.lightAlloy, 20));
                 this.size = 6;
                 this.health = 6000;
-                this.reloadTime = 13.0F;
-                this.alternate = true;
-                this.spread = 17.25F;
-                this.shots = 2;
+                this.reload = 13.0F;
+                //this.alternate = true;
+                shoot = new ShootSpread(2, 17.25f);
                 this.range = 260.0F;
                 this.shootCone = 20.0F;
                 this.heatColor = UnityPal.lightHeat;
                 this.coolantMultiplier = 3.4F;
                 this.rotateSpeed = 2.2F;
-                this.recoilAmount = 1.5F;
-                this.restitution = 0.09F;
-                this.powerUse = 10.4F;
+                this.recoil = 1.5F;
+                //this.restitution = 0.09F;
+                consumePower(10.4F);
                 this.shootSound = UnitySounds.higgsBosonShoot;
-                this.cooldown = 0.008F;
+                this.cooldownTime = 1 / 0.008F;
                 this.shootType = new RoundLaserBulletType(85.0F) {
                     {
                         this.length = 270.0F;
@@ -1002,55 +944,46 @@ public class UnityBlocks {
                         this.shootEffect = this.smokeEffect = Fx.none;
                     }
                 };
-            }
-
-            public void load() {
-                super.load();
-                this.baseRegion = Core.atlas.find("unity-block-" + this.size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
         singularity = new PowerTurret("singularity") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.silicon, 290, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 120, UnityItems.lightAlloy, 20}));
+                this.requirements(Category.turret, ItemStack.with(Items.silicon, 290, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 120, UnityItems.lightAlloy, 20));
                 this.size = 7;
                 this.health = 9800;
-                this.reloadTime = 220.0F;
+                this.reload = 220.0F;
                 this.coolantMultiplier = 1.1F;
                 this.shootCone = 30.0F;
                 this.range = 310.0F;
                 this.heatColor = UnityPal.lightHeat;
                 this.rotateSpeed = 3.3F;
-                this.recoilAmount = 6.0F;
-                this.powerUse = 39.3F;
-                this.cooldown = 0.012F;
+                this.recoil = 6.0F;
+                consumePower(39.3F);
+                this.cooldownTime = 1 / 0.012F;
                 this.shootSound = UnitySounds.singularityShoot;
                 this.shootType = UnityBullets.singularityEnergyBall;
-            }
-
-            public void load() {
-                super.load();
-                this.baseRegion = Core.atlas.find("unity-block-" + this.size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
         muon = new PowerTurret("muon") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.silicon, 290, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 120, UnityItems.lightAlloy, 25}));
+                this.requirements(Category.turret, ItemStack.with(Items.silicon, 290, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 120, UnityItems.lightAlloy, 25));
                 this.size = 8;
                 this.health = 9800;
                 this.range = 310.0F;
-                this.shots = 9;
-                this.spread = 12.0F;
-                this.reloadTime = 90.0F;
+                shoot = new ShootSpread(9, 12f);
+                this.reload = 90.0F;
                 this.coolantMultiplier = 1.9F;
                 this.shootCone = 80.0F;
-                this.powerUse = 18.0F;
-                this.shootShake = 5.0F;
-                this.recoilAmount = 8.0F;
-                this.shootLength = (float)(this.size * 8) / 2.0F - 8.0F;
+                consumePower(18.0F);
+                this.shake = 5.0F;
+                this.recoil = 8.0F;
+                //this.shootLength = 24f;
                 this.shootSound = UnitySounds.muonShoot;
                 this.rotateSpeed = 1.9F;
                 this.heatColor = UnityPal.lightHeat;
-                this.cooldown = 0.009F;
+                this.cooldownTime = 1 / 0.009F;
                 this.shootType = new RoundLaserBulletType(200.0F) {
                     {
                         this.length = 330.0F;
@@ -1063,37 +996,33 @@ public class UnityBlocks {
                         this.smokeEffect = Fx.none;
                     }
                 };
-            }
-
-            public void load() {
-                super.load();
-                this.baseRegion = Core.atlas.find("unity-block-" + this.size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
         ephemeron = new PowerTurret("ephemeron") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.silicon, 290, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 120, UnityItems.lightAlloy, 25}));
+                this.requirements(Category.turret, ItemStack.with(Items.silicon, 290, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 120, UnityItems.lightAlloy, 25));
                 this.size = 8;
                 this.health = 9800;
                 this.range = 320.0F;
-                this.reloadTime = 70.0F;
+                this.reload = 70.0F;
                 this.coolantMultiplier = 1.9F;
-                this.powerUse = 26.0F;
-                this.shootShake = 2.0F;
-                this.recoilAmount = 4.0F;
+                consumePower(26.0F);
+                this.shake = 2.0F;
+                this.recoil = 4.0F;
                 this.shootSound = UnitySounds.ephemeronShoot;
                 this.rotateSpeed = 1.9F;
                 this.heatColor = UnityPal.lightHeat;
-                this.cooldown = 0.009F;
-                this.chargeTime = 80.0F;
-                this.chargeBeginEffect = ChargeFx.ephmeronCharge;
+                this.cooldownTime = 1 / 0.009F;
+                this.shoot.firstShotDelay = 80.0F;
+                //this.chargeBeginEffect = ChargeFx.ephmeronCharge;
                 this.shootType = new EphemeronBulletType(7.7F, 10.0F) {
                     {
                         this.lifetime = 70.0F;
                         this.hitSize = 12.0F;
                         this.pierce = true;
                         this.collidesTiles = false;
-                        this.scaleVelocity = true;
+                        this.scaleLife = true;
                         this.shootEffect = Fx.lightningShoot;
                         this.hitEffect = Fx.hitLancer;
                         this.despawnEffect = this.smokeEffect = Fx.none;
@@ -1112,71 +1041,67 @@ public class UnityBlocks {
                         };
                     }
                 };
-            }
-
-            public void load() {
-                super.load();
-                this.baseRegion = Core.atlas.find("unity-block-" + this.size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
         lightLamp = new LightSource("light-lamp") {
             {
-                this.requirements(Category.crafting, ItemStack.with(new Object[]{Items.lead, 5, Items.metaglass, 10}));
+                this.requirements(Category.crafting, ItemStack.with(Items.lead, 5, Items.metaglass, 10));
                 this.lightProduction = 0.6F;
-                this.consumes.power(1.0F);
+                this.consumePower(1.0F);
                 this.drawer = new DrawLightBlock();
             }
         };
         oilLamp = new LightSource("oil-lamp") {
             {
-                this.requirements(Category.logic, ItemStack.with(new Object[]{Items.lead, 20, Items.metaglass, 20, Items.titanium, 15}));
+                this.requirements(Category.logic, ItemStack.with(Items.lead, 20, Items.metaglass, 20, Items.titanium, 15));
                 this.size = 3;
                 this.health = 240;
                 this.lightProduction = 2.0F;
-                this.consumes.power(1.8F);
-                this.consumes.liquid(Liquids.oil, 0.1F);
+                this.consumePower(1.8F);
+                this.consumeLiquid(Liquids.oil, 0.1F);
                 this.drawer = new DrawLightBlock();
             }
         };
         lightLampInfi = new LightSource("light-lamp-infi") {
             {
-                this.requirements(Category.logic, BuildVisibility.sandboxOnly, ItemStack.with(new Object[0]));
+                this.requirements(Category.logic, BuildVisibility.sandboxOnly, ItemStack.with());
                 this.lightProduction = 600000.0F;
                 this.drawer = new DrawLightBlock();
             }
         };
         lightReflector = new LightReflector("light-reflector") {
             {
-                this.requirements(Category.logic, ItemStack.with(new Object[]{Items.metaglass, 10, Items.silicon, 5}));
+                this.requirements(Category.logic, ItemStack.with(Items.metaglass, 10, Items.silicon, 5));
             }
         };
         lightDivisor = new LightReflector("light-divisor") {
             {
-                this.requirements(Category.logic, ItemStack.with(new Object[]{Items.metaglass, 10, Items.titanium, 2}));
+                this.requirements(Category.logic, ItemStack.with(Items.metaglass, 10, Items.titanium, 2));
                 this.health = 80;
                 this.fallthrough = 0.5F;
             }
         };
         metaglassWall = new LightWall("metaglass-wall") {
             {
-                this.requirements(Category.defense, ItemStack.with(new Object[]{Items.lead, 6, Items.metaglass, 6}));
+                this.requirements(Category.defense, ItemStack.with(Items.lead, 6, Items.metaglass, 6));
                 this.health = 350;
             }
         };
         metaglassWallLarge = new LightWall("metaglass-wall-large") {
             {
-                this.requirements(Category.defense, ItemStack.with(new Object[]{Items.lead, 24, Items.metaglass, 24}));
+                this.requirements(Category.defense, ItemStack.with(Items.lead, 24, Items.metaglass, 24));
                 this.size = 2;
                 this.health = 1400;
             }
         };
         lightForge = new LightHoldGenericCrafter("light-forge") {
             {
-                this.requirements(Category.crafting, ItemStack.with(new Object[]{Items.copper, 1}));
+                this.requirements(Category.crafting, ItemStack.with(Items.copper, 1));
                 this.size = 4;
                 this.outputItem = new ItemStack(UnityItems.lightAlloy, 3);
-                this.consumes.items(ItemStack.with(new Object[]{Items.copper, 2, Items.silicon, 5, Items.plastanium, 2, UnityItems.luminum, 2}));
-                this.consumes.power(3.5F);
+                this.consumeItems(ItemStack.with(Items.copper, 2, Items.silicon, 5, Items.plastanium, 2, UnityItems.luminum, 2));
+                this.consumePower(3.5F);
                 this.drawer = new DrawSmelter(UnityPal.lightDark) {
                     {
                         this.flameRadius = 7.0F;
@@ -1186,25 +1111,25 @@ public class UnityBlocks {
                     }
                 };
                 float req = 4.0F;
-                this.acceptors.add((new LightAcceptorType(0, 0, req / 4.0F)).update((b, s) -> s.data.floatValue = Mathf.lerpDelta(s.data.floatValue, Mathf.clamp(s.status()), this.warmupSpeed)).draw((b, s) -> {
+                this.acceptors.add((new LightAcceptorType(0, 0, req / 4.0F)).update((b, s) -> s.data.floatValue = Mathf.lerpDelta(s.data.floatValue, Mathf.clamp(s.status()), this.warmupSpeed)).draw((LightHoldGenericCrafterBuild b, LightAcceptor s) -> {
                     Draw.z(30.01F);
                     Draw.alpha(s.data.floatValue);
                     Draw.blend(Blending.additive);
                     Draw.rect(Regions.lightForgeTop1Region, b.x, b.y);
                     Draw.blend();
-                }), (new LightAcceptorType(this.size - 1, 0, req / 4.0F)).update((b, s) -> s.data.floatValue = Mathf.lerpDelta(s.data.floatValue, Mathf.clamp(s.status()), this.warmupSpeed)).draw((b, s) -> {
+                }), (new LightAcceptorType(this.size - 1, 0, req / 4.0F)).update((b, s) -> s.data.floatValue = Mathf.lerpDelta(s.data.floatValue, Mathf.clamp(s.status()), this.warmupSpeed)).draw((LightHoldGenericCrafterBuild b, LightAcceptor s) -> {
                     Draw.z(30.01F);
                     Draw.alpha(s.data.floatValue);
                     Draw.blend(Blending.additive);
                     Draw.rect(Regions.lightForgeTop2Region, b.x, b.y);
                     Draw.blend();
-                }), (new LightAcceptorType(this.size - 1, this.size - 1, req / 4.0F)).update((b, s) -> s.data.floatValue = Mathf.lerpDelta(s.data.floatValue, Mathf.clamp(s.status()), this.warmupSpeed)).draw((b, s) -> {
+                }), (new LightAcceptorType(this.size - 1, this.size - 1, req / 4.0F)).update((b, s) -> s.data.floatValue = Mathf.lerpDelta(s.data.floatValue, Mathf.clamp(s.status()), this.warmupSpeed)).draw((LightHoldGenericCrafterBuild b, LightAcceptor s) -> {
                     Draw.z(30.01F);
                     Draw.alpha(s.data.floatValue);
                     Draw.blend(Blending.additive);
                     Draw.rect(Regions.lightForgeTop3Region, b.x, b.y);
                     Draw.blend();
-                }), (new LightAcceptorType(0, this.size - 1, req / 4.0F)).update((b, s) -> s.data.floatValue = Mathf.lerpDelta(s.data.floatValue, Mathf.clamp(s.status()), this.warmupSpeed)).draw((b, s) -> {
+                }), (new LightAcceptorType(0, this.size - 1, req / 4.0F)).update((b, s) -> s.data.floatValue = Mathf.lerpDelta(s.data.floatValue, Mathf.clamp(s.status()), this.warmupSpeed)).draw((LightHoldGenericCrafterBuild b, LightAcceptor s) -> {
                     Draw.z(30.01F);
                     Draw.alpha(s.data.floatValue);
                     Draw.blend(Blending.additive);
@@ -1215,143 +1140,140 @@ public class UnityBlocks {
         };
         terraCore = new TerraCore("terra-core") {
             {
-                this.requirements(Category.units, ItemStack.with(new Object[]{Items.copper, 1}));
+                this.requirements(Category.units, ItemStack.with(Items.copper, 1));
                 this.size = 2;
             }
         };
         orb = new PowerTurret("orb") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 55, Items.lead, 30, Items.graphite, 25, Items.silicon, 35, UnityItems.imberium, 20}));
+                this.requirements(Category.turret, ItemStack.with(Items.copper, 55, Items.lead, 30, Items.graphite, 25, Items.silicon, 35, UnityItems.imberium, 20));
                 this.size = 2;
                 this.health = 480;
                 this.range = 145.0F;
-                this.reloadTime = 130.0F;
+                this.reload = 130.0F;
                 this.coolantMultiplier = 2.0F;
                 this.shootCone = 0.1F;
-                this.shots = 1;
+                this.shoot.shots = 1;
                 this.inaccuracy = 12.0F;
-                this.chargeTime = 65.0F;
-                this.chargeEffects = 5;
-                this.chargeMaxDelay = 25.0F;
-                this.powerUse = 4.2069F;
+                this.shoot.firstShotDelay = 65.0F;
+                //this.chargeEffects = 5;
+                //this.chargeMaxDelay = 25.0F;
+                consumePower(4.2069F);
                 this.targetAir = false;
                 this.shootType = UnityBullets.orb;
-                this.shootSound = Sounds.laser;
+                this.shootSound = Sounds.shootLancer;
                 this.heatColor = Pal.turretHeat;
                 this.shootEffect = ShootFx.orbShoot;
                 this.smokeEffect = Fx.none;
-                this.chargeEffect = UnityFx.orbCharge;
-                this.chargeBeginEffect = UnityFx.orbChargeBegin;
+                this.shootType.chargeEffect = UnityFx.orbCharge;
+                //this.chargeBeginEffect = UnityFx.orbChargeBegin;
             }
         };
         shockwire = new LaserTurret("shockwire") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 150, Items.lead, 145, Items.titanium, 160, Items.silicon, 130, UnityItems.imberium, 70}));
+                this.requirements(Category.turret, ItemStack.with(Items.copper, 150, Items.lead, 145, Items.titanium, 160, Items.silicon, 130, UnityItems.imberium, 70));
                 this.size = 2;
                 this.health = 860;
                 this.range = 125.0F;
-                this.reloadTime = 140.0F;
+                this.reload = 140.0F;
                 this.coolantMultiplier = 2.0F;
                 this.shootCone = 1.0F;
                 this.inaccuracy = 0.0F;
-                this.powerUse = 6.942F;
+                consumePower(6.942F);
                 this.targetAir = false;
                 this.shootType = UnityBullets.shockBeam;
                 this.shootSound = Sounds.thruster;
-                ((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability <= 0.1F, 0.4F))).update(false);
+                //((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability <= 0.1F, 0.4F))).update(false);
+                coolant = UnityBlocks.consumeCoolant(this, 0.4f, 0.5f, 0.1f);
             }
         };
         current = new PowerTurret("current") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 280, Items.lead, 295, Items.silicon, 260, UnityItems.sparkAlloy, 65}));
+                this.requirements(Category.turret, ItemStack.with(Items.copper, 280, Items.lead, 295, Items.silicon, 260, UnityItems.sparkAlloy, 65));
                 this.size = 3;
                 this.health = 2400;
                 this.range = 220.0F;
-                this.reloadTime = 120.0F;
+                this.reload = 120.0F;
                 this.coolantMultiplier = 2.0F;
                 this.shootCone = 0.01F;
                 this.inaccuracy = 0.0F;
-                this.chargeTime = 60.0F;
-                this.chargeEffects = 4;
-                this.chargeMaxDelay = 260.0F;
-                this.powerUse = 6.8F;
+                this.shoot.firstShotDelay = 60.0F;
+                //this.chargeEffects = 4;
+                //this.chargeMaxDelay = 260.0F;
+                consumePower(6.8F);
                 this.shootType = UnityBullets.currentStroke;
                 this.shootSound = Sounds.laserbig;
-                this.chargeEffect = UnityFx.currentCharge;
-                this.chargeBeginEffect = UnityFx.currentChargeBegin;
-                ((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability <= 0.1F, 0.52F))).boost();
+                this.shootType.chargeEffect = UnityFx.currentCharge;
+                //this.chargeBeginEffect = UnityFx.currentChargeBegin;
+                //((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability <= 0.1F, 0.52F))).boost();
+                coolant = UnityBlocks.consumeCoolant(this, 0.4f, 0.5f, 0.52f);
             }
         };
         plasma = new PowerTurret("plasma") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 580, Items.lead, 520, Items.graphite, 410, Items.silicon, 390, Items.surgeAlloy, 180, UnityItems.sparkAlloy, 110}));
+                this.requirements(Category.turret, ItemStack.with(Items.copper, 580, Items.lead, 520, Items.graphite, 410, Items.silicon, 390, Items.surgeAlloy, 180, UnityItems.sparkAlloy, 110));
                 this.size = 4;
                 this.health = 2800;
                 this.range = 200.0F;
-                this.reloadTime = 360.0F;
-                this.recoilAmount = 4.0F;
+                this.reload = 360.0F;
+                this.recoil = 4.0F;
                 this.coolantMultiplier = 1.2F;
                 this.liquidCapacity = 20.0F;
                 this.shootCone = 1.0F;
                 this.inaccuracy = 0.0F;
-                this.powerUse = 8.2F;
+                consumePower(8.2F);
                 this.shootType = UnityBullets.plasmaTriangle;
-                this.shootSound = Sounds.shotgun;
-                ((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability <= 0.1F, 0.52F))).boost();
+                this.shootSound = Sounds.shootFuse;
+                //((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability <= 0.1F, 0.52F))).boost();
+                coolant = UnityBlocks.consumeCoolant(this, 0.4f, 0.5f, 0.52f);
             }
         };
-        electrobomb = new ItemTurret("electrobomb") {
-            {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.titanium, 360, Items.thorium, 630, Items.silicon, 240, UnityItems.sparkAlloy, 420}));
-                this.health = 3650;
-                this.size = 5;
-                this.range = 400.0F;
-                this.minRange = 60.0F;
-                this.reloadTime = 320.0F;
-                this.coolantMultiplier = 2.0F;
-                this.shootCone = 20.0F;
-                this.shots = 1;
-                this.inaccuracy = 0.0F;
-                this.targetAir = false;
-                this.ammo(new Object[]{UnityItems.sparkAlloy, UnityBullets.surgeBomb});
-                this.shootSound = Sounds.laser;
-                this.shootEffect = Fx.none;
-                this.smokeEffect = Fx.none;
-                this.consumes.powerCond(10.0F, Turret.TurretBuild::isActive);
-            }
-
-            public void load() {
-                super.load();
-                this.baseRegion = Core.atlas.find("unity-block-" + this.size);
-            }
-        };
+        electrobomb = new ItemTurret("electrobomb") {{
+            this.requirements(Category.turret, ItemStack.with(Items.titanium, 360, Items.thorium, 630, Items.silicon, 240, UnityItems.sparkAlloy, 420));
+            this.health = 3650;
+            this.size = 5;
+            this.range = 400.0F;
+            this.minRange = 60.0F;
+            this.reload = 320.0F;
+            this.coolantMultiplier = 2.0F;
+            this.shootCone = 20.0F;
+            this.shoot.shots = 1;
+            this.inaccuracy = 0.0F;
+            this.targetAir = false;
+            this.ammo(UnityItems.sparkAlloy, UnityBullets.surgeBomb);
+            this.shootSound = Sounds.shootLancer;
+            this.shootEffect = Fx.none;
+            this.smokeEffect = Fx.none;
+            //this.consumes.powerCond(10.0F, Turret.TurretBuild::isActive);
+            ((DrawTurret) drawer).basePrefix = "unity-block-";
+        }};
         shielder = new ShieldTurret("shielder") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 300, Items.lead, 100, Items.titanium, 160, Items.silicon, 240, UnityItems.sparkAlloy, 90}));
+                this.requirements(Category.turret, ItemStack.with(Items.copper, 300, Items.lead, 100, Items.titanium, 160, Items.silicon, 240, UnityItems.sparkAlloy, 90));
                 this.size = 3;
                 this.health = 900;
                 this.range = 260.0F;
-                this.reloadTime = 800.0F;
+                this.reload = 800.0F;
                 this.coolantMultiplier = 2.0F;
                 this.shootCone = 60.0F;
                 this.inaccuracy = 0.0F;
-                this.powerUse = 6.4F;
+                consumePower(6.4F);
                 this.targetAir = false;
                 this.shootType = UnityBullets.shielderBullet;
                 this.shootSound = Sounds.pew;
-                this.chargeEffect = new Effect(38.0F, (e) -> {
+                this.shootType.chargeEffect = new Effect(38.0F, (e) -> {
                     Draw.color(Pal.accent);
-                    Angles.randLenVectors((long)e.id, 2, 1.0F + 20.0F * e.fout(), e.rotation, 120.0F, (x, y) -> Lines.lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fslope() * 3.0F + 1.0F));
+                    Angles.randLenVectors(e.id, 2, 1.0F + 20.0F * e.fout(), e.rotation, 120.0F, (x, y) -> Lines.lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fslope() * 3.0F + 1.0F));
                 });
-                this.chargeBeginEffect = Fx.none;
-                ((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability <= 0.1F, 0.4F))).update(false);
+                //((ConsumeLiquidFilter)this.consumes.add(new ConsumeLiquidFilter((liquid) -> liquid.temperature <= 0.5F && liquid.flammability <= 0.1F, 0.4F))).update(false);
+                coolant = UnityBlocks.consumeCoolant(this, 0.4f, 0.5f, 0.1f);
             }
         };
         orbTurret = new OrbTurret("orb-turret") {
             {
-                this.requirements(Category.turret, BuildVisibility.shown, ItemStack.with(new Object[]{Items.copper, 1}));
+                this.requirements(Category.turret, BuildVisibility.shown, ItemStack.with(Items.copper, 1));
                 this.size = 3;
-                this.powerUse = 0.3F;
+                consumePower(0.3F);
                 this.shootType = new BasicBulletType() {
                     {
                         this.damage = 20.0F;
@@ -1360,12 +1282,12 @@ public class UnityBlocks {
                     public void draw(Bullet b) {
                         Draw.color(((Color[])b.data)[0]);
                         b.trail.draw(((Color[])b.data)[1], 1.0F);
-                        ((TexturedTrail)b.trail).drawCap(((Color[])b.data)[1], 1.0F);
+                        b.trail.drawCap(((Color[])b.data)[1], 1.0F);
                     }
 
                     public void update(Bullet b) {
                         super.update(b);
-                        ((TexturedTrail)b.trail).update(b.x, b.y);
+                        b.trail.update(b.x, b.y);
                     }
 
                     public void removed(Bullet b) {
@@ -1377,13 +1299,13 @@ public class UnityBlocks {
         };
         powerPlant = new PowerPlant("power-plant") {
             {
-                this.requirements(Category.power, BuildVisibility.editorOnly, ItemStack.with(new Object[]{Items.copper, 1}));
+                this.requirements(Category.power, BuildVisibility.editorOnly, ItemStack.with(Items.copper, 1));
                 this.powerProduction = 8.6F;
             }
         };
         sparkAlloyForge = new StemGenericCrafter("spark-alloy-forge") {
             {
-                this.requirements(Category.crafting, ItemStack.with(new Object[]{Items.lead, 160, Items.graphite, 340, UnityItems.imberium, 270, Items.silicon, 250, Items.thorium, 120, Items.surgeAlloy, 100}));
+                this.requirements(Category.crafting, ItemStack.with(Items.lead, 160, Items.graphite, 340, UnityItems.imberium, 270, Items.silicon, 250, Items.thorium, 120, Items.surgeAlloy, 100));
                 this.outputItem = new ItemStack(UnityItems.sparkAlloy, 4);
                 this.size = 4;
                 this.craftTime = 160.0F;
@@ -1391,23 +1313,22 @@ public class UnityBlocks {
                 this.ambientSoundVolume = 0.6F;
                 this.craftEffect = UnityFx.imberCircleSparkCraftingEffect;
                 this.drawer = new DrawSmelter();
-                this.consumes.power(2.6F);
-                this.consumes.items(ItemStack.with(new Object[]{Items.surgeAlloy, 3, Items.titanium, 4, Items.silicon, 6, UnityItems.imberium, 3}));
-                this.update((e) -> {
-                    if (e.consValid()) {
-                        if (Mathf.chanceDelta((double)0.3F)) {
+                this.consumePower(2.6F);
+                this.consumeItems(ItemStack.with(Items.surgeAlloy, 3, Items.titanium, 4, Items.silicon, 6, UnityItems.imberium, 3));
+                this.update((StemGenericCrafterBuild e) -> {
+                    if (e.block.hasConsumers) {
+                        if (Mathf.chanceDelta(0.3F)) {
                             UnityFx.imberSparkCraftingEffect.at(e.x, e.y, Mathf.random(360.0F));
-                        } else if (Mathf.chanceDelta((double)0.02F)) {
+                        } else if (Mathf.chanceDelta(0.02F)) {
                             Lightning.create(e.team, UnityPal.imberColor, 5.0F, e.x, e.y, Mathf.random(360.0F), 5);
                         }
                     }
-
                 });
             }
         };
         absorber = new AbsorberTurret("absorber") {
             {
-                this.requirements(Category.power, ItemStack.with(new Object[]{UnityItems.imberium, 20, Items.lead, 20}));
+                this.requirements(Category.power, ItemStack.with(UnityItems.imberium, 20, Items.lead, 20));
                 this.consumesPower = false;
                 this.powerProduction = 1.2F;
                 this.range = 50.0F;
@@ -1421,20 +1342,20 @@ public class UnityBlocks {
         electroTile = new Floor("electro-tile");
         piper = new UnderPiper("piper", 80) {
             {
-                this.requirements(Category.distribution, ItemStack.with(new Object[]{Items.copper, 1}));
+                this.requirements(Category.distribution, ItemStack.with(Items.copper, 1));
                 this.size = 4;
             }
         };
         denseSmelter = new KoruhCrafter("dense-smelter") {
             {
-                this.requirements(Category.crafting, ItemStack.with(new Object[]{Items.copper, 30, Items.lead, 20, UnityItems.stone, 35}));
+                this.requirements(Category.crafting, ItemStack.with(Items.copper, 30, Items.lead, 20, UnityItems.stone, 35));
                 this.health = 70;
                 this.hasItems = true;
                 this.craftTime = 46.2F;
                 this.craftEffect = UnityFx.denseCraft;
                 this.itemCapacity = 10;
                 this.outputItem = new ItemStack(UnityItems.denseAlloy, 1);
-                this.consumes.items(ItemStack.with(new Object[]{Items.copper, 1, Items.lead, 2, Items.coal, 1}));
+                this.consumeItems(ItemStack.with(Items.copper, 1, Items.lead, 2, Items.coal, 1));
                 this.expUse = 2;
                 this.expCapacity = 24;
                 this.drawer = new DrawExp() {
@@ -1447,7 +1368,7 @@ public class UnityBlocks {
         };
         solidifier = new LiquidsSmelter("solidifier") {
             {
-                this.requirements(Category.crafting, ItemStack.with(new Object[]{Items.copper, 20, UnityItems.denseAlloy, 30}));
+                this.requirements(Category.crafting, ItemStack.with(Items.copper, 20, UnityItems.denseAlloy, 30));
                 this.health = 150;
                 this.hasItems = true;
                 this.liquidCapacity = 12.0F;
@@ -1455,7 +1376,7 @@ public class UnityBlocks {
                 this.craftEffect = UnityFx.rockFx;
                 this.craftTime = 60.0F;
                 this.outputItem = new ItemStack(UnityItems.stone, 1);
-                this.consumes.add(new ConsumeLiquids(new LiquidStack[]{new LiquidStack(UnityLiquids.lava, 0.1F), new LiquidStack(Liquids.water, 0.1F)}));
+                this.consume(new ConsumeLiquids(LiquidStack.with(UnityLiquids.lava, 0.1F, Liquids.water, 0.1F)));
                 this.drawer = new DrawGlow() {
                     public void draw(GenericCrafter.GenericCrafterBuild build) {
                         Draw.rect(build.block.region, build.x, build.y);
@@ -1475,8 +1396,8 @@ public class UnityBlocks {
                 this.updateEffect = Fx.fuelburn;
                 this.craftTime = 300.0F;
                 this.outputItem = new ItemStack(UnityItems.steel, 1);
-                this.consumes.power(2.0F);
-                this.consumes.items(ItemStack.with(new Object[]{Items.coal, 2, Items.graphite, 2, UnityItems.denseAlloy, 3}));
+                this.consumePower(2.0F);
+                this.consumeItems(ItemStack.with(Items.coal, 2, Items.graphite, 2, UnityItems.denseAlloy, 3));
                 this.drawer = new DrawGlow() {
                     public void draw(GenericCrafter.GenericCrafterBuild build) {
                         Draw.rect(build.block.region, build.x, build.y);
@@ -1498,9 +1419,9 @@ public class UnityBlocks {
                 this.craftEffect = UnityFx.craft;
                 this.itemCapacity = 21;
                 this.outputItem = new ItemStack(UnityItems.steel, 5);
-                this.consumes.items(ItemStack.with(new Object[]{Items.graphite, 7, UnityItems.denseAlloy, 7}));
-                this.consumes.power(2.0F);
-                this.consumes.liquid(UnityLiquids.lava, 0.4F);
+                this.consumeItems(ItemStack.with(new Object[]{Items.graphite, 7, UnityItems.denseAlloy, 7}));
+                this.consumePower(2.0F);
+                this.consumeLiquid(UnityLiquids.lava, 0.4F);
                 this.expUse = 10;
                 this.expCapacity = 60;
                 this.drawer = new DrawLiquid();
@@ -1508,19 +1429,18 @@ public class UnityBlocks {
         };
         liquifier = new BurnerSmelter("liquifier") {
             {
-                this.requirements(Category.crafting, ItemStack.with(new Object[]{Items.titanium, 30, Items.silicon, 15, UnityItems.steel, 10}));
+                this.requirements(Category.crafting, ItemStack.with(Items.titanium, 30, Items.silicon, 15, UnityItems.steel, 10));
                 this.health = 100;
                 this.hasLiquids = true;
                 this.updateEffect = Fx.fuelburn;
                 this.craftTime = 30.0F;
                 this.outputLiquid = new LiquidStack(UnityLiquids.lava, 0.1F);
                 this.configClear((b) -> Fires.create(b.tile));
-                this.consumes.power(3.7F);
-                this.update((e) -> {
-                    if (e.progress == 0.0F && e.warmup > 0.001F && (Vars.net.server() || !Vars.net.active()) && Mathf.chanceDelta((double)0.2F)) {
-                        e.configureAny((Object)null);
+                this.consumePower(3.7F);
+                this.update((BurnerSmelterBuild e) -> {
+                    if (e.progress == 0.0F && e.warmup > 0.001F && (Vars.net.server() || !Vars.net.active()) && Mathf.chanceDelta(0.2F)) {
+                        e.configureAny(null);
                     }
-
                 });
                 this.drawer = new DrawGlow() {
                     public void draw(GenericCrafter.GenericCrafterBuild build) {
@@ -1543,9 +1463,9 @@ public class UnityBlocks {
                 this.itemCapacity = 10;
                 this.craftTime = 360.0F;
                 this.outputItem = new ItemStack(Items.titanium, 1);
-                this.consumes.power(1.0F);
-                this.consumes.items(ItemStack.with(new Object[]{UnityItems.denseAlloy, 3, UnityItems.steel, 2}));
-                this.consumes.liquid(Liquids.water, 0.3F);
+                this.consumePower(1.0F);
+                this.consumeItems(ItemStack.with(new Object[]{UnityItems.denseAlloy, 3, UnityItems.steel, 2}));
+                this.consumeLiquid(Liquids.water, 0.3F);
                 this.drawer = new DrawGlow() {
                     public void draw(GenericCrafter.GenericCrafterBuild build) {
                         Draw.rect(build.block.region, build.x, build.y);
@@ -1568,8 +1488,8 @@ public class UnityBlocks {
                 this.ambientSound = Sounds.techloop;
                 this.ambientSoundVolume = 0.02F;
                 this.outputItem = new ItemStack(UnityItems.dirium, 1);
-                this.consumes.items(ItemStack.with(new Object[]{Items.titanium, 6, Items.pyratite, 3, Items.surgeAlloy, 3, UnityItems.steel, 9}));
-                this.consumes.power(8.28F);
+                this.consumeItems(ItemStack.with(new Object[]{Items.titanium, 6, Items.pyratite, 3, Items.surgeAlloy, 3, UnityItems.steel, 9}));
+                this.consumePower(8.28F);
                 this.expUse = 40;
                 this.expCapacity = 160;
                 this.ignoreExp = false;
@@ -1585,9 +1505,9 @@ public class UnityBlocks {
                 this.craftTime = 240.0F;
                 this.craftEffect = UnityFx.craftFx;
                 this.itemCapacity = 50;
-                this.consumes.items(ItemStack.with(new Object[]{UnityItems.stone, 6, Items.scrap, 2}));
-                this.consumes.liquid(Liquids.water, 0.5F);
-                this.consumes.power(6.0F);
+                this.consumeItems(ItemStack.with(new Object[]{UnityItems.stone, 6, Items.scrap, 2}));
+                this.consumeLiquid(Liquids.water, 0.5F);
+                this.consumePower(6.0F);
                 this.outputItem = new ItemStack(Items.coal, 1);
                 this.expUse = 30;
                 this.expCapacity = 120;
@@ -1600,21 +1520,21 @@ public class UnityBlocks {
         };
         stoneWall = new LimitWall("ustone-wall") {
             {
-                this.requirements(Category.defense, ItemStack.with(new Object[]{UnityItems.stone, 6}));
+                this.requirements(Category.defense, ItemStack.with(UnityItems.stone, 6));
                 this.maxDamage = 40.0F;
                 this.health = 200;
             }
         };
         denseWall = new LimitWall("dense-wall") {
             {
-                this.requirements(Category.defense, ItemStack.with(new Object[]{UnityItems.denseAlloy, 6}));
+                this.requirements(Category.defense, ItemStack.with(UnityItems.denseAlloy, 6));
                 this.maxDamage = 32.0F;
                 this.health = 560;
             }
         };
         steelWall = new LevelLimitWall("steel-wall") {
             {
-                this.requirements(Category.defense, ItemStack.with(new Object[]{UnityItems.steel, 6}));
+                this.requirements(Category.defense, ItemStack.with(UnityItems.steel, 6));
                 this.maxDamage = 24.0F;
                 this.health = 810;
                 this.maxLevel = 6;
@@ -1623,7 +1543,7 @@ public class UnityBlocks {
         };
         steelWallLarge = new LevelLimitWall("steel-wall-large") {
             {
-                this.requirements(Category.defense, ItemStack.with(new Object[]{UnityItems.steel, 24}));
+                this.requirements(Category.defense, ItemStack.with(UnityItems.steel, 24));
                 this.maxDamage = 48.0F;
                 this.health = 3240;
                 this.size = 2;
@@ -1633,7 +1553,7 @@ public class UnityBlocks {
         };
         diriumWall = new LevelLimitWall("dirium-wall") {
             {
-                this.requirements(Category.defense, ItemStack.with(new Object[]{UnityItems.dirium, 6}));
+                this.requirements(Category.defense, ItemStack.with(UnityItems.dirium, 6));
                 this.maxDamage = 76.0F;
                 this.blinkFrame = 30.0F;
                 this.health = 760;
@@ -1644,7 +1564,7 @@ public class UnityBlocks {
         };
         diriumWallLarge = new LevelLimitWall("dirium-wall-large") {
             {
-                this.requirements(Category.defense, ItemStack.with(new Object[]{UnityItems.dirium, 24}));
+                this.requirements(Category.defense, ItemStack.with(UnityItems.dirium, 24));
                 this.maxDamage = 152.0F;
                 this.blinkFrame = 30.0F;
                 this.health = 3040;
@@ -1656,14 +1576,14 @@ public class UnityBlocks {
         };
         shieldProjector = new ClassicProjector("shield-generator") {
             {
-                this.requirements(Category.effect, ItemStack.with(new Object[]{Items.silicon, 50, Items.titanium, 35, UnityItems.steel, 15}));
+                this.requirements(Category.effect, ItemStack.with(Items.silicon, 50, Items.titanium, 35, UnityItems.steel, 15));
                 this.health = 200;
                 this.cooldownNormal = 1.0F;
                 this.cooldownBrokenBase = 0.3F;
                 this.phaseRadiusBoost = 10.0F;
                 this.phaseShieldBoost = 200.0F;
                 this.hasItems = this.hasLiquids = false;
-                this.consumes.power(1.5F);
+                this.consumePower(1.5F);
                 this.maxLevel = 15;
                 this.expFields = new EField[]{new EField.ELinear((v) -> this.radius = v, 40.0F, 0.5F, Stat.range, (v) -> Strings.autoFixed(v / 8.0F, 2) + " blocks"), new EField.ELinear((v) -> this.shieldHealth = v, 500.0F, 25.0F, Stat.shieldHealth)};
                 this.fromColor = this.toColor = Pal.lancerLaser;
@@ -1678,8 +1598,8 @@ public class UnityBlocks {
                 this.cooldownLiquid = 1.2F;
                 this.cooldownBrokenBase = 0.35F;
                 this.phaseRadiusBoost = 40.0F;
-                this.consumes.item(Items.phaseFabric).boost();
-                this.consumes.power(5.0F);
+                this.consumeItem(Items.phaseFabric).boost();
+                this.consumePower(5.0F);
                 this.fromColor = Pal.lancerLaser;
                 this.toColor = UnityPal.diriumLight;
                 this.maxLevel = 30;
@@ -1691,7 +1611,7 @@ public class UnityBlocks {
         };
         timeMine = new TimeMine("time-mine") {
             {
-                this.requirements(Category.effect, ItemStack.with(new Object[]{Items.lead, 25, Items.silicon, 12}));
+                this.requirements(Category.effect, ItemStack.with(Items.lead, 25, Items.silicon, 12));
                 this.hasShadow = false;
                 this.health = 45;
                 this.pullTime = 360.0F;
@@ -1699,7 +1619,7 @@ public class UnityBlocks {
         };
         steelConveyor = new KoruhConveyor("steel-conveyor") {
             {
-                this.requirements(Category.distribution, ItemStack.with(new Object[]{UnityItems.stone, 1, UnityItems.denseAlloy, 1, UnityItems.steel, 1}));
+                this.requirements(Category.distribution, ItemStack.with(UnityItems.stone, 1, UnityItems.denseAlloy, 1, UnityItems.steel, 1));
                 this.health = 140;
                 this.speed = 0.1F;
                 this.displayedSpeed = 12.5F;
@@ -1708,7 +1628,7 @@ public class UnityBlocks {
         };
         diriumConveyor = new ExpKoruhConveyor("dirium-conveyor") {
             {
-                this.requirements(Category.distribution, ItemStack.with(new Object[]{UnityItems.steel, 1, Items.phaseFabric, 1, UnityItems.dirium, 1}));
+                this.requirements(Category.distribution, ItemStack.with(UnityItems.steel, 1, Items.phaseFabric, 1, UnityItems.dirium, 1));
                 this.health = 150;
                 this.speed = 0.16F;
                 this.displayedSpeed = 20.0F;
@@ -1718,28 +1638,28 @@ public class UnityBlocks {
         };
         bufferPad = new MechPad("buffer-pad") {
             {
-                this.requirements(Category.units, ItemStack.with(new Object[]{UnityItems.stone, 120, Items.copper, 170, Items.lead, 150, Items.titanium, 150, Items.silicon, 180}));
+                this.requirements(Category.units, ItemStack.with(UnityItems.stone, 120, Items.copper, 170, Items.lead, 150, Items.titanium, 150, Items.silicon, 180));
                 this.size = 2;
                 this.craftTime = 100.0F;
-                this.consumes.power(0.7F);
+                this.consumePower(0.7F);
                 this.unitType = UnityUnitTypes.buffer;
             }
         };
         omegaPad = new MechPad("omega-pad") {
             {
-                this.requirements(Category.units, ItemStack.with(new Object[]{UnityItems.stone, 220, Items.lead, 200, Items.silicon, 230, Items.thorium, 260, Items.surgeAlloy, 100}));
+                this.requirements(Category.units, ItemStack.with(UnityItems.stone, 220, Items.lead, 200, Items.silicon, 230, Items.thorium, 260, Items.surgeAlloy, 100));
                 this.size = 3;
                 this.craftTime = 300.0F;
-                this.consumes.power(1.2F);
+                this.consumePower(1.2F);
                 this.unitType = UnityUnitTypes.omega;
             }
         };
         cachePad = new MechPad("cache-pad") {
             {
-                this.requirements(Category.units, ItemStack.with(new Object[]{UnityItems.stone, 150, Items.lead, 160, Items.silicon, 100, Items.titanium, 60, Items.plastanium, 120, Items.phaseFabric, 60}));
+                this.requirements(Category.units, ItemStack.with(UnityItems.stone, 150, Items.lead, 160, Items.silicon, 100, Items.titanium, 60, Items.plastanium, 120, Items.phaseFabric, 60));
                 this.size = 2;
                 this.craftTime = 130.0F;
-                this.consumes.power(0.8F);
+                this.consumePower(0.8F);
                 this.unitType = UnityUnitTypes.cache;
             }
         };
@@ -1748,45 +1668,48 @@ public class UnityBlocks {
                 this.requirements(Category.units, BuildVisibility.sandboxOnly, ItemStack.empty);
                 this.size = 2;
                 this.craftTime = 60.0F;
-                this.consumes.power(1.0F);
+                this.consumePower(1.0F);
                 this.upgrades.add(new UnitType[]{UnitTypes.dagger, UnitTypes.mace}, new UnitType[]{UnitTypes.flare, UnitTypes.horizon}, new UnitType[]{UnityUnitTypes.cache, UnityUnitTypes.dijkstra}, new UnitType[]{UnityUnitTypes.omega, UnitTypes.reign});
             }
         };
         uraniumReactor = new KoruhReactor("uranium-reactor") {
             {
-                this.requirements(Category.power, ItemStack.with(new Object[]{Items.plastanium, 80, Items.surgeAlloy, 100, Items.lead, 150, UnityItems.steel, 200}));
+                this.requirements(Category.power, ItemStack.with(Items.plastanium, 80, Items.surgeAlloy, 100, Items.lead, 150, UnityItems.steel, 200));
                 this.size = 3;
                 this.itemDuration = 200.0F;
-                this.consumes.item(UnityItems.uranium, 2);
-                this.consumes.liquid(Liquids.water, 0.7F);
-                this.consumes.power(20.0F);
+                this.consumeItem(UnityItems.uranium, 2);
+                this.consumeLiquid(Liquids.water, 0.7F);
+                this.consumePower(20.0F);
                 this.itemCapacity = 20;
                 this.powerProduction = 150.0F;
                 this.health = 1000;
-                this.plasma1 = Color.valueOf("a5e1a2");
-                this.plasma2 = Color.valueOf("869B84");
+
+                drawer = new DrawMulti(new DrawRegion("-bottom"), new DrawPlasma(){{
+                    plasma1 = Color.valueOf("a5e1a2");
+                    plasma2 = Color.valueOf("869B84");
+                }}, new DrawDefault());
             }
         };
         teleporter = new Teleporter("teleporter") {
             {
-                this.requirements(Category.distribution, ItemStack.with(new Object[]{Items.lead, 22, Items.silicon, 10, Items.phaseFabric, 32, UnityItems.dirium, 32}));
+                this.requirements(Category.distribution, ItemStack.with(Items.lead, 22, Items.silicon, 10, Items.phaseFabric, 32, UnityItems.dirium, 32));
             }
         };
         teleunit = new TeleUnit("teleunit") {
             {
-                this.requirements(Category.units, ItemStack.with(new Object[]{Items.lead, 180, Items.titanium, 80, Items.silicon, 90, Items.phaseFabric, 64, UnityItems.dirium, 48}));
+                this.requirements(Category.units, ItemStack.with(Items.lead, 180, Items.titanium, 80, Items.silicon, 90, Items.phaseFabric, 64, UnityItems.dirium, 48));
                 this.size = 3;
                 this.ambientSound = Sounds.techloop;
                 this.ambientSoundVolume = 0.02F;
-                this.consumes.power(3.0F);
+                this.consumePower(3.0F);
             }
         };
         laser = new ExpPowerTurret("laser-turret") {
             {
-                this.requirements(Category.turret, ItemStack.with(new Object[]{Items.copper, 90, Items.silicon, 40, Items.titanium, 15}));
+                this.requirements(Category.turret, ItemStack.with(Items.copper, 90, Items.silicon, 40, Items.titanium, 15));
                 this.size = 2;
                 this.health = 600;
-                this.reloadTime = 35.0F;
+                this.reload = 35.0F;
                 this.coolantMultiplier = 2.0F;
                 this.range = 140.0F;
                 this.targetAir = false;
@@ -1794,7 +1717,7 @@ public class UnityBlocks {
                 this.powerUse = 7.0F;
                 this.shootType = UnityBullets.laser;
                 this.maxLevel = 10;
-                this.expFields = new EField[]{new ExpTurret.LinearReloadTime(this, (v) -> this.reloadTime = v, 45.0F, -2.0F), new EField.ELinear((v) -> this.range = v, 120.0F, 2.0F, Stat.shootRange, (v) -> Strings.autoFixed(v / 8.0F, 2) + " blocks"), new EField.EBool((v) -> this.targetAir = v, false, 5, Stat.targetsAir)};
+                this.expFields = new EField[]{new ExpTurret.LinearReloadTime(this, (v) -> this.reload = v, 45.0F, -2.0F), new EField.ELinear((v) -> this.range = v, 120.0F, 2.0F, Stat.shootRange, (v) -> Strings.autoFixed(v / 8.0F, 2) + " blocks"), new EField.EBool((v) -> this.targetAir = v, false, 5, Stat.targetsAir)};
             }
         };
         laserCharge = new ExpPowerTurret("charge-laser-turret") {
@@ -3332,7 +3255,7 @@ public class UnityBlocks {
                 this.requirements(Category.crafting, ItemStack.with(new Object[]{Items.lead, 810, Items.graphite, 720, Items.silicon, 520, Items.phaseFabric, 430, Items.surgeAlloy, 320, UnityItems.plagueAlloy, 120, UnityItems.darkAlloy, 120, UnityItems.lightAlloy, 120, UnityItems.advanceAlloy, 120, UnityItems.monolithAlloy, 120, UnityItems.sparkAlloy, 120, UnityItems.superAlloy, 120}));
                 this.size = 6;
                 this.craftTime = 310.0F;
-                this.ambientSound = Sounds.respawning;
+                this.ambientSound = UnitySounds.respawning;
                 this.ambientSoundVolume = 0.6F;
                 this.outputItem = new ItemStack(UnityItems.terminum, 1);
                 this.consumes.power(45.2F);

@@ -3493,7 +3493,7 @@ public class UnityUnitTypes {
                         this.rotate = true;
                         this.continuous = true;
                         this.alternate = false;
-                        this.shootSound = Sounds.respawning;
+                        this.shootSound = UnitySounds.respawning;
                         this.bullet = new PointDrainLaserBulletType(45.0F) {
                             {
                                 this.healPercent = 0.5F;

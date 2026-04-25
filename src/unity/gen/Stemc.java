@@ -13,7 +13,7 @@ public interface Stemc {
 
     Cons<StemBuildc> updateStem();
 
-    public interface StemBuildc extends Buildingc {
+    interface StemBuildc extends Buildingc {
         StemData data();
     }
 }

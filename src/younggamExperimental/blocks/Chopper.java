@@ -2,14 +2,12 @@ package younggamExperimental.blocks;
 
 import arc.Core;
 import arc.graphics.Color;
-import arc.graphics.Texture;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureRegion;
 import arc.graphics.gl.FrameBuffer;
 import arc.math.Mathf;
 import arc.math.geom.Point2;
 import arc.math.geom.Rect;
-import arc.scene.ui.ImageButton;
 import arc.scene.ui.layout.Table;
 import arc.struct.IntSeq;
 import arc.struct.IntSet;
@@ -29,14 +27,13 @@ import mindustry.gen.Unit;
 import mindustry.graphics.Pal;
 import mindustry.type.Item;
 import mindustry.type.ItemStack;
-import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.modules.ItemModule;
 import unity.graphics.UnityDrawf;
 import unity.util.Utils;
+import unity.v8.UnityStyles;
 import unity.world.blocks.GraphBlock;
-import unity.world.graph.TorqueGraph;
 import unity.world.modules.GraphTorqueModule;
 import younggamExperimental.IntPacker;
 import younggamExperimental.ModularConstructorUI;
@@ -76,9 +73,9 @@ public class Chopper extends GraphBlock {
         this.gridH = 1;
         this.spriteGridSize = 32;
         this.rotate = this.solid = this.configurable = this.acceptsItems = true;
-        this.config(String.class, (build, value) -> build.changed = build.setBluePrintFromString(value));
-        this.config(IntSeq.class, (build, value) -> build.changed = build.setBluePrint(Utils.unpackInts(value)));
-        this.configClear((build) -> build.setBluePrint((IntSeq)null));
+        this.config(String.class, (ChopperBuild build, String value) -> build.changed = build.setBluePrintFromString(value));
+        this.config(IntSeq.class, (ChopperBuild build, IntSeq value) -> build.changed = build.setBluePrint(Utils.unpackInts(value)));
+        this.configClear((ChopperBuild build) -> build.setBluePrint(null));
     }
 
     protected void setGridW(int s) {
@@ -124,9 +121,9 @@ public class Chopper extends GraphBlock {
     }
 
     public class ChopperBuild extends GraphBlock.GraphBuild {
-        final OrderedMap<Item, Integer> blueprintRemainingCost = new OrderedMap(12);
+        final OrderedMap<Item, Integer> blueprintRemainingCost = new OrderedMap<>(12);
         final IntSeq bluePrint = new IntSeq();
-        final Seq<Segment> hitSegments = new Seq();
+        final Seq<Segment> hitSegments = new Seq<>();
         final FrameBuffer buffer;
         final StatContainer currentStats;
         final Rect detectRect;
@@ -143,7 +140,6 @@ public class Chopper extends GraphBlock {
         boolean changed;
 
         public ChopperBuild() {
-            super(Chopper.this);
             this.buffer = new FrameBuffer(Chopper.this.tx, Chopper.this.ty);
             this.currentStats = new StatContainer();
             this.detectRect = new Rect();
@@ -172,7 +168,7 @@ public class Chopper extends GraphBlock {
         }
 
         TextureRegion getBufferRegion() {
-            TextureRegion tex = Draw.wrap((Texture)this.buffer.getTexture());
+            TextureRegion tex = Draw.wrap(this.buffer.getTexture());
             tex.v = tex.v2;
             tex.v2 = tex.u;
             return tex;
@@ -187,40 +183,34 @@ public class Chopper extends GraphBlock {
                     if (this.blueprintRemainingCost.isEmpty()) {
                         sub.labelWrap("No blueprint").color(Color.lightGray);
                     } else {
-                        ObjectMap.Entries var2 = this.blueprintRemainingCost.iterator();
-
-                        while(var2.hasNext()) {
-                            ObjectMap.Entry<Item, Integer> i = (ObjectMap.Entry)var2.next();
-                            sub.image(((Item)i.key).uiIcon).size(32.0F);
-                            sub.add(((Integer)i.value >>> 16) + "/" + ((Integer)i.value & '\uffff'));
+                        for (ObjectMap.Entry<Item, Integer> i : this.blueprintRemainingCost) {
+                            sub.image(i.key.uiIcon).size(32.0F);
+                            sub.add((i.value >>> 16) + "/" + (i.value & '\uffff'));
                             sub.row();
                         }
                     }
-
                 }
             });
         }
 
         void updateAutoBuild() {
-            if (this.totalItemCountPaid < this.totalItemCountCost) {
-                if (!Vars.state.rules.infiniteResources && !this.team.rules().infiniteResources && !this.team.rules().cheat) {
-                    if (this.timer(Chopper.this.timerDump, Chopper.this.autoBuildDelay)) {
-                        CoreBlock.CoreBuild core = this.team.core();
+            if (totalItemCountPaid < totalItemCountCost) {
+                if (!Vars.state.rules.infiniteResources && !team.rules().infiniteResources && !team.rules().cheat) {
+                    if (timer(timerDump, autoBuildDelay)) {
+                        CoreBlock.CoreBuild core = team.core();
                         if (core == null) {
                             return;
                         }
 
                         ItemModule cItems = core.items;
-                        ObjectMap.Entries var7 = this.blueprintRemainingCost.iterator();
 
-                        while(var7.hasNext()) {
-                            ObjectMap.Entry<Item, Integer> i = (ObjectMap.Entry)var7.next();
-                            if ((Integer)i.value >>> 16 < ((Integer)i.value & '\uffff') && cItems.get((Item)i.key) > 0) {
-                                cItems.remove((Item)i.key, 1);
-                                ++this.totalItemCountPaid;
-                                this.blueprintRemainingCost.put((Item)i.key, (Integer)i.value + 65536);
-                                if (this.totalItemCountPaid == this.totalItemCountCost) {
-                                    this.applyStats();
+                        for (ObjectMap.Entry<Item, Integer> i : blueprintRemainingCost) {
+                            if (i.value >>> 16 < (i.value & '\uffff') && cItems.get(i.key) > 0) {
+                                cItems.remove(i.key, 1);
+                                ++totalItemCountPaid;
+                                blueprintRemainingCost.put(i.key, i.value + 65536);
+                                if (totalItemCountPaid == totalItemCountCost) {
+                                    applyStats();
                                 }
 
                                 return;
@@ -231,31 +221,31 @@ public class Chopper extends GraphBlock {
                 } else {
                     ObjectMap.Entry<Item, Integer> i;
                     int temp;
-                    for(ObjectMap.Entries var1 = this.blueprintRemainingCost.iterator(); var1.hasNext(); i.value = (Integer)i.value + temp) {
-                        i = (ObjectMap.Entry)var1.next();
-                        temp = (Integer)i.value & '\uffff';
-                        i.value = (Integer)i.value << 16;
+                    for(ObjectMap.Entries<Item, Integer> var1 = blueprintRemainingCost.iterator(); var1.hasNext(); i.value = i.value + temp) {
+                        i = var1.next();
+                        temp = i.value & '\uffff';
+                        i.value = i.value << 16;
                     }
 
-                    this.totalItemCountPaid = this.totalItemCountCost;
-                    this.applyStats();
+                    totalItemCountPaid = totalItemCountCost;
+                    applyStats();
                 }
             }
         }
 
         public boolean acceptItem(Building source, Item item) {
-            int value = (Integer)this.blueprintRemainingCost.get(item, 0);
+            int value = blueprintRemainingCost.get(item, 0);
             boolean hasSpace = value >>> 16 < (value & '\uffff');
             return super.acceptItem(source, item) || hasSpace;
         }
 
         public void handleItem(Building source, Item item) {
-            if (this.totalItemCountPaid != this.totalItemCountCost) {
-                ++this.totalItemCountPaid;
-                int value = (Integer)this.blueprintRemainingCost.get(item, 0);
-                this.blueprintRemainingCost.put(item, value + 65536);
-                if (this.totalItemCountPaid == this.totalItemCountCost) {
-                    this.applyStats();
+            if (totalItemCountPaid != totalItemCountCost) {
+                ++totalItemCountPaid;
+                int value = blueprintRemainingCost.get(item, 0);
+                blueprintRemainingCost.put(item, value + 65536);
+                if (totalItemCountPaid == totalItemCountCost) {
+                    applyStats();
                 }
 
             }
@@ -275,12 +265,12 @@ public class Chopper extends GraphBlock {
             this.originalMaxHp = this.maxHealth;
             this.maxHealth = this.originalMaxHp + (float)this.currentStats.hpinc;
             this.heal((float)this.currentStats.hpinc * this.health / this.originalMaxHp);
-            this.hitSegments.set(this.currentStats.segments);
+            hitSegments.set(this.currentStats.segments);
             int r = 0;
             int i = 0;
 
             for(int len = this.hitSegments.size; i < len; ++i) {
-                r = Math.max(r, ((Segment)this.hitSegments.get(i)).end * 8);
+                r = Math.max(r, (hitSegments.get(i)).end * 8);
             }
 
             this.detectRect.setCentered(this.x, this.y, (float)r * 2.0F);
@@ -291,17 +281,14 @@ public class Chopper extends GraphBlock {
             float dist = Mathf.dst(rx, ry);
             float drx = Mathf.cosDeg(rot);
             float dry = Mathf.sinDeg(rot);
-            if (rx * drx / dist + ry * dry / dist < Mathf.cosDeg(Mathf.clamp(this.speedDmgMul * 10.0F, 0.0F, 180.0F))) {
-                return 0.0F;
-            } else {
-                for(Segment seg : this.hitSegments) {
-                    if ((float)(seg.start * 8 + 4) < dist && (float)(seg.end * 8 + 4) > dist) {
-                        return (float)seg.damage * Mathf.clamp(dist * 0.1F);
+            if (!(rx * drx / dist + ry * dry / dist < Mathf.cosDeg(Mathf.clamp(this.speedDmgMul * 10.0F, 0.0F, 180.0F)))) {
+                for (Segment seg : this.hitSegments) {
+                    if ((float) (seg.start * 8 + 4) < dist && (float) (seg.end * 8 + 4) > dist) {
+                        return (float) seg.damage * Mathf.clamp(dist * 0.1F);
                     }
                 }
-
-                return 0.0F;
             }
+            return 0.0F;
         }
 
         void onIntCollider(int cx, int cy, float rot) {
@@ -310,7 +297,7 @@ public class Chopper extends GraphBlock {
             if (collide && build.team != this.team) {
                 float k = this.getHitDamage((float)((cx - this.tileX()) * 8), (float)((cy - this.tileY()) * 8), rot);
                 build.damage(k);
-                this.knockbackTorque = (int)((float)this.knockbackTorque + k * 10.0F);
+                this.knockbackTorque = this.knockbackTorque + (int) k * 10;
             }
 
         }
@@ -320,7 +307,7 @@ public class Chopper extends GraphBlock {
             float dry = Mathf.sinDeg(rot);
             Chopper.collidedBlocks.clear();
             Vars.world.raycastEachWorld(this.x, this.y, this.x + drx * (float)this.bladeRadius, this.y + dry * (float)this.bladeRadius, (cx, cy) -> {
-                this.onIntCollider(cx, cy, rot);
+                onIntCollider(cx, cy, rot);
                 return false;
             });
             Units.nearbyEnemies(this.team, this.detectRect, (unit) -> {
@@ -331,27 +318,24 @@ public class Chopper extends GraphBlock {
                         unit.impulse(-dry * k * 10.0F, drx * k * 10.0F);
                         this.knockbackTorque = (int)((float)this.knockbackTorque + k * 10.0F);
                     }
-
                 }
             });
         }
 
         void accumStats(PartInfo part, int x, int y, int[][] grid) {
-            PartStat iner = (PartStat)part.stats.get(PartStatType.mass);
+            PartStat iner = part.stats.get(PartStatType.mass);
             if (iner != null) {
-                StatContainer var10000 = this.currentStats;
-                var10000.inertia += iner.asInt() * x;
+                this.currentStats.inertia += iner.asInt() * x;
             }
 
-            PartStat hp = (PartStat)part.stats.get(PartStatType.hp);
+            PartStat hp = part.stats.get(PartStatType.hp);
             if (hp != null) {
-                StatContainer var13 = this.currentStats;
-                var13.hpinc += hp.asInt();
+                this.currentStats.hpinc += hp.asInt();
             }
 
-            PartStat collides = (PartStat)part.stats.get(PartStatType.collides);
+            PartStat collides = part.stats.get(PartStatType.collides);
             if (collides != null && collides.asBool()) {
-                PartStat damage = (PartStat)part.stats.get(PartStatType.damage);
+                PartStat damage = part.stats.get(PartStatType.damage);
                 int dmg = damage != null ? damage.asInt() : 0;
                 if (this.currentStats.segments.isEmpty()) {
                     this.currentStats.segments.add(new Segment(x, x + part.tw, dmg));
@@ -383,22 +367,21 @@ public class Chopper extends GraphBlock {
         }
 
         public void buildConfiguration(Table table) {
-            ((ImageButton)table.button(Tex.whiteui, Styles.clearTransi, 50.0F, () -> {
+            table.button(Tex.whiteui, UnityStyles.clearTransi, 50f, () -> {
                 BaseDialog dialog = new BaseDialog("Edit Blueprint");
                 dialog.setFillParent(false);
-                ModularConstructorUI mtd = ModularConstructorUI.applyModularConstructorUI(dialog.cont, Chopper.this.partsRegion, Math.round((float)Chopper.this.partsRegion.width / 32.0F), Math.round((float)Chopper.this.partsRegion.height / 32.0F), Chopper.partInfo, Chopper.this.gridW, Chopper.this.gridH, this.bluePrint, Chopper.this.getPartsCategories(), Chopper.this.partCostAccum);
+                ModularConstructorUI mtd = ModularConstructorUI.applyModularConstructorUI(dialog.cont, partsRegion, Math.round(partsRegion.width / 32f), Math.round(partsRegion.height / 32f), partInfo, gridW, gridH, bluePrint, getPartsCategories(), partCostAccum);
                 dialog.buttons.button("@ok", () -> {
-                    this.configure(mtd.getPackedSave());
+                    configure(mtd.getPackedSave());
                     dialog.hide();
-                }).size(130.0F, 60.0F);
+                }).size(130f, 60f);
                 dialog.update(() -> {
-                    if (!(this.tile.build instanceof ChopperBuild)) {
+                    if (!(tile.build instanceof ChopperBuild)) {
                         dialog.hide();
                     }
-
                 });
                 dialog.show();
-            }).size(50.0F).get()).getStyle().imageUp = Icon.pencil;
+            }).size(50f).get().getStyle().imageUp = Icon.pencil;
         }
 
         public void configured(Unit builder, Object value) {
@@ -491,12 +474,10 @@ public class Chopper extends GraphBlock {
                     write.s(0);
                 } else {
                     write.s(this.blueprintRemainingCost.size);
-                    ObjectMap.Entries var6 = this.blueprintRemainingCost.iterator();
 
-                    while(var6.hasNext()) {
-                        ObjectMap.Entry<Item, Integer> i = (ObjectMap.Entry)var6.next();
-                        write.s(((Item)i.key).id);
-                        write.s((Integer)i.value >>> 16);
+                    for (ObjectMap.Entry<Item, Integer> i : this.blueprintRemainingCost) {
+                        write.s((i.key).id);
+                        write.s(i.value >>> 16);
                     }
                 }
 
@@ -546,7 +527,7 @@ public class Chopper extends GraphBlock {
                 this.aniSpeed = 0.0F;
             }
 
-            this.speedDmgMul = ((TorqueGraph)tGraph.getNetwork()).lastVelocity;
+            this.speedDmgMul = tGraph.getNetwork().lastVelocity;
             this.updateAutoBuild();
         }
 

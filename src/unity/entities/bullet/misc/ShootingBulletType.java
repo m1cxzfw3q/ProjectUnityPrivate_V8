@@ -7,13 +7,13 @@ import arc.graphics.g2d.TextureRegion;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.util.Tmp;
-import mindustry.content.Bullets;
 import mindustry.entities.Sized;
 import mindustry.entities.Units;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.Bullet;
 import mindustry.gen.Healthc;
 import mindustry.gen.Sounds;
+import unity.content.UnityBullets;
 import unity.content.effects.HitFx;
 import unity.content.effects.ShootFx;
 
@@ -30,7 +30,7 @@ public class ShootingBulletType extends BulletType {
 
     public ShootingBulletType(String name, float speed, float damage) {
         super(speed, damage);
-        this.shootBullet = Bullets.standardCopper;
+        this.shootBullet = UnityBullets.standardCopper;
         this.shootSound = Sounds.none;
         this.name = name;
         this.hittable = true;

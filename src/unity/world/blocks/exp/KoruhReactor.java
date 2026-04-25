@@ -24,21 +24,17 @@ public class KoruhReactor extends ImpactReactor {
 
     public void setStats() {
         super.setStats();
-        this.stats.add(Stat.itemCapacity, "@", new Object[]{Core.bundle.format("exp.expAmount", new Object[]{this.expCapacity})});
-        this.stats.add(Stat.input, "@ [lightgray]@[]", new Object[]{Core.bundle.format("explib.expAmount", new Object[]{(float)this.expUse / this.itemDuration * 60.0F}), StatUnit.perSecond.localized()});
+        this.stats.add(Stat.itemCapacity, "@", Core.bundle.format("exp.expAmount", this.expCapacity));
+        this.stats.add(Stat.input, "@ [lightgray]@[]", Core.bundle.format("explib.expAmount", (float)this.expUse / this.itemDuration * 60.0F), StatUnit.perSecond.localized());
     }
 
     public void setBars() {
         super.setBars();
-        this.bars.add("exp", (entity) -> new Bar(() -> Core.bundle.get("bar.exp"), () -> UnityPal.exp, () -> 1.0F * (float)entity.exp / (float)this.expCapacity));
+        addBar("exp", (KoruhReactorBuild entity) -> new Bar(() -> Core.bundle.get("bar.exp"), () -> UnityPal.exp, () -> (float) entity.exp / (float)this.expCapacity));
     }
 
     public class KoruhReactorBuild extends ImpactReactor.ImpactReactorBuild implements ExpHolder {
         public int exp;
-
-        public KoruhReactorBuild() {
-            super(KoruhReactor.this);
-        }
 
         public int getExp() {
             return this.exp;
@@ -72,7 +68,7 @@ public class KoruhReactor extends ImpactReactor {
 
         public void updateTile() {
             super.updateTile();
-            if (this.consValid()) {
+            if (block.hasConsumers) {
                 if (this.exp >= KoruhReactor.this.expUse) {
                     if (this.productionEfficiency >= 0.8F && Mathf.randomBoolean(0.001F)) {
                         float dir = Mathf.random(360.0F);

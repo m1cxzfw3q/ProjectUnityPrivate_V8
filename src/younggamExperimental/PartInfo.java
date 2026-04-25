@@ -30,9 +30,9 @@ public class PartInfo {
     int id;
 
     public PartInfo(String name, String desc, PartType category, int tx, int ty, int tw, int th, boolean cannotPlace, boolean isRoot, Point2 prePlace, ItemStack[] cost, byte[] connectOut, byte[] connectIn, PartStat... stats) {
-        this.stats = new OrderedMap(12);
-        this.connInList = new Seq();
-        this.connOutList = new Seq();
+        this.stats = new OrderedMap<>(12);
+        this.connInList = new Seq<>();
+        this.connOutList = new Seq<>();
         this.name = name;
         this.desc = desc;
         this.category = category;
@@ -50,11 +50,10 @@ public class PartInfo {
         for(PartStat i : stats) {
             this.stats.put(i.category, i);
         }
-
     }
 
     public PartInfo(String name, String desc, PartType category, int tx, int ty, int tw, int th, ItemStack[] cost, byte[] connectOut, byte[] connectIn, PartStat... stats) {
-        this(name, desc, category, tx, ty, tw, th, false, false, (Point2)null, cost, connectOut, connectIn, stats);
+        this(name, desc, category, tx, ty, tw, th, false, false, null, cost, connectOut, connectIn, stats);
     }
 
     public static void preCalcConnection(PartInfo[] partsConfig) {
@@ -82,7 +81,6 @@ public class PartInfo {
                 }
             }
         }
-
     }
 
     public static void assignPartSprites(PartInfo[] partsConfig, TextureRegion partsSprite, int spriteW, int spriteH) {
@@ -91,8 +89,7 @@ public class PartInfo {
         for(int len = partsConfig.length; i < len; ++i) {
             PartInfo pinfo = partsConfig[i];
             pinfo.id = i;
-            pinfo.texRegion = GraphicUtils.getRegionRect(partsSprite, (float)pinfo.tx, (float)pinfo.ty, pinfo.tw, pinfo.th, spriteW, spriteH);
+            pinfo.texRegion = GraphicUtils.getRegionRect(partsSprite, pinfo.tx, pinfo.ty, pinfo.tw, pinfo.th, spriteW, spriteH);
         }
-
     }
 }

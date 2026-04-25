@@ -16,8 +16,7 @@ import unity.world.modules.GraphModules;
 public class GraphBlock extends Block implements GraphBlockBase {
     protected final Graphs graphs = new Graphs();
     protected boolean preserveDraw;
-    protected TextureRegion heatRegion;
-    protected TextureRegion liquidRegion;
+    protected TextureRegion heatRegion, liquidRegion;
 
     public GraphBlock(String name) {
         super(name);
@@ -55,81 +54,80 @@ public class GraphBlock extends Block implements GraphBlockBase {
         protected GraphModules gms;
 
         public void created() {
-            this.gms = new GraphModules(this);
-            GraphBlock.this.graphs.injectGraphConnector(this.gms);
-            this.gms.created();
+            gms = new GraphModules(this);
+            graphs.injectGraphConnector(gms);
+            gms.created();
         }
 
         public float efficiency() {
-            return super.efficiency() * this.gms.efficiency();
+            return efficiency * gms.efficiency();
         }
 
         public void onRemoved() {
-            this.gms.updateGraphRemovals();
-            this.onDelete();
+            gms.updateGraphRemovals();
+            onDelete();
             super.onRemoved();
-            this.onDeletePost();
+            onDeletePost();
         }
 
         public void updateTile() {
-            if (GraphBlock.this.graphs.useOriginalUpdate()) {
-                super.updateTile();
+            if (graphs.useOriginalUpdate()) {
+                updateTile();
             }
 
-            this.updatePre();
-            this.gms.updateTile();
-            this.updatePost();
-            this.gms.prevTileRotation(this.rotation);
+            updatePre();
+            gms.updateTile();
+            updatePost();
+            gms.prevTileRotation(rotation);
         }
 
         public void onProximityUpdate() {
             super.onProximityUpdate();
-            this.gms.onProximityUpdate();
-            this.proxUpdate();
+            gms.onProximityUpdate();
+            proxUpdate();
         }
 
         public void display(Table table) {
             super.display(table);
-            this.gms.display(table);
-            this.displayExt(table);
+            gms.display(table);
+            displayExt(table);
         }
 
         public void displayBars(Table table) {
             super.displayBars(table);
-            this.gms.displayBars(table);
-            this.displayBarsExt(table);
+            gms.displayBars(table);
+            displayBarsExt(table);
         }
 
         public void write(Writes write) {
             super.write(write);
-            this.gms.write(write);
-            this.writeExt(write);
+            gms.write(write);
+            writeExt(write);
         }
 
         public void read(Reads read, byte revision) {
             super.read(read, revision);
-            this.gms.read(read, revision);
-            this.readExt(read, revision);
+            gms.read(read, revision);
+            readExt(read, revision);
         }
 
         public GraphModules gms() {
-            return this.gms;
+            return gms;
         }
 
         public void drawSelect() {
             super.drawSelect();
-            this.gms.drawSelect();
+            gms.drawSelect();
         }
 
         public void draw() {
-            if (GraphBlock.this.preserveDraw) {
+            if (preserveDraw) {
                 super.draw();
-            } else if (GraphBlock.this.graphs.hasGraph(GraphType.heat)) {
-                Draw.rect(GraphBlock.this.region, this.x, this.y);
-                UnityDrawf.drawHeat(GraphBlock.this.heatRegion, this.x, this.y, 0.0F, this.heat().getTemp());
-                this.drawTeamTop();
+            } else if (graphs.hasGraph(GraphType.heat)) {
+                Draw.rect(region, x, y);
+                UnityDrawf.drawHeat(heatRegion, x, y, 0f, heat().getTemp());
+                drawTeamTop();
             }
-
         }
     }
 }

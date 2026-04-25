@@ -59,16 +59,19 @@ public final class UnitySounds {
     public static Sound supernovaCharge = new Sound();
     public static Sound supernovaShoot = new Sound();
 
+    // v8
+    public static Sound respawning;
+
     private UnitySounds() {
         throw new AssertionError();
     }
 
-    protected static Sound load(String name) {
+    private static Sound load(String name) {
         String n = "sounds/" + name;
         String path = Vars.tree.get(n + ".ogg").exists() ? n + ".ogg" : n + ".mp3";
         Sound sound = new Sound();
         AssetDescriptor<Sound> desc = Core.assets.load(path, Sound.class, new SoundLoader.SoundParameter(sound));
-        desc.errored = (e) -> Log.err(e);
+        desc.errored = Log::err;
         return sound;
     }
 
@@ -124,6 +127,7 @@ public final class UnitySounds {
             supernovaActive = load("monolith/supernova-active");
             supernovaCharge = load("monolith/supernova-charge");
             supernovaShoot = load("monolith/supernova-shoot");
+            respawning = load("v8/respawning");
         }
     }
 }

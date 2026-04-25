@@ -35,8 +35,10 @@ import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.meta.Stat;
 import mindustry.world.meta.Stats;
 import mindustry.world.modules.ItemModule;
+import unity.content.UnityBullets;
 import unity.graphics.UnityDrawf;
 import unity.util.Utils;
+import unity.v8.UnityStyles;
 import unity.world.blocks.GraphBlockBase;
 import unity.world.graphs.Graphs;
 import unity.world.modules.GraphModules;
@@ -71,9 +73,9 @@ public class ModularTurret extends Turret implements GraphBlockBase {
     public ModularTurret(String name) {
         super(name);
         this.rotate = this.configurable = this.hasItems = true;
-        this.config(String.class, (build, value) -> build.changed = build.setBluePrintFromString(value));
-        this.config(IntSeq.class, (build, value) -> build.changed = build.setBluePrint(Utils.unpackInts(value)));
-        this.configClear((build) -> build.setBluePrint((IntSeq)null));
+        this.config(String.class, (ModularTurretBuild build, String value) -> build.changed = build.setBluePrintFromString(value));
+        this.config(IntSeq.class, (ModularTurretBuild build, IntSeq value) -> build.changed = build.setBluePrint(Utils.unpackInts(value)));
+        this.configClear((ModularTurretBuild build) -> build.setBluePrint(null));
     }
 
     public void load() {
@@ -129,7 +131,7 @@ public class ModularTurret extends Turret implements GraphBlockBase {
 
     public class ModularTurretBuild extends Turret.TurretBuild implements GraphBlockBase.GraphBuildBase {
         protected GraphModules gms;
-        final OrderedMap<Item, Integer> blueprintRemainingCost = new OrderedMap(12);
+        final OrderedMap<Item, Integer> blueprintRemainingCost = new OrderedMap<>(12);
         final IntSeq bluePrint = new IntSeq();
         final FrameBuffer buffer;
         final StatContainer currentStats;
@@ -145,7 +147,6 @@ public class ModularTurret extends Turret implements GraphBlockBase {
         boolean validTurret;
 
         public ModularTurretBuild() {
-            super(ModularTurret.this);
             this.buffer = new FrameBuffer(ModularTurret.this.tx, ModularTurret.this.ty);
             this.currentStats = new StatContainer();
             this.turretRange = 80.0F;
@@ -188,12 +189,9 @@ public class ModularTurret extends Turret implements GraphBlockBase {
                     if (this.blueprintRemainingCost.isEmpty()) {
                         sub.labelWrap("No blueprint").color(Color.lightGray);
                     } else {
-                        ObjectMap.Entries var2 = this.blueprintRemainingCost.iterator();
-
-                        while(var2.hasNext()) {
-                            ObjectMap.Entry<Item, Integer> i = (ObjectMap.Entry)var2.next();
-                            sub.image(((Item)i.key).uiIcon).size(32.0F);
-                            sub.add(((Integer)i.value >>> 16) + "/" + ((Integer)i.value & '\uffff'));
+                        for (ObjectMap.Entry<Item, Integer> i : this.blueprintRemainingCost) {
+                            sub.image(i.key.uiIcon).size(32.0F);
+                            sub.add((i.value >>> 16) + "/" + (i.value & '\uffff'));
                             sub.row();
                         }
                     }
@@ -212,18 +210,15 @@ public class ModularTurret extends Turret implements GraphBlockBase {
                         }
 
                         ItemModule cItems = core.items;
-                        ObjectMap.Entries var7 = this.blueprintRemainingCost.iterator();
 
-                        while(var7.hasNext()) {
-                            ObjectMap.Entry<Item, Integer> i = (ObjectMap.Entry)var7.next();
-                            if ((Integer)i.value >>> 16 < ((Integer)i.value & '\uffff') && cItems.get((Item)i.key) > 0) {
-                                cItems.remove((Item)i.key, 1);
-                                ++this.totalItemCountPaid;
-                                this.blueprintRemainingCost.put((Item)i.key, (Integer)i.value + 65536);
-                                if (this.totalItemCountPaid == this.totalItemCountCost) {
-                                    this.applyStats();
+                        for (ObjectMap.Entry<Item, Integer> i : this.blueprintRemainingCost) {
+                            if (i.value >>> 16 < (i.value & '\uffff') && cItems.get(i.key) > 0) {
+                                cItems.remove(i.key, 1);
+                                ++totalItemCountPaid;
+                                blueprintRemainingCost.put(i.key, i.value + 65536);
+                                if (totalItemCountPaid == totalItemCountCost) {
+                                    applyStats();
                                 }
-
                                 return;
                             }
                         }
@@ -232,40 +227,39 @@ public class ModularTurret extends Turret implements GraphBlockBase {
                 } else {
                     ObjectMap.Entry<Item, Integer> i;
                     int temp;
-                    for(ObjectMap.Entries var1 = this.blueprintRemainingCost.iterator(); var1.hasNext(); i.value = (Integer)i.value + temp) {
-                        i = (ObjectMap.Entry)var1.next();
-                        temp = (Integer)i.value & '\uffff';
-                        i.value = (Integer)i.value << 16;
+                    for(ObjectMap.Entries<Item, Integer> var1 = blueprintRemainingCost.iterator(); var1.hasNext(); i.value = i.value + temp) {
+                        i = var1.next();
+                        temp = i.value & '\uffff';
+                        i.value = i.value << 16;
                     }
 
-                    this.totalItemCountPaid = this.totalItemCountCost;
-                    this.applyStats();
+                    totalItemCountPaid = totalItemCountCost;
+                    applyStats();
                 }
             }
         }
 
         public boolean acceptItem(Building source, Item item) {
-            int value = (Integer)this.blueprintRemainingCost.get(item, 0);
+            int value = blueprintRemainingCost.get(item, 0);
             boolean hasSpace = value >>> 16 < (value & '\uffff');
-            return super.acceptItem(source, item) || hasSpace && this.acceptItemExt(source, item);
+            return super.acceptItem(source, item) || hasSpace && acceptItemExt(source, item);
         }
 
         public void handleItem(Building source, Item item) {
-            if (this.totalItemCountPaid == this.totalItemCountCost) {
-                this.handleItemExt(source, item);
+            if (totalItemCountPaid == totalItemCountCost) {
+                handleItemExt(source, item);
             } else {
                 ++this.totalItemCountPaid;
-                int value = (Integer)this.blueprintRemainingCost.get(item, 0);
-                this.blueprintRemainingCost.put(item, value + 65536);
-                if (this.totalItemCountPaid == this.totalItemCountCost) {
-                    this.applyStats();
+                int value = blueprintRemainingCost.get(item, 0);
+                blueprintRemainingCost.put(item, value + 65536);
+                if (totalItemCountPaid == totalItemCountCost) {
+                    applyStats();
                 }
-
             }
         }
 
         boolean acceptItemExt(Building source, Item item) {
-            return !this.validTurret ? false : false;
+            return false;
         }
 
         void handleItemExt(Building source, Item item) {
@@ -277,7 +271,7 @@ public class ModularTurret extends Turret implements GraphBlockBase {
         }
 
         public boolean hasAmmo() {
-            return !this.validTurret ? false : false;
+            return false;
         }
 
         void attemptRefillingMag() {
@@ -288,42 +282,34 @@ public class ModularTurret extends Turret implements GraphBlockBase {
         }
 
         public BulletType useAmmo() {
-            return Bullets.standardCopper;
+            return UnityBullets.standardCopper;
         }
 
         public BulletType peekAmmo() {
-            return Bullets.standardCopper;
+            return UnityBullets.standardCopper;
         }
 
         void applyStats() {
             this.originalMaxHp = this.maxHealth;
-            this.maxHealth = this.originalMaxHp + (float)this.currentStats.hpinc;
+            this.maxHealth = this.originalMaxHp + this.currentStats.hpinc;
             this.turretRange = 80.0F;
-            this.heal((float)this.currentStats.hpinc * this.health / this.originalMaxHp);
+            this.heal(this.currentStats.hpinc * this.health / this.originalMaxHp);
         }
 
         public void displayBarsExt(Table table) {
-            if (this.validTurret) {
-            }
-
+            GraphBuildBase.super.displayBarsExt(table);
         }
 
         void accumStats(PartInfo part, int x, int y, int[][] grid) {
-            PartStat hp = (PartStat)part.stats.get(PartStatType.hp);
+            PartStat hp = part.stats.get(PartStatType.hp);
             if (hp != null) {
-                StatContainer var10000 = this.currentStats;
-                var10000.hpinc += hp.asInt();
+                this.currentStats.hpinc += hp.asInt();
             }
 
-            PartStat range = (PartStat)part.stats.get(PartStatType.rangeinc);
+            PartStat range = part.stats.get(PartStatType.rangeinc);
             if (range != null) {
-                StatContainer var7 = this.currentStats;
-                var7.rangeInc += range.asInt();
+                this.currentStats.rangeInc += range.asInt();
             }
-
-            if (part.category == PartType.base) {
-            }
-
         }
 
         void resetStats() {
@@ -337,16 +323,13 @@ public class ModularTurret extends Turret implements GraphBlockBase {
         }
 
         void drawPartBuffer(PartInfo part, int x, int y, int[][] grid) {
-            if (part.category != PartType.none && part.category != PartType.base) {
-            }
-
         }
 
         void preDrawBuffer() {
         }
 
         public void buildConfiguration(Table table) {
-            ((ImageButton)table.button(Tex.whiteui, Styles.clearTransi, 50.0F, () -> {
+            ((ImageButton)table.button(Tex.whiteui, UnityStyles.clearTransi, 50.0F, () -> {
                 BaseDialog dialog = new BaseDialog("Edit Blueprint");
                 dialog.setFillParent(false);
                 ModularConstructorUI mtd = ModularConstructorUI.applyModularConstructorUI(dialog.cont, ModularTurret.this.partsRegion, Math.round((float)ModularTurret.this.partsRegion.width / 32.0F), Math.round((float)ModularTurret.this.partsRegion.height / 32.0F), ModularTurret.this.partInfo, ModularTurret.this.gridW, ModularTurret.this.gridH, this.bluePrint, ModularTurret.this.getPartsCategories(), ModularTurret.this.partCostAccum);
@@ -454,12 +437,10 @@ public class ModularTurret extends Turret implements GraphBlockBase {
                     write.s(0);
                 } else {
                     write.s(this.blueprintRemainingCost.size);
-                    ObjectMap.Entries var6 = this.blueprintRemainingCost.iterator();
 
-                    while(var6.hasNext()) {
-                        ObjectMap.Entry<Item, Integer> i = (ObjectMap.Entry)var6.next();
-                        write.s(((Item)i.key).id);
-                        write.s((Integer)i.value >>> 16);
+                    for (ObjectMap.Entry<Item, Integer> i : this.blueprintRemainingCost) {
+                        write.s(i.key.id);
+                        write.s(i.value >>> 16);
                     }
                 }
 
@@ -495,16 +476,10 @@ public class ModularTurret extends Turret implements GraphBlockBase {
         }
 
         protected void updateShooting() {
-            if (this.validTurret) {
-                ;
-            }
-        }
-
-        void shootType() {
         }
 
         protected void findTarget() {
-            this.target = Units.bestTarget(this.team, this.x, this.y, this.turretRange, (e) -> !e.dead, (b) -> true, ModularTurret.this.unitSort);
+            this.target = Units.bestTarget(this.team, this.x, this.y, this.turretRange, (e) -> !e.dead, (b) -> true, unitSort);
         }
 
         public void updatePre() {
@@ -512,7 +487,7 @@ public class ModularTurret extends Turret implements GraphBlockBase {
         }
 
         void drawExt() {
-            Draw.rect(ModularTurret.this.regions[this.rotation()], this.x, this.y);
+            Draw.rect(regions[(int) rotation / 90], this.x, this.y);
             this.drawTeamTop();
         }
 
@@ -555,7 +530,7 @@ public class ModularTurret extends Turret implements GraphBlockBase {
         }
 
         public float efficiency() {
-            return super.efficiency() * this.gms.efficiency();
+            return super.efficiency * this.gms.efficiency();
         }
 
         public void onRemoved() {
@@ -573,7 +548,7 @@ public class ModularTurret extends Turret implements GraphBlockBase {
             this.updatePre();
             this.gms.updateTile();
             this.updatePost();
-            this.gms.prevTileRotation(this.rotation());
+            this.gms.prevTileRotation((int) this.rotation / 90);
         }
 
         public void onProximityUpdate() {

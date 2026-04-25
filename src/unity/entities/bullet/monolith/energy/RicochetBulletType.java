@@ -39,7 +39,7 @@ public class RicochetBulletType extends BasicBulletType {
     }
 
     public void hitTile(Bullet b, Building build, float initialHealth, boolean direct) {
-        super.hitTile(b, build, initialHealth, direct);
+        super.hitTile(b, build, b.x, b.y, initialHealth, direct);
         if (direct) {
             this.ricochet(b, build);
         }
@@ -74,8 +74,7 @@ public class RicochetBulletType extends BasicBulletType {
                     data.findEnemy(b);
                     if (data.target != null) {
                         Teamc var5 = data.target;
-                        if (var5 instanceof Hitboxc) {
-                            Hitboxc v = (Hitboxc)var5;
+                        if (var5 instanceof Hitboxc v) {
                             Vec2 out = Predict.intercept(b.x, b.y, v.x(), v.y(), v.deltaX(), v.deltaY(), b.vel.len());
                             float rot = out.sub(b.x, b.y).angle();
                             b.vel.setAngle(rot);
@@ -98,11 +97,11 @@ public class RicochetBulletType extends BasicBulletType {
         protected Trail trail;
 
         protected RicochetBulletData() {
-            this.trail = new Trail(RicochetBulletType.this.trailLength);
+            this.trail = new Trail(trailLength);
         }
 
         protected void findEnemy(Bullet b) {
-            this.target = Units.closestTarget(b.team, b.x, b.y, RicochetBulletType.this.range() * b.fout(), (u) -> u.isValid() && u.id != this.hit && (u.isFlying() && RicochetBulletType.this.collidesAir || u.isGrounded() && RicochetBulletType.this.collidesGround), (t) -> t.isValid() && t.id != this.hit && RicochetBulletType.this.collidesGround);
+            this.target = Units.closestTarget(b.team, b.x, b.y, range * b.fout(), (u) -> u.isValid() && u.id != hit && (u.isFlying() && collidesAir || u.isGrounded() && collidesGround), (t) -> t.isValid() && t.id != hit && collidesGround);
         }
     }
 }

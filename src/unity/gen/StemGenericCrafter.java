@@ -17,11 +17,11 @@ public class StemGenericCrafter extends GenericCrafter implements Stemc {
     }
 
     public <T extends Stemc.StemBuildc> void draw(Cons<T> draw) {
-        this.drawStem = draw;
+        this.drawStem = (Cons<StemBuildc>) draw;
     }
 
     public <T extends Stemc.StemBuildc> void update(Cons<T> update) {
-        this.updateStem = update;
+        this.updateStem = (Cons<StemBuildc>) update;
     }
 
     public Cons<Stemc.StemBuildc> drawStem() {
@@ -34,10 +34,6 @@ public class StemGenericCrafter extends GenericCrafter implements Stemc {
 
     public class StemGenericCrafterBuild extends GenericCrafter.GenericCrafterBuild implements Stemc.StemBuildc {
         protected transient StemData data = new StemData();
-
-        public StemGenericCrafterBuild() {
-            super(StemGenericCrafter.this);
-        }
 
         public String toString() {
             return "StemGenericCrafterBuild#" + this.id;

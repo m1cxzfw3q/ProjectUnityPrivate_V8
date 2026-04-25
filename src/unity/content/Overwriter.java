@@ -37,12 +37,33 @@ public class Overwriter {
             t.itemDrop = UnityItems.stone;
             t.playerUnmineable = true;
         });
-        overwrite(Blocks.airFactory, (UnitFactory f) -> f.plans.add(new UnitFactory.UnitPlan(UnityUnitTypes.caelifera, 1500.0F, ItemStack.with(Items.silicon, 15, Items.titanium, 25))));
-        overwrite(Blocks.navalFactory, (UnitFactory f) -> f.plans.add(new UnitFactory.UnitPlan(UnityUnitTypes.amphibiNaval, 1500.0F, ItemStack.with(Items.silicon, 15, Items.titanium, 25))));
-        overwrite(Blocks.additiveReconstructor, (Reconstructor r) -> r.upgrades.add(new UnitType[]{UnityUnitTypes.caelifera, UnityUnitTypes.schistocerca}, new UnitType[]{UnityUnitTypes.amphibiNaval, UnityUnitTypes.craberNaval}, new UnitType[]{MonolithUnitTypes.stele, MonolithUnitTypes.pedestal}));
-        overwrite(Blocks.multiplicativeReconstructor, (Reconstructor r) -> r.upgrades.add(new UnitType[]{UnityUnitTypes.schistocerca, UnityUnitTypes.anthophila}, new UnitType[]{MonolithUnitTypes.pedestal, MonolithUnitTypes.pilaster}));
-        overwrite(Blocks.exponentialReconstructor, (Reconstructor r) -> r.upgrades.add(new UnitType[]{UnityUnitTypes.anthophila, UnityUnitTypes.vespula}, new UnitType[]{MonolithUnitTypes.pilaster, MonolithUnitTypes.pylon}));
-        overwrite(Blocks.tetrativeReconstructor, (Reconstructor r) -> r.upgrades.add(new UnitType[]{UnityUnitTypes.vespula, UnityUnitTypes.lepidoptera}, new UnitType[]{MonolithUnitTypes.pylon, MonolithUnitTypes.monument}));
+        overwrite(Blocks.airFactory, (UnitFactory f) -> f.plans.add(new UnitFactory.UnitPlan(
+                UnityUnitTypes.caelifera,
+                1500.0F,
+                ItemStack.with(Items.silicon, 15, Items.titanium, 25)
+        )));
+        overwrite(Blocks.navalFactory, (UnitFactory f) -> f.plans.add(new UnitFactory.UnitPlan(
+                UnityUnitTypes.amphibiNaval,
+                1500.0F,
+                ItemStack.with(Items.silicon, 15, Items.titanium, 25)
+        )));
+        overwrite(Blocks.additiveReconstructor, (Reconstructor r) -> r.upgrades.add(
+                new UnitType[]{UnityUnitTypes.caelifera, UnityUnitTypes.schistocerca},
+                new UnitType[]{UnityUnitTypes.amphibiNaval, UnityUnitTypes.craberNaval},
+                new UnitType[]{MonolithUnitTypes.stele, MonolithUnitTypes.pedestal}
+        ));
+        overwrite(Blocks.multiplicativeReconstructor, (Reconstructor r) -> r.upgrades.add(
+                new UnitType[]{UnityUnitTypes.schistocerca, UnityUnitTypes.anthophila},
+                new UnitType[]{MonolithUnitTypes.pedestal, MonolithUnitTypes.pilaster}
+        ));
+        overwrite(Blocks.exponentialReconstructor, (Reconstructor r) -> r.upgrades.add(
+                new UnitType[]{UnityUnitTypes.anthophila, UnityUnitTypes.vespula},
+                new UnitType[]{MonolithUnitTypes.pilaster, MonolithUnitTypes.pylon}
+        ));
+        overwrite(Blocks.tetrativeReconstructor, (Reconstructor r) -> r.upgrades.add(
+                new UnitType[]{UnityUnitTypes.vespula, UnityUnitTypes.lepidoptera},
+                new UnitType[]{MonolithUnitTypes.pylon, MonolithUnitTypes.monument}
+        ));
         LAssembler.customParsers.put("expsensor", (args) -> new ExpSensorStatement());
         LogicIO.allStatements.add(ExpSensorStatement::new);
     }

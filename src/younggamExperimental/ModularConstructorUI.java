@@ -15,7 +15,6 @@ import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.ui.Button;
 import arc.scene.ui.ImageButton;
-import arc.scene.ui.Label;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
@@ -34,15 +33,16 @@ import mindustry.ui.BorderImage;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import unity.graphics.UnityPal;
+import unity.v8.UnityStyles;
 
 public class ModularConstructorUI extends Element {
     static final Color[] colorPorts = new Color[100];
     static ImageButton prevChecked;
     static PartType currentCat;
     Point2 hover;
-    final Seq<PartPlaceObj> partList = new Seq();
-    final Seq<PartPlaceObj> rootList = new Seq();
-    final GridMap<PartPlaceObj> grid = new GridMap();
+    final Seq<PartPlaceObj> partList = new Seq<>();
+    final Seq<PartPlaceObj> rootList = new Seq<>();
+    final GridMap<PartPlaceObj> grid = new GridMap<>();
     Runnable onTileAction;
     TextureRegion partsSprite;
     PartInfo partsSelect;
@@ -93,7 +93,7 @@ public class ModularConstructorUI extends Element {
                         butt.add(pinfo.name).size(170.0F, 45.0F).row();
                         butt.table((topTable) -> {
                             topTable.add(new BorderImage(pinfo.texRegion, 2.0F)).size(36.0F).padTop(-4.0F).padLeft(-4.0F).padRight(4.0F);
-                            ((ImageButton)topTable.button(Tex.whiteui, Styles.clearTransi, 50.0F, () -> displayPartInfo(pinfo)).size(50.0F).get()).getStyle().imageUp = Icon.infoSmall;
+                            topTable.button(Tex.whiteui, UnityStyles.clearTransi, 50.0F, () -> displayPartInfo(pinfo)).size(50.0F).get().getStyle().imageUp = Icon.infoSmall;
                         }).marginLeft(4.0F).row();
                         butt.add("[accent]Cost").padBottom(4.0F).row();
                         butt.table((botTable) -> {
@@ -101,7 +101,7 @@ public class ModularConstructorUI extends Element {
 
                             for(ItemStack cst : pinfo.cost) {
                                 botTable.image(cst.item.uiIcon).size(24.0F).left();
-                                botTable.add("[gray]" + Mathf.floor((float)cst.amount * costInc)).padLeft(2.0F).left().padRight(4.0F);
+                                botTable.add("[gray]" + Mathf.floor(cst.amount * costInc)).padLeft(2.0F).left().padRight(4.0F);
                                 if (i++ % 2 == 1) {
                                     botTable.row();
                                 }
@@ -121,7 +121,7 @@ public class ModularConstructorUI extends Element {
         catTable.margin(12.0F).top().left();
 
         for(PartType i : categories) {
-            ImageButton catButt = new ImageButton(i.region, Styles.clearToggleTransi);
+            ImageButton catButt = new ImageButton(i.region, UnityStyles.clearToggleTransi);
             catButt.clicked(() -> {
                 currentCat = i;
                 rebuildParts.run();
@@ -138,20 +138,17 @@ public class ModularConstructorUI extends Element {
         rebuildParts.run();
         Table leftSide = new Table();
         leftSide.add(catTable).align(8).row();
-        ((ScrollPane)leftSide.add(pane).minWidth(200.0F).maxHeight(400.0F).align(2).get()).setScrollingDisabled(true, false);
+        leftSide.add(pane).minWidth(200.0F).maxHeight(400.0F).align(2).get().setScrollingDisabled(true, false);
         Cons<Table> costCons = (cstTable) -> {
             cstTable.clearChildren();
             cstTable.add("[accent]Total Cost").padBottom(4.0F).row();
             cstTable.table((botTable) -> {
                 OrderedMap<Item, Integer> csTot = modElement.getTotalCost();
-                ObjectMap.Entries var3 = csTot.iterator();
 
-                while(var3.hasNext()) {
-                    ObjectMap.Entry<Item, Integer> cost = (ObjectMap.Entry)var3.next();
-                    botTable.image(((Item)cost.key).uiIcon).size(24.0F).left();
+                for (ObjectMap.Entry<Item, Integer> cost : csTot) {
+                    botTable.image(cost.key.uiIcon).size(24.0F).left();
                     botTable.add("[gray]" + cost.value).padLeft(2.0F).left().padRight(4.0F).row();
                 }
-
             });
         };
         Table totals = new Table();
@@ -181,15 +178,13 @@ public class ModularConstructorUI extends Element {
         Table cont = dialog.cont;
         cont.add("[lightgray]Name:[white]" + part.name).left().row();
         cont.add("[lightgray]Description:").left().row();
-        ((Label)cont.add("[white]" + part.desc).wrap().fillX().left().width(500.0F).maxWidth(500.0F).get()).setWrap(true);
+        cont.add("[white]" + part.desc).wrap().fillX().left().width(500.0F).maxWidth(500.0F).get().setWrap(true);
         cont.row();
         cont.add("[accent] Stats");
-        ObjectMap.Entries var3 = part.stats.iterator();
 
-        while(var3.hasNext()) {
-            ObjectMap.Entry<PartStatType, PartStat> stat = (ObjectMap.Entry)var3.next();
+        for (ObjectMap.Entry<PartStatType, PartStat> partStatTypePartStatEntry : part.stats) {
             cont.row();
-            cont.add("[lightgray]" + Core.bundle.get(((PartStatType)stat.key).name) + ": [white]" + ((PartStat)stat.value).value.toString()).left();
+            cont.add("[lightgray]" + Core.bundle.get(((ObjectMap.Entry<PartStatType, PartStat>) partStatTypePartStatEntry).key.name) + ": [white]" + ((PartStat) ((ObjectMap.Entry<PartStatType, PartStat>) partStatTypePartStatEntry).value).value.toString()).left();
         }
 
         Table var10000 = dialog.buttons;
@@ -306,54 +301,54 @@ public class ModularConstructorUI extends Element {
             if (!chkConnection) {
                 return true;
             } else {
-                px = partType.connInList.isEmpty();
+                boolean pxb = partType.connInList.isEmpty();
 
                 for(ConnectData i : partType.connInList) {
                     PartPlaceObj fromPart = this.getPartAt(x + i.x + i.dir.x, y + i.y + i.dir.y);
                     if (fromPart != null) {
-                        px |= this.partCanConnectOut(fromPart, i.x + x, i.y + y, i.id);
+                        pxb |= this.partCanConnectOut(fromPart, i.x + x, i.y + y, i.id);
                     }
                 }
 
-                if (!px) {
+                if (!pxb) {
                     for(ConnectData i : partType.connOutList) {
                         PartPlaceObj fromPart = this.getPartAt(x + i.x + i.dir.x, y + i.y + i.dir.y);
                         if (fromPart != null) {
-                            px |= this.partCanConnectIn(fromPart, i.x + x, i.y + y, i.id);
+                            pxb |= this.partCanConnectIn(fromPart, i.x + x, i.y + y, i.id);
                         }
                     }
                 }
 
-                return (boolean)px;
+                return pxb;
             }
         }
     }
 
     OrderedSet<PartPlaceObj> floodFrom(PartPlaceObj part) {
-        OrderedSet<PartPlaceObj> visited = new OrderedSet(12);
+        OrderedSet<PartPlaceObj> visited = new OrderedSet<>(12);
         visited.add(part);
-        Seq<PartPlaceObj> toVisit = new Seq();
-        OrderedSet.OrderedSetIterator var4 = part.parents.iterator();
+        Seq<PartPlaceObj> toVisit = new Seq<>();
+        OrderedSet<PartPlaceObj>.OrderedSetIterator var4 = part.parents.iterator();
 
         while(var4.hasNext()) {
-            PartPlaceObj i = (PartPlaceObj)var4.next();
+            PartPlaceObj i = var4.next();
             toVisit.add(i);
         }
 
         var4 = part.children.iterator();
 
         while(var4.hasNext()) {
-            PartPlaceObj i = (PartPlaceObj)var4.next();
+            PartPlaceObj i = var4.next();
             toVisit.add(i);
         }
 
         for(int index = 0; index < toVisit.size; ++index) {
-            PartPlaceObj cPart = (PartPlaceObj)toVisit.get(index);
+            PartPlaceObj cPart = toVisit.get(index);
             visited.add(cPart);
-            OrderedSet.OrderedSetIterator var6 = cPart.parents.iterator();
+            OrderedSet<PartPlaceObj>.OrderedSetIterator var6 = cPart.parents.iterator();
 
             while(var6.hasNext()) {
-                PartPlaceObj i = (PartPlaceObj)var6.next();
+                PartPlaceObj i = var6.next();
                 if (!visited.contains(i)) {
                     toVisit.add(i);
                 }
@@ -362,7 +357,7 @@ public class ModularConstructorUI extends Element {
             var6 = cPart.children.iterator();
 
             while(var6.hasNext()) {
-                PartPlaceObj i = (PartPlaceObj)var6.next();
+                PartPlaceObj i = var6.next();
                 if (!visited.contains(i)) {
                     toVisit.add(i);
                 }
@@ -376,17 +371,17 @@ public class ModularConstructorUI extends Element {
         int i = 0;
 
         for(int len = this.partList.size; i < len; ++i) {
-            ((PartPlaceObj)this.partList.get(i)).valid = false;
+            this.partList.get(i).valid = false;
         }
 
         i = 0;
 
         for(int len = this.rootList.size; i < len; ++i) {
-            OrderedSet<PartPlaceObj> k = this.floodFrom((PartPlaceObj)this.rootList.get(i));
+            OrderedSet<PartPlaceObj> k = this.floodFrom(this.rootList.get(i));
 
             PartPlaceObj part;
-            for(OrderedSet.OrderedSetIterator var4 = k.iterator(); var4.hasNext(); part.valid = true) {
-                part = (PartPlaceObj)var4.next();
+            for(OrderedSet<PartPlaceObj>.OrderedSetIterator var4 = k.iterator(); var4.hasNext(); part.valid = true) {
+                part = var4.next();
             }
         }
 
@@ -400,10 +395,7 @@ public class ModularConstructorUI extends Element {
             if (prt.isRoot) {
                 return false;
             } else {
-                OrderedSet.OrderedSetIterator var3 = part.parents.iterator();
-
-                while(var3.hasNext()) {
-                    PartPlaceObj i = (PartPlaceObj)var3.next();
+                for (PartPlaceObj i : part.parents) {
                     i.children.remove(part);
                 }
 
@@ -546,11 +538,11 @@ public class ModularConstructorUI extends Element {
     }
 
     OrderedMap<Item, Integer> getTotalCost() {
-        OrderedMap<Item, Integer> cst = new OrderedMap(this.partList.size);
+        OrderedMap<Item, Integer> cst = new OrderedMap<>(this.partList.size);
 
         for(PartPlaceObj i : this.partList) {
             for(ItemStack p : i.part.cost) {
-                int cur = (Integer)cst.get(p.item, 0);
+                int cur = cst.get(p.item, 0);
                 cst.put(p.item, cur + Mathf.floor((float)p.amount * (this.costAccum - this.costAccumRate)));
             }
         }
@@ -559,7 +551,7 @@ public class ModularConstructorUI extends Element {
     }
 
     PartPlaceObj getPartAt(int x, int y) {
-        return !this.inBoundsRect(x, y, 1, 1) ? null : (PartPlaceObj)this.grid.get(x, y);
+        return !this.inBoundsRect(x, y, 1, 1) ? null : this.grid.get(x, y);
     }
 
     boolean partCanConnectOut(PartPlaceObj part, int x, int y, byte portId) {
@@ -635,8 +627,8 @@ public class ModularConstructorUI extends Element {
         final int y;
         int flash;
         boolean valid;
-        final OrderedSet<PartPlaceObj> parents = new OrderedSet(12);
-        final OrderedSet<PartPlaceObj> children = new OrderedSet(12);
+        final OrderedSet<PartPlaceObj> parents = new OrderedSet<>(12);
+        final OrderedSet<PartPlaceObj> children = new OrderedSet<>(12);
 
         PartPlaceObj(int x, int y, PartInfo part) {
             this.x = x;

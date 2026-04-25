@@ -3,7 +3,7 @@ package younggamExperimental;
 import arc.struct.Seq;
 
 public class StatContainer {
-    public final Seq<Segment> segments = new Seq();
+    public final Seq<Segment> segments = new Seq<>();
     public int inertia;
     public int hpinc;
     public int rangeInc;

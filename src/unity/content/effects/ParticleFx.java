@@ -25,8 +25,7 @@ public class ParticleFx {
     }));
     public static Effect monolithSoul = (new Effect(48.0F, (e) -> {
         Object data$temp = e.data;
-        if (data$temp instanceof Vec2) {
-            Vec2 data = (Vec2)data$temp;
+        if (data$temp instanceof Vec2 data) {
             Draw.blend(Blending.additive);
             Draw.color(UnityPal.monolith, UnityPal.monolithDark, Color.black, e.finpow());
             float time = Time.time - e.rotation;

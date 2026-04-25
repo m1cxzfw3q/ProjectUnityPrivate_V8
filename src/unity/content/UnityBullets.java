@@ -12,7 +12,6 @@ import arc.math.geom.Vec2;
 import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.Vars;
-import mindustry.content.Bullets;
 import mindustry.content.Fx;
 import mindustry.content.Liquids;
 import mindustry.content.StatusEffects;
@@ -31,6 +30,7 @@ import mindustry.entities.bullet.LightningBulletType;
 import mindustry.entities.bullet.MissileBulletType;
 import mindustry.entities.bullet.PointBulletType;
 import mindustry.entities.bullet.ShrapnelBulletType;
+import mindustry.entities.effect.MultiEffect;
 import mindustry.gen.Building;
 import mindustry.gen.Bullet;
 import mindustry.gen.Entityc;
@@ -40,7 +40,6 @@ import mindustry.gen.Sounds;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Pal;
 import mindustry.type.Liquid;
-import mindustry.type.Weapon;
 import mindustry.world.Tile;
 import unity.content.effects.ChargeFx;
 import unity.content.effects.HitFx;
@@ -173,14 +172,17 @@ public class UnityBullets {
     public static BasicBulletType reignBulletWeakened;
     public static ArtilleryBulletType artilleryExplosiveT2;
 
+    // v8
+    public static BasicBulletType standardCopper, standardDenseBig, standardThoriumBig, standardIncendiaryBig, artilleryExplosive;
+
     private static <T extends BulletType> T copy(BulletType from, Cons<T> setter) {
-        T bullet = from.copy();
+        T bullet = (T) from.copy();
         setter.get(bullet);
         return bullet;
     }
 
     private static <T extends BulletType> T deepCopy(BulletType from, Cons<T> setter) {
-        T bullet = from.copy();
+        T bullet = (T) from.copy();
         if (from.fragBullet != null) {
             bullet.fragBullet = deepCopy(bullet.fragBullet, (b) -> {
             });
@@ -191,6 +193,74 @@ public class UnityBullets {
     }
 
     public static void load() {
+        standardCopper = new BasicBulletType(2.5F, 9.0F) {
+            {
+                this.width = 7.0F;
+                this.height = 9.0F;
+                this.lifetime = 60.0F;
+                this.shootEffect = Fx.shootSmall;
+                this.smokeEffect = Fx.shootSmallSmoke;
+                this.ammoMultiplier = 2.0F;
+            }
+        };
+        standardDenseBig = new BasicBulletType(7.5F, 50.0F, "bullet") {
+            {
+                this.hitSize = 4.8F;
+                this.width = 15.0F;
+                this.height = 21.0F;
+                this.shootEffect = Fx.shootBig;
+                this.ammoMultiplier = 4.0F;
+                this.reloadMultiplier = 1.7F;
+                this.knockback = 0.3F;
+            }
+        };
+        standardThoriumBig = new BasicBulletType(8.0F, 80.0F, "bullet") {
+            {
+                this.hitSize = 5.0F;
+                this.width = 16.0F;
+                this.height = 23.0F;
+                this.shootEffect = Fx.shootBig;
+                this.pierceCap = 2;
+                this.pierceBuilding = true;
+                this.knockback = 0.7F;
+            }
+        };
+        standardIncendiaryBig = new BasicBulletType(7.0F, 70.0F, "bullet") {
+            {
+                this.hitSize = 5.0F;
+                this.width = 16.0F;
+                this.height = 21.0F;
+                this.frontColor = Pal.lightishOrange;
+                this.backColor = Pal.lightOrange;
+                this.status = StatusEffects.burning;
+                this.hitEffect = new MultiEffect(new Effect[]{Fx.hitBulletSmall, Fx.fireHit});
+                this.shootEffect = Fx.shootBig;
+                this.makeFire = true;
+                this.pierceCap = 2;
+                this.pierceBuilding = true;
+                this.knockback = 0.6F;
+                this.ammoMultiplier = 3.0F;
+                this.splashDamage = 15.0F;
+                this.splashDamageRadius = 24.0F;
+            }
+        };
+        artilleryExplosive = new ArtilleryBulletType(2.0F, 20.0F, "shell") {
+            {
+                this.hitEffect = Fx.blastExplosion;
+                this.knockback = 0.8F;
+                this.lifetime = 80.0F;
+                this.width = this.height = 14.0F;
+                this.collidesTiles = false;
+                this.ammoMultiplier = 4.0F;
+                this.splashDamageRadius = 33.75F;
+                this.splashDamage = 55.0F;
+                this.backColor = Pal.missileYellowBack;
+                this.frontColor = Pal.missileYellow;
+                this.status = StatusEffects.blasted;
+            }
+        };
+
+
         laser = new ExpLaserBulletType(150.0F, 30.0F) {
             {
                 this.damageInc = 7.0F;
@@ -417,14 +487,13 @@ public class UnityBullets {
 
             }
 
+            @Override
             public void init(Bullet b) {
                 super.init(b);
                 Object var3 = b.data;
-                if (var3 instanceof Position) {
-                    Position point = (Position)var3;
+                if (var3 instanceof Position point) {
                     this.makeLava(point.getX(), point.getY(), this.getLevelf(b));
                 }
-
             }
         };
         kelvinOilLaser = new ExpLaserBulletType(170.0F, 130.0F) {
@@ -453,8 +522,7 @@ public class UnityBullets {
             public void init(Bullet b) {
                 super.init(b);
                 Object var3 = b.data;
-                if (var3 instanceof Position) {
-                    Position point = (Position)var3;
+                if (var3 instanceof Position point) {
                     this.makeLava(point.getX(), point.getY(), this.getLevelf(b));
                 }
 
@@ -487,31 +555,28 @@ public class UnityBullets {
                 Damage.status(b.team, x, y, 10.0F + (float)lvl / rad, UnityStatusEffects.disabled, 4.5F * (float)lvl, true, true);
             }
 
+            @Override
             public void init(Bullet b) {
                 super.init(b);
                 this.setDamage(b);
                 Healthc target = Damage.linecast(b, b.x, b.y, b.rotation(), this.getLength(b));
                 b.data = target;
-                if (target instanceof Hitboxc) {
-                    Hitboxc hit = (Hitboxc)target;
+                if (target instanceof Hitboxc hit) {
                     hit.collision(b, hit.x(), hit.y());
                     b.collision(hit, hit.x(), hit.y());
                     this.freezePos(b, hit.x(), hit.y());
                     Entityc var6 = b.owner;
-                    if (var6 instanceof ExpTurret.ExpTurretBuild) {
-                        ExpTurret.ExpTurretBuild exp = (ExpTurret.ExpTurretBuild)var6;
+                    if (var6 instanceof ExpTurret.ExpTurretBuild exp) {
                         exp.handleExp(this.expGain);
                     }
                 } else {
-                    if (target instanceof Building) {
-                        Building tile = (Building)target;
+                    if (target instanceof Building tile) {
                         if (tile.collide(b)) {
                             tile.collision(b);
                             this.hit(b, tile.x, tile.y);
                             this.freezePos(b, tile.x, tile.y);
                             Entityc var8 = b.owner;
-                            if (var8 instanceof ExpTurret.ExpTurretBuild) {
-                                ExpTurret.ExpTurretBuild exp = (ExpTurret.ExpTurretBuild)var8;
+                            if (var8 instanceof ExpTurret.ExpTurretBuild exp) {
                                 exp.handleExp(this.buildingExpGain);
                             }
 
@@ -525,9 +590,6 @@ public class UnityBullets {
             }
         };
         kelvinLiquidLaser = new ExpLaserBulletType(170.0F, 130.0F) {
-            final float damageMultiplier = 150.0F;
-            final float damageMultiplierInc = 10.0F;
-
             {
                 this.status = StatusEffects.freezing;
                 this.statusDuration = 180.0F;
@@ -541,11 +603,8 @@ public class UnityBullets {
             public void setDamage(Bullet b) {
                 Liquid liquid = Liquids.cryofluid;
                 Entityc var4 = b.owner;
-                if (var4 instanceof Building) {
-                    Building build = (Building)var4;
-                    if (!build.cheating()) {
-                        liquid = build.liquids.current();
-                    }
+                if (var4 instanceof Building build && !build.cheating()) {
+                    liquid = build.liquids.current();
                 }
 
                 float mul = 150.0F + 10.0F * (float)this.getLevel(b);
@@ -572,26 +631,22 @@ public class UnityBullets {
                 this.setDamage(b);
                 Healthc target = Damage.linecast(b, b.x, b.y, b.rotation(), this.getLength(b));
                 b.data = target;
-                if (target instanceof Hitboxc) {
-                    Hitboxc hit = (Hitboxc)target;
+                if (target instanceof Hitboxc hit) {
                     hit.collision(b, hit.x(), hit.y());
                     b.collision(hit, hit.x(), hit.y());
                     this.freezePos(b, hit.x(), hit.y());
                     Entityc var6 = b.owner;
-                    if (var6 instanceof ExpTurret.ExpTurretBuild) {
-                        ExpTurret.ExpTurretBuild exp = (ExpTurret.ExpTurretBuild)var6;
+                    if (var6 instanceof ExpTurret.ExpTurretBuild exp) {
                         exp.handleExp(this.expGain);
                     }
                 } else {
-                    if (target instanceof Building) {
-                        Building tile = (Building)target;
+                    if (target instanceof Building tile) {
                         if (tile.collide(b)) {
                             tile.collision(b);
                             this.hit(b, tile.x, tile.y);
                             this.freezePos(b, tile.x, tile.y);
                             Entityc var8 = b.owner;
-                            if (var8 instanceof ExpTurret.ExpTurretBuild) {
-                                ExpTurret.ExpTurretBuild exp = (ExpTurret.ExpTurretBuild)var8;
+                            if (var8 instanceof ExpTurret.ExpTurretBuild exp) {
                                 exp.handleExp(this.buildingExpGain);
                             }
 
@@ -735,26 +790,17 @@ public class UnityBullets {
             }
 
             public void hitTile(Bullet b, Building build, float initialHealth, boolean direct) {
-                super.hitTile(b, build, initialHealth, direct);
-                Entityc var6 = b.owner;
-                if (var6 instanceof Healthc) {
-                    Healthc owner = (Healthc)var6;
+                super.hitTile(b, build, b.x, b.y, initialHealth, direct);
+                if (b.owner instanceof Healthc owner) {
                     owner.heal(Math.max(initialHealth - build.health(), 0.0F) * 0.2F);
                 }
-
             }
 
             public void hitEntity(Bullet b, Hitboxc entity, float health) {
                 super.hitEntity(b, entity, health);
-                if (entity instanceof Healthc) {
-                    Healthc h = (Healthc)entity;
-                    Entityc var6 = b.owner;
-                    if (var6 instanceof Healthc) {
-                        Healthc owner = (Healthc)var6;
-                        owner.heal(Math.max(health - h.health(), 0.0F) * 0.2F);
-                    }
+                if (entity instanceof Healthc h && b.owner instanceof Healthc owner) {
+                    owner.heal(Math.max(health - h.health(), 0.0F) * 0.2F);
                 }
-
             }
         };
         falloutLaser = new SparkingContinuousLaserBulletType(95.0F) {
@@ -771,7 +817,7 @@ public class UnityBullets {
         catastropheLaser = new SparkingContinuousLaserBulletType(240.0F) {
             {
                 this.length = 340.0F;
-                this.strokes = new float[]{2.8F, 2.1F, 1.4F, 0.42000002F};
+                //this.strokes = new float[]{2.8F, 2.1F, 1.4F, 0.42000002F};
                 this.incendSpread = 7.0F;
                 this.incendAmount = 2;
             }
@@ -779,9 +825,9 @@ public class UnityBullets {
         calamityLaser = new SparkingContinuousLaserBulletType(580.0F) {
             {
                 this.length = 450.0F;
-                this.strokes = new float[]{3.4F, 2.5500002F, 1.7F, 0.51000005F};
+                //this.strokes = new float[]{3.4F, 2.5500002F, 1.7F, 0.51000005F};
                 this.lightStroke = 70.0F;
-                this.spaceMag = 70.0F;
+                //this.spaceMag = 70.0F;
                 this.fromBlockChance = 0.5F;
                 this.fromBlockDamage = 34.0F;
                 this.fromLaserChance = 0.8F;
@@ -797,9 +843,9 @@ public class UnityBullets {
         extinctionLaser = new SparkingContinuousLaserBulletType(770.0F) {
             {
                 this.length = 560.0F;
-                this.strokes = new float[]{4.4F, 3.3000002F, 2.2F, 0.66F};
+                //this.strokes = new float[]{4.4F, 3.3000002F, 2.2F, 0.66F};
                 this.lightStroke = 90.0F;
-                this.spaceMag = 70.0F;
+                //this.spaceMag = 70.0F;
                 this.fromBlockChance = 0.5F;
                 this.fromBlockDamage = 76.0F;
                 this.fromBlockAmount = 4;
@@ -955,7 +1001,7 @@ public class UnityBullets {
                 this.hitSize = 0.0F;
                 this.hittable = false;
                 this.hitEffect = Fx.hitLiquid;
-                this.breakSound = Sounds.wave;
+                this.breakSound = Sounds.waveSpawn;
                 this.maxRadius = 10.0F;
                 this.shieldHealth = 3000.0F;
             }
@@ -979,7 +1025,7 @@ public class UnityBullets {
                 this.trailWidth = 3.5F;
                 this.trailLength = 14;
                 this.homingPower = 0.06F;
-                this.hitSound = Sounds.plasmaboom;
+                this.hitSound = Sounds.explosionQuad;
                 this.hitEffect = HitFx.plasmaTriangleHit;
                 this.despawnEffect = Fx.none;
                 this.fragBullet = UnityBullets.plasmaFragTriangle;
@@ -993,7 +1039,7 @@ public class UnityBullets {
                 this.backColor = Pal.surge;
                 this.frontColor = Color.white;
                 this.mixColorTo = Color.white;
-                this.hitSound = Sounds.plasmaboom;
+                this.hitSound = Sounds.explosionQuad;
                 this.despawnShake = 4.0F;
                 this.collidesAir = false;
                 this.lifetime = 70.0F;
@@ -1008,7 +1054,7 @@ public class UnityBullets {
                 this.fragBullets = 8;
                 this.fragLifeMin = 0.8F;
                 this.fragLifeMax = 1.1F;
-                this.scaleVelocity = true;
+                this.scaleLife = true;
                 this.fragBullet = UnityBullets.plasmaFragTriangle;
                 this.lightning = 10;
                 this.lightningDamage = 136.0F;
@@ -1038,7 +1084,7 @@ public class UnityBullets {
                 for(int i = 0; i < 24; ++i) {
                     Time.run(2.0F * (float)i, () -> {
                         UnityBullets.pylonLightning.create(b, b.x, b.y, b.vel().angle());
-                        Sounds.spark.at(b.x, b.y, Mathf.random(0.6F, 0.9F));
+                        Sounds.shootArc.at(b.x, b.y, Mathf.random(0.6F, 0.9F));
                     });
                 }
 
@@ -1467,8 +1513,7 @@ public class UnityBullets {
 
             public void draw(Bullet b) {
                 Object var3 = b.data;
-                if (var3 instanceof FixedTrail) {
-                    FixedTrail trail = (FixedTrail)var3;
+                if (var3 instanceof FixedTrail trail) {
                     trail.draw(this.frontColor, this.width);
                 }
 
@@ -1480,8 +1525,7 @@ public class UnityBullets {
             public void update(Bullet b) {
                 super.update(b);
                 Object var3 = b.data;
-                if (var3 instanceof FixedTrail) {
-                    FixedTrail trail = (FixedTrail)var3;
+                if (var3 instanceof FixedTrail trail) {
                     trail.update(b.x, b.y, b.rotation());
                 }
 
@@ -1490,8 +1534,7 @@ public class UnityBullets {
             public void hit(Bullet b, float x, float y) {
                 super.hit(b, x, y);
                 Object var5 = b.data;
-                if (var5 instanceof FixedTrail) {
-                    FixedTrail trail = (FixedTrail)var5;
+                if (var5 instanceof FixedTrail trail) {
                     UnityFx.fixedTrailFade.at(b.x, b.y, this.width, this.frontColor, trail.copy());
                     trail.clear();
                 }
@@ -1540,13 +1583,13 @@ public class UnityBullets {
                 this.upgrade = true;
             }
         };
-        standardDenseLarge = (BasicBulletType)copy(Bullets.standardDenseBig, (t) -> {
+        standardDenseLarge = copy(standardDenseBig, (t) -> {
             t.damage *= 1.4F;
             t.speed *= 1.1F;
             t.width *= 1.12F;
             t.height *= 1.12F;
         });
-        standardHomingLarge = (BasicBulletType)copy(Bullets.standardDenseBig, (t) -> {
+        standardHomingLarge = copy(standardDenseBig, (t) -> {
             t.damage *= 1.23F;
             t.reloadMultiplier = 1.3F;
             t.homingPower = 0.09F;
@@ -1554,25 +1597,25 @@ public class UnityBullets {
             t.width *= 1.09F;
             t.height *= 1.09F;
         });
-        standardIncendiaryLarge = (BasicBulletType)copy(Bullets.standardIncendiaryBig, (t) -> {
+        standardIncendiaryLarge = copy(standardIncendiaryBig, (t) -> {
             t.damage *= 1.4F;
             t.speed *= 1.1F;
             t.width *= 1.12F;
             t.height *= 1.12F;
         });
-        standardThoriumLarge = (BasicBulletType)copy(Bullets.standardThoriumBig, (t) -> {
+        standardThoriumLarge = copy(standardThoriumBig, (t) -> {
             t.damage *= 1.4F;
             t.speed *= 1.1F;
             t.width *= 1.12F;
             t.height *= 1.12F;
         });
-        standardDenseHeavy = (BasicBulletType)copy(Bullets.standardDenseBig, (t) -> {
+        standardDenseHeavy = copy(standardDenseBig, (t) -> {
             t.damage *= 1.7F;
             t.speed *= 1.3F;
             t.width *= 1.32F;
             t.height *= 1.32F;
         });
-        standardHomingHeavy = (BasicBulletType)copy(Bullets.standardDenseBig, (t) -> {
+        standardHomingHeavy = copy(standardDenseBig, (t) -> {
             t.damage *= 1.4F;
             t.reloadMultiplier = 1.3F;
             t.homingPower = 0.09F;
@@ -1580,26 +1623,26 @@ public class UnityBullets {
             t.width *= 1.19F;
             t.height *= 1.19F;
         });
-        standardIncendiaryHeavy = (BasicBulletType)copy(Bullets.standardIncendiaryBig, (t) -> {
+        standardIncendiaryHeavy = copy(standardIncendiaryBig, (t) -> {
             t.damage *= 1.7F;
             t.speed *= 1.3F;
             t.width *= 1.32F;
             t.height *= 1.32F;
         });
-        standardThoriumHeavy = (BasicBulletType)copy(Bullets.standardThoriumBig, (t) -> {
+        standardThoriumHeavy = copy(standardThoriumBig, (t) -> {
             t.damage *= 1.7F;
             t.speed *= 1.3F;
             t.width *= 1.32F;
             t.height *= 1.32F;
         });
-        standardDenseMassive = (BasicBulletType)copy(Bullets.standardDenseBig, (t) -> {
+        standardDenseMassive = copy(standardDenseBig, (t) -> {
             t.damage *= 1.8F;
             t.speed *= 1.3F;
             t.width *= 1.34F;
             t.height *= 1.34F;
             t.lifetime *= 1.1F;
         });
-        standardHomingMassive = (BasicBulletType)copy(Bullets.standardDenseBig, (t) -> {
+        standardHomingMassive = copy(standardDenseBig, (t) -> {
             t.damage *= 1.6F;
             t.reloadMultiplier = 1.3F;
             t.homingPower = 0.09F;
@@ -1608,22 +1651,22 @@ public class UnityBullets {
             t.height *= 1.21F;
             t.lifetime *= 1.1F;
         });
-        standardIncendiaryMassive = (BasicBulletType)copy(Bullets.standardIncendiaryBig, (t) -> {
+        standardIncendiaryMassive = copy(standardIncendiaryBig, (t) -> {
             t.damage *= 1.8F;
             t.speed *= 1.3F;
             t.width *= 1.34F;
             t.height *= 1.34F;
             t.lifetime *= 1.1F;
         });
-        standardThoriumMassive = (BasicBulletType)copy(Bullets.standardThoriumBig, (t) -> {
+        standardThoriumMassive = copy(standardThoriumBig, (t) -> {
             t.damage *= 1.8F;
             t.speed *= 1.3F;
             t.width *= 1.34F;
             t.height *= 1.34F;
             t.lifetime *= 1.1F;
         });
-        reignBulletWeakened = (BasicBulletType)copy(((Weapon)UnitTypes.reign.weapons.get(0)).bullet, (t) -> t.damage = 45.0F);
-        artilleryExplosiveT2 = (ArtilleryBulletType)copy(Bullets.artilleryExplosive, (t) -> {
+        reignBulletWeakened = copy(UnitTypes.reign.weapons.get(0).bullet, (t) -> t.damage = 45.0F);
+        artilleryExplosiveT2 = copy(artilleryExplosive, (t) -> {
             t.speed = 4.5F;
             t.lifetime = 74.0F;
             t.ammoMultiplier = 2.0F;

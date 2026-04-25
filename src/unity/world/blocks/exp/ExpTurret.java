@@ -38,6 +38,7 @@ import unity.content.UnityFx;
 import unity.entities.ExpOrbs;
 import unity.graphics.UnityPal;
 import unity.ui.Graph;
+import unity.v8.UnityStyles;
 import unity.world.draw.DrawLevel;
 
 public class ExpTurret extends Turret {
@@ -70,11 +71,11 @@ public class ExpTurret extends Turret {
         super(name);
         this.upgradeEffect = UnityFx.expPoof;
         this.upgradeBlockEffect = UnityFx.expShineRegion;
-        this.upgradeSound = Sounds.message;
+        this.upgradeSound = Sounds.uiNotify;
         this.fromColor = Pal.lancerLaser;
         this.toColor = UnityPal.exp;
         this.rangeField = null;
-        this.seqs = new Seq();
+        this.seqs = new Seq<>();
         this.draw = null;
     }
 
@@ -91,7 +92,7 @@ public class ExpTurret extends Turret {
 
         for(EField<?> f : this.expFields) {
             if (f.stat == Stat.shootRange || f.stat == Stat.range) {
-                this.rangeField = f;
+                this.rangeField = (EField<Float>) f;
                 break;
             }
         }
@@ -142,7 +143,7 @@ public class ExpTurret extends Turret {
 
         for(EField<?> f : this.expFields) {
             if (f.stat != null) {
-                if (map.containsKey(f.stat.category) && ((OrderedMap)map.get(f.stat.category)).containsKey(f.stat)) {
+                if (map.containsKey(f.stat.category) && (map.get(f.stat.category)).containsKey(f.stat)) {
                     if (f.stat == Stat.abilities) {
                         if (!removeAbil) {
                             this.stats.remove(f.stat);
@@ -162,28 +163,28 @@ public class ExpTurret extends Turret {
         }
 
         if (this.pregrade != null) {
-            this.stats.add(Stat.buildCost, "[#84ff00]\ue804" + Core.bundle.format("exp.upgradefrom", new Object[]{this.pregradeLevel, this.pregrade.localizedName}) + "[]", new Object[0]);
-            this.stats.add(Stat.buildCost, (t) -> t.button(Icon.infoCircleSmall, Styles.clearTransi, 20.0F, () -> Vars.ui.content.show(this.pregrade)).size(26.0F).color(UnityPal.exp));
+            this.stats.add(Stat.buildCost, "[#84ff00]\ue804" + Core.bundle.format("exp.upgradefrom", this.pregradeLevel, this.pregrade.localizedName) + "[]");
+            this.stats.add(Stat.buildCost, (t) -> t.button(Icon.infoCircleSmall, UnityStyles.clearTransi, 20.0F, () -> Vars.ui.content.show(this.pregrade)).size(26.0F).color(UnityPal.exp));
         }
 
-        this.stats.add(Stat.itemCapacity, "@", new Object[]{Core.bundle.format("exp.expAmount", new Object[]{this.maxExp})});
-        this.stats.add(Stat.itemCapacity, (t) -> t.add(Core.bundle.format(this.passive ? "exp.lvlAmountP" : "exp.lvlAmount", new Object[]{this.maxLevel})).tooltip(Core.bundle.get("exp.tooltip")));
+        this.stats.add(Stat.itemCapacity, "@", Core.bundle.format("exp.expAmount", this.maxExp));
+        this.stats.add(Stat.itemCapacity, (t) -> t.add(Core.bundle.format(this.passive ? "exp.lvlAmountP" : "exp.lvlAmount", this.maxLevel)).tooltip(Core.bundle.get("exp.tooltip")));
         this.stats.add(Stat.armor, (t) -> this.buildGraphTable(t, this.damageReduction));
     }
 
     protected void buildGraphTable(Table t, EField<?> f) {
-        Label l = (Label)t.add(f.toString()).get();
+        Label l = t.add(f.toString()).get();
         Collapser c = new Collapser((tc) -> f.buildTable(tc, this.maxLevel), true);
         Runnable toggle = () -> c.toggle(false);
         l.clicked(toggle);
-        t.button(Icon.downOpenSmall, Styles.clearToggleTransi, 20.0F, toggle).size(26.0F).color(UnityPal.exp).padLeft(8.0F);
+        t.button(Icon.downOpenSmall, UnityStyles.clearToggleTransi, 20.0F, toggle).size(26.0F).color(UnityPal.exp).padLeft(8.0F);
         t.row();
         t.add(c).colspan(2).left();
     }
 
     public void setBars() {
         super.setBars();
-        this.bars.remove("health");
+        removeBar("health");
     }
 
     public void drawPlace(int x, int y, int rotation, boolean valid) {
@@ -269,10 +270,7 @@ public class ExpTurret extends Turret {
         public int exp;
         @Nullable
         public ExpHub.ExpHubBuild hub = null;
-
-        public ExpTurretBuild() {
-            super(ExpTurret.this);
-        }
+        private float recoil;
 
         public int incExp(int amount, boolean hub) {
             int ehub = hub && this.hubValid() ? this.hub.takeAmount(amount, this) : 0;
@@ -406,15 +404,15 @@ public class ExpTurret extends Turret {
             fshootEffect.at(this.x + ExpTurret.this.tr.x, this.y + ExpTurret.this.tr.y, this.rotation, effectc);
             fsmokeEffect.at(this.x + ExpTurret.this.tr.x, this.y + ExpTurret.this.tr.y, this.rotation, effectc);
             ExpTurret.this.shootSound.at(this.x + ExpTurret.this.tr.x, this.y + ExpTurret.this.tr.y, Mathf.random(0.9F, 1.1F));
-            if (ExpTurret.this.shootShake > 0.0F) {
-                Effect.shake(ExpTurret.this.shootShake, ExpTurret.this.shootShake, this);
+            if (ExpTurret.this.shake > 0.0F) {
+                Effect.shake(ExpTurret.this.shake, ExpTurret.this.shake, this);
             }
 
-            this.recoil = ExpTurret.this.recoilAmount;
+            this.recoil = ExpTurret.this.recoil;
         }
 
         public void drawSelect() {
-            Drawf.dashCircle(this.x, this.y, ExpTurret.this.rangeField == null ? ExpTurret.this.range : (Float)ExpTurret.this.rangeField.fromLevel(this.level()), this.team.color);
+            Drawf.dashCircle(this.x, this.y, ExpTurret.this.rangeField == null ? ExpTurret.this.range : ExpTurret.this.rangeField.fromLevel(this.level()), this.team.color);
         }
 
         public void displayBars(Table table) {
@@ -518,12 +516,12 @@ public class ExpTurret extends Turret {
         }
 
         public String toString() {
-            return Core.bundle.format("field.linearreload", new Object[]{Strings.autoFixed((float)ExpTurret.this.shots * 60.0F / this.start, 2), Strings.autoFixed((float)ExpTurret.this.shots * 60.0F / (this.start + this.scale * (float)ExpTurret.this.maxLevel), 2)});
+            return Core.bundle.format("field.linearreload", Strings.autoFixed((float)ExpTurret.this.shoot.shots * 60.0F / this.start, 2), Strings.autoFixed((float)ExpTurret.this.shoot.shots * 60.0F / (this.start + this.scale * (float)ExpTurret.this.maxLevel), 2));
         }
 
         public void buildTable(Table table, int end) {
             table.left();
-            Graph g = new Graph((i) -> (float)ExpTurret.this.shots * 60.0F / this.fromLevel(i), end, UnityPal.exp);
+            Graph g = new Graph((i) -> (float)ExpTurret.this.shoot.shots * 60.0F / this.fromLevel(i), end, UnityPal.exp);
             table.add(g).size(330.0F, 160.0F).left();
             table.row();
             table.label(() -> g.lastMouseOver ? Core.bundle.format("ui.graph.label", new Object[]{g.lastMouseStep, Strings.autoFixed(g.mouseValue(), 2) + "/s"}) : Core.bundle.get("ui.graph.hover"));

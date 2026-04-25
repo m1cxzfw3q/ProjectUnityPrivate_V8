@@ -33,8 +33,7 @@ public class SpecialFx {
     private static final Rand rand = new Rand();
     public static Effect kamiBulletSpawn = new Effect(30.0F, 300.0F, (e) -> {
         Object kb$temp = e.data;
-        if (kb$temp instanceof KamiBullet) {
-            KamiBullet kb = (KamiBullet)kb$temp;
+        if (kb$temp instanceof KamiBullet kb) {
             KamiBulletType type = (KamiBulletType)kb.type;
             TextureRegion r = KamiBulletType.region;
             e.lifetime = type.delay;
@@ -50,8 +49,7 @@ public class SpecialFx {
     });
     public static Effect endDeny = new Effect(80.0F, 1200.0F, (e) -> {
         Object u$temp = e.data;
-        if (u$temp instanceof Unit) {
-            Unit u = (Unit)u$temp;
+        if (u$temp instanceof Unit u) {
             Draw.blend(Blending.additive);
             float a = e.color.a / 2.0F + 0.5F;
             e.scaled(40.0F, (s) -> {
@@ -90,8 +88,7 @@ public class SpecialFx {
     public static Effect endgameVapourize = (new VapourizeShaderEffect(180.0F, 900.0F)).updateVel(false);
     public static Effect chainLightningActive = (new Effect(20.0F, 300.0F, (e) -> {
         Object p$temp = e.data;
-        if (p$temp instanceof Position) {
-            Position p = (Position)p$temp;
+        if (p$temp instanceof Position p) {
             float tx = p.getX();
             float ty = p.getY();
             float dst = Mathf.dst(e.x, e.y, tx, ty);
@@ -154,8 +151,7 @@ public class SpecialFx {
         Draw.blend();
     });
     public static Effect voidFractureEffect = (new Effect(30.0F, 700.0F, (e) -> {
-        if (e.data instanceof VoidFractureData) {
-            VoidFractureData data = (VoidFractureData)e.data;
+        if (e.data instanceof VoidFractureData data) {
             float rot = Angles.angle(data.x, data.y, data.x2, data.y2);
             Draw.color(Color.black);
 
@@ -185,8 +181,7 @@ public class SpecialFx {
     })).layer(110.03F);
     public static Effect pointBlastLaserEffect = new Effect(23.0F, 600.0F, (e) -> {
         Object data$temp = e.data;
-        if (data$temp instanceof PointBlastInterface) {
-            PointBlastInterface data = (PointBlastInterface)data$temp;
+        if (data$temp instanceof PointBlastInterface data) {
 
             for(int i = 0; i < data.colors().length; ++i) {
                 Draw.color(data.colors()[i]);

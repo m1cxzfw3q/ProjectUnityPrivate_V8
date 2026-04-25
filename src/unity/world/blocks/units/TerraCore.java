@@ -13,6 +13,7 @@ import mindustry.world.Block;
 import unity.content.UnityUnitTypes;
 import unity.gen.Worldc;
 import unity.type.UnityUnitType;
+import unity.v8.UnityStyles;
 
 public class TerraCore extends Block {
     UnityUnitType type;
@@ -32,7 +33,7 @@ public class TerraCore extends Block {
         Worldc unit;
 
         public void buildConfiguration(Table table) {
-            table.button(Icon.units, Styles.clearTransi, () -> {
+            table.button(Icon.units, UnityStyles.clearTransi, () -> {
                 Unit u = TerraCore.this.type.create(this.team);
                 if (u instanceof Worldc) {
                     u.x = this.x;

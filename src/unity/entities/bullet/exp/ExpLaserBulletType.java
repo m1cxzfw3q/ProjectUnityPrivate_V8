@@ -14,7 +14,7 @@ import mindustry.gen.Hitboxc;
 import mindustry.graphics.Drawf;
 import unity.util.Utils;
 
-public class ExpLaserBulletType extends ExpBulletType {
+public abstract class ExpLaserBulletType extends ExpBulletType {
     public float width;
     public float length;
     public float lengthInc;

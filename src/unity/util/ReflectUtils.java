@@ -47,27 +47,12 @@ public final class ReflectUtils {
     }
 
     public static String def(Class<?> type) {
-        String var10000;
-        switch (unbox(type).getSimpleName()) {
-            case "boolean":
-                var10000 = "false";
-                break;
-            case "byte":
-            case "char":
-            case "short":
-            case "int":
-            case "long":
-                var10000 = "0";
-                break;
-            case "float":
-            case "double":
-                var10000 = "0.0";
-                break;
-            default:
-                var10000 = "null";
-        }
-
-        return var10000;
+        return switch (unbox(type).getSimpleName()) {
+            case "boolean" -> "false";
+            case "byte", "char", "short", "int", "long" -> "0";
+            case "float", "double" -> "0.0";
+            default -> "null";
+        };
     }
 
     public static Class<?> findClassf(Class<?> type, String field) {
@@ -75,6 +60,8 @@ public final class ReflectUtils {
             try {
                 type.getDeclaredField(field);
                 break;
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -86,6 +73,8 @@ public final class ReflectUtils {
             try {
                 type.getDeclaredMethod(method, args);
                 break;
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -97,6 +86,8 @@ public final class ReflectUtils {
             try {
                 type.getDeclaredConstructor(args);
                 break;
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -163,7 +154,7 @@ public final class ReflectUtils {
 
     public static <T> Constructor<T> findConstructor(Class<T> type, boolean access, Class<?>... args) {
         try {
-            Constructor<T> c = findClassc(type, args).getDeclaredConstructor(args);
+            Constructor<T> c = (Constructor<T>) findClassc(type, args).getDeclaredConstructor(args);
             if (access) {
                 c.setAccessible(true);
             }
@@ -176,7 +167,7 @@ public final class ReflectUtils {
 
     public static <T> T newInstance(Constructor<T> constructor, Object... args) {
         try {
-            return (T)constructor.newInstance(args);
+            return constructor.newInstance(args);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

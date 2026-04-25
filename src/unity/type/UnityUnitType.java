@@ -24,7 +24,6 @@ import mindustry.ctype.ContentType;
 import mindustry.entities.Leg;
 import mindustry.entities.abilities.Ability;
 import mindustry.entities.units.WeaponMount;
-import mindustry.game.SpawnGroup;
 import mindustry.game.Team;
 import mindustry.gen.Building;
 import mindustry.gen.Legsc;
@@ -34,7 +33,6 @@ import mindustry.gen.Sounds;
 import mindustry.gen.Unit;
 import mindustry.gen.WaterMovec;
 import mindustry.graphics.Drawf;
-import mindustry.graphics.Pal;
 import mindustry.graphics.Trail;
 import mindustry.type.UnitType;
 import mindustry.type.Weapon;
@@ -57,10 +55,12 @@ import unity.gen.Worldc;
 import unity.gen.Wormc;
 import unity.graphics.UnityDrawf;
 import unity.type.decal.UnitDecorationType;
-import unity.util.ReflectUtils;
+import unity.v8.UnitDecal;
+
+import static arc.graphics.g2d.Draw.z;
 
 public class UnityUnitType extends UnitType {
-    public final Seq<Weapon> segWeapSeq = new Seq();
+    public final Seq<Weapon> segWeapSeq = new Seq<>();
     public TextureRegion segmentRegion;
     public TextureRegion tailRegion;
     public TextureRegion segmentCellRegion;
@@ -74,7 +74,7 @@ public class UnityUnitType extends UnitType {
     public TextureRegion legShadowBaseRegion;
     public TextureRegion payloadCellRegion;
     public TextureRegion[] abilityRegions = new TextureRegion[AbilityTextures.values().length];
-    public Seq<Weapon> bottomWeapons = new Seq();
+    public Seq<Weapon> bottomWeapons = new Seq<>();
     public Engine engine;
     public float bulletWidth = 2.0F;
     public WormDecal wormDecal;
@@ -128,6 +128,8 @@ public class UnityUnitType extends UnitType {
     public int worldHeight;
     public boolean forceWreckRegion;
 
+    public Seq<UnitDecal> decals = new Seq<>();
+
     public UnityUnitType(String name) {
         super(name);
         this.splitSound = Sounds.door;
@@ -137,13 +139,13 @@ public class UnityUnitType extends UnitType {
             Floor floor = unit.floorOn();
             return floor.isLiquid && !(floor instanceof ShallowLiquid) ^ unit instanceof WaterMovec;
         };
-        this.decorations = new Seq();
-        this.tentacles = new Seq();
-        this.rotors = new Seq(4);
+        this.decorations = new Seq<>();
+        this.tentacles = new Seq<>();
+        this.rotors = new Seq<>(4);
         this.rotorDeathSlowdown = 0.01F;
         this.fallRotateSpeed = 2.5F;
         this.weaponXs = new FloatSeq();
-        this.legGroup = new Seq();
+        this.legGroup = new Seq<>();
         this.customBackLegs = false;
         this.legShadows = false;
         this.linkCount = 1;
@@ -158,25 +160,17 @@ public class UnityUnitType extends UnitType {
 
     public Unit create(Team team) {
         Unit unit = super.create(team);
-        Class<?> caller = ReflectUtils.classCaller();
-        if (caller != null && SpawnGroup.class.isAssignableFrom(caller)) {
-            boolean var11 = true;
-        } else {
-            boolean var10000 = false;
-        }
-
-        if (unit instanceof Monolithc) {
-            Monolithc e = (Monolithc)unit;
+        if (unit instanceof Monolithc e) {
             e.join();
         }
 
         if (!this.wormCreating && unit instanceof Wormc) {
             this.wormCreating = true;
-            Unit cur = (Unit)((Wormc)unit);
+            Unit cur = unit;
             int cid = unit.id;
 
             for(int i = 0; i < this.segmentLength; ++i) {
-                Unit t = (Unit)((Wormc)this.create(team));
+                Unit t = this.create(team);
                 t.elevation = unit.elevation;
                 ((Wormc)t).layer(1.0F + (float)i);
                 ((Wormc)t).head(unit);
@@ -236,7 +230,7 @@ public class UnityUnitType extends UnitType {
 
     public void init() {
         super.init();
-        Seq<Rotor> mapped = new Seq();
+        Seq<Rotor> mapped = new Seq<>();
         this.rotors.each((rotor) -> {
             mapped.add(rotor);
             if (rotor.mirror) {
@@ -261,11 +255,11 @@ public class UnityUnitType extends UnitType {
             }
         }
 
-        Seq<Weapon> addBottoms = new Seq();
+        Seq<Weapon> addBottoms = new Seq<>();
 
         for(Weapon w : this.weapons) {
             if (this.bottomWeapons.contains(w) && w.otherSide != -1) {
-                addBottoms.add((Weapon)this.weapons.get(w.otherSide));
+                addBottoms.add(this.weapons.get(w.otherSide));
             }
         }
 
@@ -277,7 +271,7 @@ public class UnityUnitType extends UnitType {
     }
 
     public void sortSegWeapons(Seq<Weapon> weaponSeq) {
-        Seq<Weapon> mapped = new Seq();
+        Seq<Weapon> mapped = new Seq<>();
         int i = 0;
 
         for(int len = weaponSeq.size; i < len; ++i) {
@@ -308,18 +302,18 @@ public class UnityUnitType extends UnitType {
     public <T extends Unit & Wormc> void drawWorm(T unit) {
         Mechc mech = unit instanceof Mechc ? (Mechc)unit : null;
         float z = (unit.elevation > 0.5F ? (this.lowAltitude ? 90.0F : 115.0F) : this.groundLayer + Mathf.clamp(this.hitSize / 4000.0F, 0.0F, 0.01F)) - ((Wormc)unit).layer() * 1.0E-5F;
-        if (unit.isFlying() || this.visualElevation > 0.0F) {
+        if (unit.isFlying()) {
             TextureRegion tmpShadow = this.shadowRegion;
-            if (!((Wormc)unit).isHead() || ((Wormc)unit).isTail()) {
-                this.shadowRegion = ((Wormc)unit).isTail() ? this.tailRegion : this.segmentRegion;
+            if (!unit.isHead() || unit.isTail()) {
+                this.shadowRegion = unit.isTail() ? this.tailRegion : this.segmentRegion;
             }
 
-            Draw.z(Math.min(80.0F, z - 1.0F));
+            z(Math.min(80.0F, z - 1.0F));
             this.drawShadow(unit);
             this.shadowRegion = tmpShadow;
         }
 
-        Draw.z(z - 0.02F);
+        z(z - 0.02F);
         if (mech != null) {
             this.drawMech(mech);
             legOffsetB.trns(mech.baseRotation(), 0.0F, Mathf.lerp(Mathf.sin(mech.walkExtend(true), 0.63661975F, 1.0F) * this.mechSideSway, 0.0F, unit.elevation));
@@ -328,44 +322,44 @@ public class UnityUnitType extends UnitType {
         }
 
         if (unit instanceof Legsc) {
-            this.drawLegs((Unit)((Legsc)unit));
+            this.drawLegs((Unit & Legsc) unit);
         }
 
-        Draw.z(Math.min(z - 0.01F, 99.0F));
+        z(Math.min(z - 0.01F, 99.0F));
         if (unit instanceof Payloadc) {
-            this.drawPayload((Unit)((Payloadc)unit));
+            this.drawPayload((Unit & Payloadc) unit);
         }
 
         this.drawSoftShadow(unit);
-        Draw.z(z);
+        z(z);
         TextureRegion tmp = this.region;
         TextureRegion tmpOutline = this.outlineRegion;
         TextureRegion tmpCell = this.cellRegion;
-        if (!((Wormc)unit).isHead() || ((Wormc)unit).isTail()) {
-            this.region = ((Wormc)unit).isTail() ? this.tailRegion : this.segmentRegion;
-            this.outlineRegion = ((Wormc)unit).isTail() ? this.tailOutline : this.segmentOutline;
+        if (!unit.isHead() || unit.isTail()) {
+            this.region = unit.isTail() ? this.tailRegion : this.segmentRegion;
+            this.outlineRegion = unit.isTail() ? this.tailOutline : this.segmentOutline;
         }
 
-        if (!((Wormc)unit).isHead()) {
+        if (!unit.isHead()) {
             this.cellRegion = this.segmentCellRegion;
         }
 
         this.drawOutline(unit);
         this.drawWeaponOutlines(unit);
-        if (((Wormc)unit).isTail() && ((Wormc)unit).layer() < (float)this.maxSegments) {
+        if (unit.isTail() && unit.layer() < this.maxSegments) {
             Draw.draw(z, () -> {
                 Tmp.v1.trns(unit.rotation + 180.0F, this.segmentOffset).add(unit);
-                Drawf.construct(Tmp.v1.x, Tmp.v1.y, this.tailRegion, unit.rotation - 90.0F, ((Wormc)unit).regenTime() / this.regenTime, 1.0F, ((Wormc)unit).regenTime());
+                Drawf.construct(Tmp.v1.x, Tmp.v1.y, this.tailRegion, unit.rotation - 90.0F, unit.regenTime() / this.regenTime, 1.0F, unit.regenTime());
             });
         }
 
         this.drawBody(unit);
-        if (this.drawCell && !((Wormc)unit).isTail()) {
+        if (this.drawCell && !unit.isTail()) {
             this.drawCell(unit);
         }
 
         if (this.wormDecal != null) {
-            this.wormDecal.draw(unit, ((Wormc)unit).parent());
+            this.wormDecal.draw(unit, unit.parent());
         }
 
         this.cellRegion = tmpCell;
@@ -380,7 +374,7 @@ public class UnityUnitType extends UnitType {
             unit.trns(-legOffsetB.x, -legOffsetB.y);
         }
 
-        if (unit.abilities.size > 0) {
+        if (unit.abilities.length > 0) {
             for(Ability a : unit.abilities) {
                 Draw.reset();
                 a.draw(unit);
@@ -388,42 +382,49 @@ public class UnityUnitType extends UnitType {
 
             Draw.reset();
         }
-
     }
 
     public void draw(Unit unit) {
-        label16: {
-            if (unit instanceof Wormc) {
-                Wormc w = (Wormc)unit;
-                if (!w.isHead()) {
-                    this.drawWorm((Unit)((Wormc)((Unit)w)));
-                    break label16;
-                }
+        if (unit instanceof Wormc w) {
+            if (!w.isHead()) {
+                this.drawWorm((Unit & Wormc) w);
+            }
+        }
+        super.draw(unit);
+        float z = z();
+
+        if (this.decals.size > 0) {
+            float base = unit.rotation - 90.0F;
+
+            for(UnitDecal d : this.decals) {
+                z(d.layer);
+                Draw.scl(d.xScale, d.yScale);
+                Draw.color(d.color);
+                Draw.rect(d.region, unit.x + Angles.trnsx(base, d.x, d.y), unit.y + Angles.trnsy(base, d.x, d.y), base + d.rotation);
             }
 
-            super.draw(unit);
+            Draw.reset();
+            Draw.z(z);
         }
 
-        if (unit instanceof Copterc) {
-            this.drawRotors((Unit)((Copterc)unit));
+        if (unit instanceof Copterc c) {
+            this.drawRotors((Unit & Copterc) c);
         }
-
     }
 
-    public void drawEngine(Unit unit) {
+    @Override
+    public void drawEngines(Unit unit) {
         if (unit.isFlying()) {
-            if (this.engine != null) {
-                this.engine.draw(unit);
+            if (engine != null) {
+                engine.draw(unit);
             } else {
-                super.drawEngine(unit);
+                super.drawEngines(unit);
             }
-
         }
     }
 
     public Color cellColor(Unit unit) {
-        if (unit instanceof Monolithc) {
-            Monolithc e = (Monolithc)unit;
+        if (unit instanceof Monolithc e) {
             if (e.disabled()) {
                 return Tmp.c1.set(Color.black).lerp(unit.team.color, 0.1F);
             }
@@ -446,9 +447,9 @@ public class UnityUnitType extends UnitType {
 
     public <T extends Unit & TriJointLegsc> void drawTriLegs(T unit) {
         this.applyColor(unit);
-        TriJointLeg[] legs = ((TriJointLegsc)unit).legs();
+        TriJointLeg[] legs = unit.legs();
         float ssize = (float)this.footRegion.width * Draw.scl * 1.5F;
-        float rotation = ((TriJointLegsc)unit).baseRotation();
+        float rotation = unit.baseRotation();
 
         for(TriJointLeg leg : legs) {
             Drawf.shadow(leg.joints[2].x, leg.joints[2].y, ssize);
@@ -457,7 +458,7 @@ public class UnityUnitType extends UnitType {
         for(int j = legs.length - 1; j >= 0; --j) {
             int i = j % 2 == 0 ? j / 2 : legs.length - 1 - j / 2;
             TriJointLeg leg = legs[i];
-            float angle = ((TriJointLegsc)unit).legAngle(rotation, i);
+            float angle = unit.legAngle(rotation, i);
             boolean flip = (float)i >= (float)legs.length / 2.0F;
             int flips = Mathf.sign(flip);
             Vec2 position = legOffsetB.trns(angle, this.legBaseOffset).add(unit);
@@ -466,14 +467,6 @@ public class UnityUnitType extends UnitType {
                 Tmp.v1.set(leg.joints[1 + k]).sub(leg.joints[k]).inv().setLength(this.legExtension);
                 jointOffsets[k][0] = Tmp.v1.x;
                 jointOffsets[k][1] = Tmp.v1.y;
-            }
-
-            if (leg.moving && this.visualElevation > 0.0F) {
-                float scl = this.visualElevation;
-                float elev = Mathf.slope(1.0F - leg.stage) * scl;
-                Draw.color(Pal.shadow);
-                Draw.rect(this.footRegion, leg.joints[2].x + -12.0F * elev, leg.joints[2].y + -13.0F * elev, position.angleTo(leg.joints[2]));
-                this.applyColor(unit);
             }
 
             Draw.rect(this.footRegion, leg.joints[2].x, leg.joints[2].y, position.angleTo(leg.joints[2]));
@@ -506,44 +499,12 @@ public class UnityUnitType extends UnitType {
 
     public <T extends Unit & Legsc> void drawLegs(T unit) {
         if (!this.customBackLegs) {
-            if (this.legShadows && this.visualElevation > 0.0F) {
-                float z = Draw.z();
-                float rotation = ((Legsc)unit).baseRotation();
-                Draw.z(Math.min(80.0F, z - 0.98F));
-                Draw.color(Pal.shadow);
-                Leg[] legs = ((Legsc)unit).legs();
-
-                for(int j = legs.length - 1; j >= 0; --j) {
-                    int i = j % 2 == 0 ? j / 2 : legs.length - 1 - j / 2;
-                    Leg leg = legs[i];
-                    float angle = ((Legsc)unit).legAngle(rotation, i);
-                    boolean flip = (float)i >= (float)legs.length / 2.0F;
-                    int flips = Mathf.sign(flip);
-                    Vec2 position = legOffsetB.trns(angle, this.legBaseOffset).add(unit);
-                    Vec2 v1 = Tmp.v1.set(leg.base).sub(leg.joint).inv().setLength(this.legExtension).add(leg.joint);
-                    float elev = 0.0F;
-                    if (leg.moving) {
-                        elev = Mathf.slope(1.0F - leg.stage);
-                    }
-
-                    float mid = elev / 2.0F + 0.5F;
-                    float scl = this.visualElevation;
-                    Lines.stroke((float)this.legShadowRegion.height * Draw.scl * (float)flips);
-                    Lines.line(this.legShadowRegion, position.x + -12.0F * scl, position.y + -13.0F * scl, leg.joint.x + -12.0F * mid * scl, leg.joint.y + -13.0F * mid * scl, false);
-                    Lines.stroke((float)this.legShadowBaseRegion.height * Draw.scl * (float)flips);
-                    Lines.line(this.legShadowBaseRegion, v1.x + -12.0F * mid * scl, v1.y + -13.0F * mid * scl, leg.base.x + -12.0F * elev * scl, leg.base.y + -13.0F * elev * scl, false);
-                }
-
-                Draw.color();
-                Draw.z(z);
-            }
-
             super.drawLegs(unit);
         } else {
             this.applyColor(unit);
-            Leg[] legs = ((Legsc)unit).legs();
+            Leg[] legs = unit.legs();
             float ssize = (float)this.footRegion.width * Draw.scl * 1.5F;
-            float rotation = ((Legsc)unit).baseRotation();
+            float rotation = unit.baseRotation();
 
             for(Leg leg : legs) {
                 Drawf.shadow(leg.base.x, leg.base.y, ssize);
@@ -552,7 +513,7 @@ public class UnityUnitType extends UnitType {
             for(int j = legs.length - 1; j >= 0; --j) {
                 int i = j % 2 == 0 ? j / 2 : legs.length - 1 - j / 2;
                 Leg leg = legs[i];
-                float angle = ((Legsc)unit).legAngle(rotation, i);
+                float angle = unit.legAngle(i);
                 boolean flip = (float)i >= (float)legs.length / 2.0F;
                 boolean back = j < legs.length - 2;
                 int flips = Mathf.sign(flip);
@@ -561,13 +522,6 @@ public class UnityUnitType extends UnitType {
                 TextureRegion lbr = back ? this.legBaseRegion : this.legBaseBackRegion;
                 Vec2 position = legOffsetB.trns(angle, this.legBaseOffset).add(unit);
                 Tmp.v1.set(leg.base).sub(leg.joint).inv().setLength(this.legExtension);
-                if (leg.moving && this.visualElevation > 0.0F) {
-                    float scl = this.visualElevation;
-                    float elev = Mathf.slope(1.0F - leg.stage) * scl;
-                    Draw.color(Pal.shadow);
-                    Draw.rect(fr, leg.base.x + -12.0F * elev, leg.base.y + -13.0F * elev, position.angleTo(leg.base));
-                    Draw.color();
-                }
 
                 Draw.rect(fr, leg.base.x, leg.base.y, position.angleTo(leg.base));
                 Lines.stroke((float)lr.height * Draw.scl * (float)flips);
@@ -594,8 +548,7 @@ public class UnityUnitType extends UnitType {
 
     public void drawShadow(Unit unit) {
         super.drawShadow(unit);
-        if (unit instanceof WormDefaultUnit) {
-            WormDefaultUnit wormUnit = (WormDefaultUnit)unit;
+        if (unit instanceof WormDefaultUnit wormUnit) {
             wormUnit.drawShadow();
         }
 
@@ -603,10 +556,10 @@ public class UnityUnitType extends UnitType {
 
     public void drawSoftShadow(Unit unit) {
         if (unit instanceof TriJointLegsc) {
-            float oz = Draw.z();
-            Draw.z(oz - 0.01F);
-            this.drawTriLegs((Unit)((TriJointLegsc)unit));
-            Draw.z(oz);
+            float oz = z();
+            z(oz - 0.01F);
+            this.drawTriLegs((Unit & TriJointLegsc)unit);
+            z(oz);
         }
 
         if (unit instanceof CLegc) {
@@ -616,22 +569,20 @@ public class UnityUnitType extends UnitType {
         }
 
         super.drawSoftShadow(unit);
-        if (unit instanceof WormDefaultUnit) {
-            WormDefaultUnit wormUnit = (WormDefaultUnit)unit;
-            float var8 = Draw.z();
+        if (unit instanceof WormDefaultUnit wormUnit) {
+            float var8 = z();
 
             for(int var9 = 0; var9 < wormUnit.segmentUnits.length; ++var9) {
-                Draw.z(var8 - ((float)var9 + 1.1F) / 10000.0F);
+                z(var8 - ((float)var9 + 1.1F) / 10000.0F);
                 wormUnit.type.drawSoftShadow(wormUnit.segmentUnits[var9]);
             }
 
-            Draw.z(var8);
+            z(var8);
         }
     }
 
     public void drawOutline(Unit unit) {
-        if (unit instanceof Decorationc) {
-            Decorationc d = (Decorationc)unit;
+        if (unit instanceof Decorationc d) {
 
             for(UnitDecorationType.UnitDecoration decor : d.decors()) {
                 if (!decor.type.top) {
@@ -644,17 +595,15 @@ public class UnityUnitType extends UnitType {
     }
 
     public void drawBody(Unit unit) {
-        float z = Draw.z();
-        if (unit instanceof Tentaclec) {
-            Tentaclec t = (Tentaclec)unit;
-            Draw.z(Math.min(z - 0.01F, 99.0F));
+        float z = z();
+        if (unit instanceof Tentaclec t) {
+            z(Math.min(z - 0.01F, 99.0F));
             t.drawTentacles();
-            Draw.z(z);
+            z(z);
         }
 
         super.drawBody(unit);
-        if (unit instanceof Decorationc) {
-            Decorationc d = (Decorationc)unit;
+        if (unit instanceof Decorationc d) {
 
             for(UnitDecorationType.UnitDecoration decor : d.decors()) {
                 if (decor.type.top) {
@@ -663,8 +612,7 @@ public class UnityUnitType extends UnitType {
             }
         }
 
-        if (unit instanceof WormDefaultUnit) {
-            WormDefaultUnit wormUnit = (WormDefaultUnit)unit;
+        if (unit instanceof WormDefaultUnit wormUnit) {
             Core.camera.bounds(viewport);
             int index = -4;
 
@@ -679,11 +627,12 @@ public class UnityUnitType extends UnitType {
                 }
 
                 if (viewport.overlaps(viewport2)) {
-                    Draw.z(z - ((float)i + 1.0F) / 10000.0F);
+                    z(z - ((float)i + 1.0F) / 10000.0F);
                     if (wormUnit.regenAvailable() && i == wormUnit.segmentUnits.length - 1) {
+                        int finalI = i;
                         Draw.draw(z - ((float)i + 2.0F) / 10000.0F, () -> {
-                            Tmp.v1.trns(wormUnit.segmentUnits[i].rotation + 180.0F, this.segmentOffset).add(wormUnit.segmentUnits[i]);
-                            Drawf.construct(Tmp.v1.x, Tmp.v1.y, this.tailRegion, wormUnit.segmentUnits[i].rotation - 90.0F, wormUnit.repairTime / this.regenTime, 1.0F, wormUnit.repairTime);
+                            Tmp.v1.trns(wormUnit.segmentUnits[finalI].rotation + 180.0F, this.segmentOffset).add(wormUnit.segmentUnits[finalI]);
+                            Drawf.construct(Tmp.v1.x, Tmp.v1.y, this.tailRegion, wormUnit.segmentUnits[finalI].rotation - 90.0F, wormUnit.repairTime / this.regenTime, 1.0F, wormUnit.repairTime);
                         });
                     }
 
@@ -694,13 +643,12 @@ public class UnityUnitType extends UnitType {
         }
 
         if (unit instanceof Worldc) {
-            Unit w = (Unit)((Worldc)unit);
             Draw.draw(z + 1.0E-4F, () -> {
-                Seq<Building> build = ((Worldc)w).buildings();
-                World world = ((Worldc)w).unitWorld();
+                Seq<Building> build = ((Worldc)unit).buildings();
+                World world = ((Worldc)unit).unitWorld();
                 float cx = (float)(world.width() * 8) / 2.0F;
                 float cy = (float)(world.height() * 8) / 2.0F;
-                float r = w.rotation - 90.0F;
+                float r = unit.rotation() - 90.0F;
                 Mat proj = Tmp.m1.set(Draw.proj());
                 Vec2 cam = Core.camera.position;
                 float camX = cam.x;
@@ -719,12 +667,12 @@ public class UnityUnitType extends UnitType {
                 Draw.sort(true);
 
                 for(int i = 0; i < build.size; ++i) {
-                    Building b = (Building)build.get(i);
-                    Draw.z(30.0F);
+                    Building b = build.get(i);
+                    z(30.0F);
                     b.draw();
                 }
 
-                Draw.z(9999.0F);
+                z(9999.0F);
                 Draw.color(Color.clear);
                 Fill.rect(0.0F, 0.0F, 0.0F, 0.0F);
                 Draw.reset();
@@ -737,21 +685,21 @@ public class UnityUnitType extends UnitType {
             });
         }
 
-        Draw.z(z);
+        z(z);
     }
 
     public void drawWeapons(Unit unit) {
-        float z = Draw.z();
+        float z = z();
         this.applyColor(unit);
 
         for(WeaponMount mount : unit.mounts) {
             Weapon weapon = mount.weapon;
             if (this.bottomWeapons.contains(weapon)) {
-                Draw.z(z - 1.0E-4F);
+                z(z - 1.0E-4F);
             }
 
             weapon.draw(unit, mount);
-            Draw.z(z);
+            z(z);
         }
 
         Draw.reset();
@@ -759,13 +707,13 @@ public class UnityUnitType extends UnitType {
 
     public <T extends Unit & Copterc> void drawRotors(T unit) {
         this.applyColor(unit);
-        RotorMount[] rotors = ((Copterc)unit).rotors();
+        RotorMount[] rotors = unit.rotors();
 
         for(RotorMount mount : rotors) {
             Rotor rotor = mount.rotor;
             float x = unit.x + Angles.trnsx(unit.rotation - 90.0F, rotor.x, rotor.y);
             float y = unit.y + Angles.trnsy(unit.rotation - 90.0F, rotor.x, rotor.y);
-            float alpha = Mathf.curve(((Copterc)unit).rotorSpeedScl(), 0.2F, 1.0F);
+            float alpha = Mathf.curve(unit.rotorSpeedScl(), 0.2F, 1.0F);
             Draw.color(0.0F, 0.0F, 0.0F, rotor.shadowAlpha);
             float rad = 1.2F;
             float size = (float)Math.max(rotor.bladeRegion.width, rotor.bladeRegion.height) * Draw.scl;
@@ -785,7 +733,7 @@ public class UnityUnitType extends UnitType {
             Rotor rotor = mount.rotor;
             float x = unit.x + Angles.trnsx(unit.rotation - 90.0F, rotor.x, rotor.y);
             float y = unit.y + Angles.trnsy(unit.rotation - 90.0F, rotor.x, rotor.y);
-            Draw.alpha(1.0F - Mathf.curve(((Copterc)unit).rotorSpeedScl(), 0.2F, 1.0F) * rotor.bladeFade);
+            Draw.alpha(1.0F - Mathf.curve(unit.rotorSpeedScl(), 0.2F, 1.0F) * rotor.bladeFade);
 
             for(int j = 0; j < rotor.bladeCount; ++j) {
                 Draw.rect(rotor.bladeRegion, x, y, (unit.rotation + (float)unit.id * 24.0F + mount.rotorRot + 360.0F / (float)rotor.bladeCount * (float)j) % 360.0F);

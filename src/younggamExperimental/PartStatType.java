@@ -28,7 +28,7 @@ public enum PartStatType {
     public static final PartStatType[] all = values();
     public final String name;
 
-    private PartStatType(String name) {
+    PartStatType(String name) {
         this.name = name;
     }
 }

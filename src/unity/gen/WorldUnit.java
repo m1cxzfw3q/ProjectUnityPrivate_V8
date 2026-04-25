@@ -17,14 +17,8 @@ import arc.math.geom.Position;
 import arc.math.geom.QuadTree;
 import arc.math.geom.Rect;
 import arc.math.geom.Vec2;
-import arc.math.geom.Vec3;
 import arc.scene.ui.layout.Table;
-import arc.struct.Bits;
-import arc.struct.FloatSeq;
-import arc.struct.IntMap;
-import arc.struct.IntSeq;
-import arc.struct.IntSet;
-import arc.struct.Seq;
+import arc.struct.*;
 import arc.util.Structs;
 import arc.util.Time;
 import arc.util.Tmp;
@@ -35,11 +29,7 @@ import java.nio.FloatBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
 import mindustry.Vars;
-import mindustry.ai.formations.DistanceAssignmentStrategy;
-import mindustry.ai.formations.Formation;
-import mindustry.ai.formations.FormationMember;
-import mindustry.ai.formations.FormationPattern;
-import mindustry.ai.types.FormationAI;
+import mindustry.ai.types.CommandAI;
 import mindustry.ai.types.LogicAI;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
@@ -47,6 +37,7 @@ import mindustry.content.StatusEffects;
 import mindustry.core.World;
 import mindustry.ctype.Content;
 import mindustry.ctype.ContentType;
+import mindustry.ctype.UnlockableContent;
 import mindustry.entities.Damage;
 import mindustry.entities.Effect;
 import mindustry.entities.EntityCollisions;
@@ -61,33 +52,7 @@ import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.game.EventType.Trigger;
-import mindustry.gen.Boundedc;
-import mindustry.gen.Builderc;
-import mindustry.gen.Building;
-import mindustry.gen.Call;
-import mindustry.gen.Commanderc;
-import mindustry.gen.Drawc;
-import mindustry.gen.Entityc;
-import mindustry.gen.Flyingc;
-import mindustry.gen.Groups;
-import mindustry.gen.Healthc;
-import mindustry.gen.Hitboxc;
-import mindustry.gen.Itemsc;
-import mindustry.gen.Minerc;
-import mindustry.gen.Payloadc;
-import mindustry.gen.Physicsc;
-import mindustry.gen.Player;
-import mindustry.gen.Posc;
-import mindustry.gen.Rotc;
-import mindustry.gen.Shieldc;
-import mindustry.gen.Sounds;
-import mindustry.gen.Statusc;
-import mindustry.gen.Syncc;
-import mindustry.gen.Teamc;
-import mindustry.gen.Unit;
-import mindustry.gen.Unitc;
-import mindustry.gen.Velc;
-import mindustry.gen.Weaponsc;
+import mindustry.gen.*;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Pal;
 import mindustry.input.InputHandler;
@@ -113,21 +78,19 @@ import unity.entities.UnitTile;
 import unity.type.UnityUnitType;
 import unity.util.TimeReflect;
 
-public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc, Physicsc, Itemsc, Flyingc, Shieldc, Posc, Commanderc, Syncc, Worldc, Weaponsc, Teamc, Unitc, Healthc, Rotc, Boundedc, Builderc, Minerc, Velc {
+public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc, Physicsc, Itemsc, Shieldc, Posc, Syncc, Worldc, Weaponsc, Teamc, Unitc, Healthc, Rotc, Builderc, Minerc, Velc {
     private static final Vec2 tmp1 = new Vec2();
     private static final Vec2 tmp2 = new Vec2();
-    private static final Seq<FormationMember> members = new Seq();
-    private static final Seq<Unit> units = new Seq();
     public static final Vec2 vec = new Vec2();
-    public static final Seq<Building> tmp = new Seq();
-    public static final Seq<Runnable> tmpr = new Seq();
-    public static final IntMap<IntSeq> tmpLinks = new IntMap(102);
+    public static final Seq<Building> tmp = new Seq<>();
+    public static final Seq<Runnable> tmpr = new Seq<>();
+    public static final IntMap<IntSeq> tmpLinks = new IntMap<>(102);
     public static final IntSet tmpAdded = new IntSet(102);
     public static final float hitDuration = 9.0F;
     public static final float warpDst = 30.0F;
     public static final Vec2[] vecs = new Vec2[]{new Vec2(), new Vec2(), new Vec2(), new Vec2()};
-    private Seq<StatusEntry> statuses = new Seq();
-    private transient Bits applied;
+    private final Seq<StatusEntry> statuses = new Seq<>();
+    private final transient Bits applied;
     private transient boolean added;
     private transient boolean wasFlying;
     private transient float x_TARGET_;
@@ -149,12 +112,13 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     private transient BuildPlan lastActive;
     private transient int lastSize;
     private transient float buildAlpha;
+    protected transient float buildCounter;
 
     protected WorldUnit() {
         this.applied = new Bits(Vars.content.getBy(ContentType.status).size);
-        this.runs = new Seq();
-        this.buildings = new Seq(16);
-        this.turrets = new Seq();
+        this.runs = new Seq<>();
+        this.buildings = new Seq<>(16);
+        this.turrets = new Seq<>();
         this.positions = new FloatSeq();
         this.resupplyTime = Mathf.random(10.0F);
         this.buildAlpha = 0.0F;
@@ -162,6 +126,11 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
 
     public String toString() {
         return "WorldUnit#" + this.id;
+    }
+
+    @Override
+    public CommandAI command() {
+        return null;
     }
 
     public boolean canMine() {
@@ -213,31 +182,6 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
 
     }
 
-    public void command(Formation formation, Seq<Unit> units) {
-        this.clearCommand();
-        units.shuffle();
-        float spacing = this.hitSize * 0.9F;
-        this.minFormationSpeed = this.type.speed;
-        this.controlling.addAll(units);
-
-        for(Unit unit : units) {
-            FormationAI ai;
-            unit.controller(ai = new FormationAI(this, formation));
-            spacing = Math.max(spacing, ai.formationSize());
-            this.minFormationSpeed = Math.min(this.minFormationSpeed, unit.type.speed);
-        }
-
-        this.formation = formation;
-        formation.pattern.spacing = spacing;
-        members.clear();
-
-        for(Unitc u : units) {
-            members.add((FormationAI)u.controller());
-        }
-
-        formation.addMembers(members);
-    }
-
     public float realSpeed() {
         return this.speed();
     }
@@ -270,17 +214,11 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     }
 
     public boolean isRemote() {
-        boolean var10000;
         if (this instanceof Unitc) {
-            Unitc u = this;
-            if (u.isPlayer() && !this.isLocal()) {
-                var10000 = true;
-                return var10000;
-            }
+            return isPlayer() && !isLocal();
         }
 
-        var10000 = false;
-        return var10000;
+        return false;
     }
 
     public Color statusColor() {
@@ -308,7 +246,27 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     public void afterRead() {
         this.updateLastPosition();
         this.afterSync();
-        this.controller(this.type.createController());
+        this.controller(this.type.createController(this));
+    }
+
+    @Override
+    public void afterReadAll() {
+
+    }
+
+    @Override
+    public void beforeWrite() {
+
+    }
+
+    @Override
+    public void drawBuilding() {
+
+    }
+
+    @Override
+    public void drawBuildingBeam(float v, float v1) {
+
     }
 
     public void velAddNet(Vec2 v) {
@@ -321,7 +279,6 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     }
 
     public void killed() {
-        this.clearCommand();
         this.wasPlayer = this.isLocal();
         this.health = Math.min(this.health, 0.0F);
         this.dead = true;
@@ -335,7 +292,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         return (T)this;
     }
 
-    private void rawDamage(float amount) {
+    public void rawDamage(float amount) {
         boolean hadShields = this.shield > 1.0E-4F;
         if (hadShields) {
             this.shieldAlpha = 1.0F;
@@ -382,23 +339,18 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     }
 
     public boolean isLocal() {
-        boolean var10000;
-        if (this != Vars.player) {
-            label26: {
-                if (this instanceof Unitc) {
-                    Unitc u = this;
-                    if (u.controller() == Vars.player) {
-                        break label26;
-                    }
+        if (this != Vars.player.unit()) {
+            if (this instanceof Unitc) {
+                Unitc u = this;
+                if (u.controller() == Vars.player) {
+                    return false;
                 }
-
-                var10000 = false;
-                return var10000;
             }
+
+            return false;
         }
 
-        var10000 = true;
-        return var10000;
+        return true;
     }
 
     public void set(UnitType def, UnitController controller) {
@@ -407,6 +359,21 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         }
 
         this.controller(controller);
+    }
+
+    @Override
+    public void setProp(UnlockableContent unlockableContent, double v) {
+
+    }
+
+    @Override
+    public void setProp(LAccess lAccess, double v) {
+
+    }
+
+    @Override
+    public void setProp(LAccess lAccess, Object o) {
+
     }
 
     public void damage(float amount) {
@@ -445,7 +412,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
             Draw.reset();
             Draw.mixcol(Color.white, 0.24F + Mathf.absin(Time.globalTime, 6.0F, 0.28F));
             Draw.alpha(alpha);
-            request.block.drawRequestConfigTop(request, this.plans);
+            request.block.drawPlanConfigTop(request, this.plans);
         }
 
     }
@@ -467,7 +434,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         if (this.isBuilding()) {
             return Vars.state.rules.infiniteResources ? Float.MAX_VALUE : Math.max(this.type.clipSize, (float)this.type.region.width) + 220.0F + 32.0F;
         } else {
-            return this.mining() ? this.type.clipSize + this.type.miningRange : this.type.clipSize;
+            return this.mining() ? this.type.clipSize + this.type.mineRange : this.type.clipSize;
         }
     }
 
@@ -534,8 +501,13 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         tmpr.clear();
         Teams.TeamData data = this.team().data();
         if (data.buildings != null) {
+            Rect rect = new Rect();
             Tmp.r1.setCentered(this.x, this.y, (float)(w * 8), (float)(h * 8));
-            data.buildings.intersect(Tmp.r1, tmp);
+            //data.buildings.intersect(Tmp.r1, tmp);
+            for (Building build : data.buildings) {
+                build.hitbox(rect);
+                if (rect.contains(Tmp.r1)) tmp.addUnique(build);
+            }
         }
 
         tmpLinks.clear();
@@ -610,16 +582,8 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         this.moveAt(vector, this.type.accel);
     }
 
-    public int pathType() {
-        return 0;
-    }
-
     public boolean inRange(Position other) {
         return this.within(other, this.type.range);
-    }
-
-    public boolean isCommanding() {
-        return this.formation != null;
     }
 
     public float getX() {
@@ -702,7 +666,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
             float ey = this.mineTile.worldy() + Mathf.sin(Time.time + 48.0F, swingScl + 2.0F, swingMag);
             Draw.z(115.1F);
             Draw.color(Color.lightGray, Color.white, 1.0F - flashScl + Mathf.absin(Time.time, 0.5F, flashScl));
-            Drawf.laser(this.team(), Core.atlas.find("minelaser"), Core.atlas.find("minelaser-end"), px, py, ex, ey, 0.75F);
+            Drawf.laser(Core.atlas.find("minelaser"), Core.atlas.find("minelaser-end"), px, py, ex, ey);
             if (this.isLocal()) {
                 Lines.stroke(1.0F, Pal.accent);
                 Lines.poly(this.mineTile.worldx(), this.mineTile.worldy(), 4, 4.0F * Mathf.sqrt2, Time.time);
@@ -766,7 +730,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
                 }
             }
 
-            if (this.abilities.size > 0) {
+            if (this.abilities.length > 0) {
                 for(Ability a : this.abilities) {
                     a.death(this);
                 }
@@ -777,12 +741,12 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     }
 
     public boolean canDrown() {
-        return this.isGrounded() && !this.hovering && this.type.canDrown;
+        return this.isGrounded() && !this.type.hovering && this.type.canDrown;
     }
 
     public void landed() {
-        if (this.type.landShake > 0.0F) {
-            Effect.shake(this.type.landShake, this.type.landShake, this);
+        if (this.type.mechLandShake > 0.0F) {
+            Effect.shake(this.type.mechLandShake, this.type.mechLandShake, this);
         }
 
         this.type.landed(this);
@@ -791,6 +755,11 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     public Floor floorOn() {
         Tile tile = this.tileOn();
         return tile != null && tile.block() == Blocks.air ? tile.floor() : (Floor)Blocks.air;
+    }
+
+    @Override
+    public Building buildOn() {
+        return null;
     }
 
     public Block blockOn() {
@@ -819,6 +788,11 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         return this.controller instanceof AIController;
     }
 
+    @Override
+    public boolean isEnemy() {
+        return false;
+    }
+
     public Item item() {
         return this.stack.item;
     }
@@ -828,7 +802,17 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     }
 
     public boolean validMine(Tile tile, boolean checkDst) {
-        return tile != null && tile.block() == Blocks.air && (this.within(tile.worldx(), tile.worldy(), this.type.miningRange) || !checkDst) && tile.drop() != null && this.canMine(tile.drop());
+        return tile != null && tile.block() == Blocks.air && (this.within(tile.worldx(), tile.worldy(), this.type.mineRange) || !checkDst) && tile.drop() != null && this.canMine(tile.drop());
+    }
+
+    @Override
+    public Item getMineResult(Tile tile) {
+        return null;
+    }
+
+    @Override
+    public StatusEntry applyDynamicStatus() {
+        return null;
     }
 
     public void apply(StatusEffect effect, float duration) {
@@ -839,9 +823,10 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
 
             if (this.statuses.size > 0) {
                 for(int i = 0; i < this.statuses.size; ++i) {
-                    StatusEntry entry = (StatusEntry)this.statuses.get(i);
+                    StatusEntry entry = this.statuses.get(i);
                     if (entry.effect == effect) {
                         entry.time = Math.max(entry.time, duration);
+                        effect.applied(this, entry.time, true);
                         return;
                     }
 
@@ -852,9 +837,12 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
             }
 
             if (!effect.reactive) {
-                StatusEntry entry = (StatusEntry)Pools.obtain(StatusEntry.class, StatusEntry::new);
+                StatusEntry entry = Pools.obtain(StatusEntry.class, StatusEntry::new);
+                entry.damageTime = 0.0F;
                 entry.set(effect, duration);
+                this.applied.set(effect.id);
                 this.statuses.add(entry);
+                effect.applied(this, duration, false);
             }
 
         }
@@ -885,10 +873,6 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         return null;
     }
 
-    public boolean isCounted() {
-        return this.type.isCounted;
-    }
-
     public String getControllerName() {
         if (this.isPlayer()) {
             return this.getPlayer().name;
@@ -898,14 +882,6 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
                 LogicAI ai = (LogicAI)var2;
                 if (ai.controller != null) {
                     return ai.controller.lastAccessed;
-                }
-            }
-
-            var2 = this.controller;
-            if (var2 instanceof FormationAI) {
-                FormationAI ai = (FormationAI)var2;
-                if (ai.leader != null && ai.leader.isPlayer()) {
-                    return ai.leader.getPlayer().name;
                 }
             }
 
@@ -930,15 +906,9 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         this.isShooting = read.bool();
         this.mineTile = TypeIO.readTile(read);
         this.mounts = TypeIO.readMounts(read, this.mounts);
-        int plans_LENGTH = read.i();
-        this.plans.clear();
 
-        for(int INDEX = 0; INDEX < plans_LENGTH; ++INDEX) {
-            BuildPlan plans_ITEM = TypeIO.readRequest(read);
-            if (plans_ITEM != null) {
-                this.plans.add(plans_ITEM);
-            }
-        }
+        this.plans.clear();
+        this.plans = TypeIO.readPlansQueue(read);
 
         this.rotation = read.f();
         this.shield = read.f();
@@ -955,7 +925,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         }
 
         this.team = TypeIO.readTeam(read);
-        this.type = (UnitType)Vars.content.getByID(ContentType.unit, read.s());
+        this.type = Vars.content.getByID(ContentType.unit, read.s());
         this.updateBuilding = read.bool();
         this.vel = TypeIO.readVec2(read, this.vel);
         this.x = read.f();
@@ -973,6 +943,11 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
 
     public boolean canShoot() {
         return !this.disarmed && (!this.type.canBoost || !this.isFlying());
+    }
+
+    @Override
+    public boolean canTarget(Teamc teamc) {
+        return false;
     }
 
     public float getDuration(StatusEffect effect) {
@@ -1000,37 +975,37 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         double var10000;
         switch (sensor) {
             case totalItems:
-                var10000 = (double)this.stack().amount;
+                var10000 = this.stack().amount;
                 break;
             case itemCapacity:
-                var10000 = (double)this.type.itemCapacity;
+                var10000 = this.type.itemCapacity;
                 break;
             case rotation:
-                var10000 = (double)this.rotation;
+                var10000 = this.rotation;
                 break;
             case health:
-                var10000 = (double)this.health;
+                var10000 = this.health;
                 break;
             case maxHealth:
-                var10000 = (double)this.maxHealth;
+                var10000 = this.maxHealth;
                 break;
             case ammo:
                 var10000 = !Vars.state.rules.unitAmmo ? (double)this.type.ammoCapacity : (double)this.ammo;
                 break;
             case ammoCapacity:
-                var10000 = (double)this.type.ammoCapacity;
+                var10000 = this.type.ammoCapacity;
                 break;
             case x:
-                var10000 = (double)World.conv(this.x);
+                var10000 = World.conv(this.x);
                 break;
             case y:
-                var10000 = (double)World.conv(this.y);
+                var10000 = World.conv(this.y);
                 break;
             case dead:
                 var10000 = !this.dead && this.isAdded() ? (double)0.0F : (double)1.0F;
                 break;
             case team:
-                var10000 = (double)this.team.id;
+                var10000 = this.team.id;
                 break;
             case shooting:
                 var10000 = this.isShooting() ? (double)1.0F : (double)0.0F;
@@ -1039,45 +1014,34 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
                 var10000 = this.type.canBoost && this.isFlying() ? (double)1.0F : (double)0.0F;
                 break;
             case range:
-                var10000 = (double)(this.range() / 8.0F);
+                var10000 = this.range() / 8.0F;
                 break;
             case shootX:
-                var10000 = (double)World.conv(this.aimX());
+                var10000 = World.conv(this.aimX());
                 break;
             case shootY:
-                var10000 = (double)World.conv(this.aimY());
+                var10000 = World.conv(this.aimY());
                 break;
             case mining:
-                var10000 = this.mining() ? (double)1.0F : (double)0.0F;
+                var10000 = this.mining() ? (double)1 : (double)0;
                 break;
             case mineX:
-                var10000 = this.mining() ? (double)this.mineTile.x : (double)-1.0F;
+                var10000 = this.mining() ? (double)this.mineTile.x : (double)-1;
                 break;
             case mineY:
-                var10000 = this.mining() ? (double)this.mineTile.y : (double)-1.0F;
+                var10000 = this.mining() ? (double)this.mineTile.y : (double)-1;
                 break;
             case flag:
                 var10000 = this.flag;
                 break;
             case controlled:
-                var10000 = !this.isValid() ? (double)0.0F : (this.controller instanceof LogicAI ? (double)1.0F : (this.controller instanceof Player ? (double)2.0F : (this.controller instanceof FormationAI ? (double)3.0F : (double)0.0F)));
-                break;
-            case commanded:
-                var10000 = this.controller instanceof FormationAI && this.isValid() ? (double)1.0F : (double)0.0F;
+                var10000 = !this.isValid() ? 0 : (this.controller instanceof LogicAI ? 1 : (this.controller instanceof Player ? 2 : 0));
                 break;
             case payloadCount:
-                int var4;
-                if (this instanceof Payloadc) {
-                    Payloadc pay = (Payloadc)this;
-                    var4 = pay.payloads().size;
-                } else {
-                    var4 = 0;
-                }
-
-                var10000 = (double)var4;
+                var10000 = this instanceof Payloadc pay ? pay.payloads().size : 0;
                 break;
             case size:
-                var10000 = (double)(this.hitSize / 8.0F);
+                var10000 = this.hitSize / 8.0F;
                 break;
             default:
                 var10000 = Double.NaN;
@@ -1117,21 +1081,9 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         }
 
         if (!islocal) {
-            int plans_LENGTH = read.i();
-            this.plans.clear();
-
-            for(int INDEX = 0; INDEX < plans_LENGTH; ++INDEX) {
-                BuildPlan plans_ITEM = TypeIO.readRequest(read);
-                if (plans_ITEM != null) {
-                    this.plans.add(plans_ITEM);
-                }
-            }
+            this.plans = TypeIO.readPlansQueue(read);
         } else {
-            int _LENGTH = read.i();
-
-            for(int INDEX = 0; INDEX < _LENGTH; ++INDEX) {
-                TypeIO.readRequest(read);
-            }
+            TypeIO.readPlansQueue(read);
         }
 
         if (!islocal) {
@@ -1226,6 +1178,16 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         }
     }
 
+    @Override
+    public boolean allowCommand() {
+        return false;
+    }
+
+    @Override
+    public boolean isCommandable() {
+        return false;
+    }
+
     public void write(Writes write) {
         write.f(this.ammo);
         TypeIO.writeController(write, this.controller);
@@ -1236,10 +1198,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         TypeIO.writeTile(write, this.mineTile);
         TypeIO.writeMounts(write, this.mounts);
         write.i(this.plans.size);
-
-        for(int INDEX = 0; INDEX < this.plans.size; ++INDEX) {
-            TypeIO.writeRequest(write, (BuildPlan)this.plans.get(INDEX));
-        }
+        TypeIO.writePlansQueueNet(write, this.plans);
 
         write.f(this.rotation);
         write.f(this.shield);
@@ -1248,7 +1207,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         write.i(this.statuses.size);
 
         for(int INDEX = 0; INDEX < this.statuses.size; ++INDEX) {
-            TypeIO.writeStatus(write, (StatusEntry)this.statuses.get(INDEX));
+            TypeIO.writeStatus(write, this.statuses.get(INDEX));
         }
 
         TypeIO.writeTeam(write, this.team);
@@ -1257,6 +1216,11 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         TypeIO.writeVec2(write, this.vel);
         write.f(this.x);
         write.f(this.y);
+    }
+
+    @Override
+    public boolean inFogTo(Team team) {
+        return false;
     }
 
     public boolean cheating() {
@@ -1270,7 +1234,6 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
             Groups.unit.remove(this);
             Groups.sync.remove(this);
             this.added = false;
-            this.clearCommand();
             if (Vars.net.client()) {
                 Vars.netClient.addRemovedEntity(this.id());
             }
@@ -1332,7 +1295,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
             int index = 0;
 
             while(index < this.statuses.size) {
-                StatusEntry entry = (StatusEntry)this.statuses.get(index++);
+                StatusEntry entry = this.statuses.get(index++);
                 entry.time = Math.max(entry.time - Time.delta, 0.0F);
                 if (entry.effect != null && (!(entry.time <= 0.0F) || entry.effect.permanent)) {
                     this.applied.set(entry.effect.id);
@@ -1343,7 +1306,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
                     this.buildSpeedMultiplier *= entry.effect.buildSpeedMultiplier;
                     this.dragMultiplier *= entry.effect.dragMultiplier;
                     this.disarmed |= entry.effect.disarm;
-                    entry.effect.update(this, entry.time);
+                    entry.effect.update(this, entry);
                 } else {
                     Pools.free(entry);
                     --index;
@@ -1363,7 +1326,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
             this.wasFlying = this.isFlying();
         }
 
-        if (!this.hovering && this.isGrounded() && (this.splashTimer += Mathf.dst(this.deltaX(), this.deltaY())) >= 7.0F + this.hitSize() / 8.0F) {
+        if (!this.type.hovering && this.isGrounded() && (this.splashTimer += Mathf.dst(this.deltaX(), this.deltaY())) >= 7.0F + this.hitSize() / 8.0F) {
             floor.walkEffect.at(this.x, this.y, this.hitSize() / 8.0F, floor.mapColor);
             this.splashTimer = 0.0F;
             if (this.emitWalkSound()) {
@@ -1375,31 +1338,6 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         this.shieldAlpha -= Time.delta / 15.0F;
         if (this.shieldAlpha < 0.0F) {
             this.shieldAlpha = 0.0F;
-        }
-
-        if (this.controlling.isEmpty() && !Vars.net.client()) {
-            this.formation = null;
-        }
-
-        if (this.formation != null) {
-            this.formation.anchor.set(this.x, this.y, 0.0F);
-            this.formation.updateSlots();
-            this.controlling.removeAll((u) -> {
-                boolean var10000;
-                if (!u.dead) {
-                    UnitController ai$temp = u.controller();
-                    if (ai$temp instanceof FormationAI) {
-                        FormationAI ai = (FormationAI)ai$temp;
-                        if (ai.leader == this) {
-                            var10000 = false;
-                            return var10000;
-                        }
-                    }
-                }
-
-                var10000 = true;
-                return var10000;
-            });
         }
 
         if (Vars.net.client() && !this.isLocal() || this.isRemote()) {
@@ -1417,7 +1355,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
 
         this.healTime -= Time.delta / 20.0F;
         this.wasHealed = false;
-        if (!this.type.supportsEnv(Vars.state.rules.environment) && !this.dead) {
+        if (!this.type.supportsEnv(Vars.state.rules.env) && !this.dead) {
             Call.unitCapDeath(this);
             this.team.data().updateCount(this.type, -1);
         }
@@ -1430,7 +1368,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
             }
         }
 
-        if (this.abilities.size > 0) {
+        if (this.abilities.length > 0) {
             for(Ability a : this.abilities) {
                 a.update(this);
             }
@@ -1454,12 +1392,6 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
                 this.type.fallEffect.at(this.x + Tmp.v1.x, this.y + Tmp.v1.y);
             }
 
-            if (Mathf.chanceDelta(0.2)) {
-                float offset = this.type.engineOffset / 2.0F + this.type.engineOffset / 2.0F * this.elevation;
-                float range = Mathf.range(this.type.engineSize);
-                this.type.fallThrusterEffect.at(this.x + Angles.trnsx(this.rotation + 180.0F, offset) + Mathf.range(range), this.y + Angles.trnsy(this.rotation + 180.0F, offset) + Mathf.range(range), Mathf.random());
-            }
-
             this.elevation -= this.type.fallSpeed * Time.delta;
             if (this.isGrounded() || this.health <= -this.maxHealth) {
                 Call.unitDestroy(this.id);
@@ -1467,7 +1399,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         }
 
         Tile tile = this.tileOn();
-        Floor floor = this.floorOn();
+        floor = this.floorOn();
         if (tile != null && this.isGrounded() && !this.type.hovering) {
             if (tile.build != null) {
                 tile.build.unitOn(this);
@@ -1544,8 +1476,8 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
             Iterator<BuildPlan> it = this.plans.iterator();
 
             while(it.hasNext()) {
-                BuildPlan req = (BuildPlan)it.next();
-                Tile tile = Vars.world.tile(req.x, req.y);
+                BuildPlan req = it.next();
+                tile = Vars.world.tile(req.x, req.y);
                 if (tile == null || req.breaking && tile.block() == Blocks.air || !req.breaking && (tile.build != null && tile.build.rotation == req.rotation || !req.block.rotate) && tile.block() == req.block) {
                     it.remove();
                 }
@@ -1562,7 +1494,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
                 }
 
                 BuildPlan current = this.buildPlan();
-                Tile tile = current.tile();
+                tile = current.tile();
                 this.lastActive = current;
                 this.buildAlpha = 1.0F;
                 if (current.breaking) {
@@ -1572,7 +1504,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
                 if (this.within(tile, finalPlaceDst)) {
                     label614: {
                         if (!Vars.headless) {
-                            Vars.control.sound.loop(Sounds.build, tile, 0.51F);
+                            Vars.control.sound.loop(Sounds.loopBuild, tile, 0.51F);
                         }
 
                         Building hasAll = tile.build;
@@ -1583,9 +1515,9 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
                                 break label614;
                             }
                         } else if (!current.initialized && !current.breaking && Build.validPlace(current.block, this.team, current.x, current.y, current.rotation)) {
-                            boolean hasAll = infinite || current.isRotation(this.team) || !Structs.contains(current.block.requirements, (ix) -> core != null && !core.items.has(ix.item, Math.min(Mathf.round((float)ix.amount * Vars.state.rules.buildCostMultiplier), 1)));
-                            if (hasAll) {
-                                Call.beginPlace(this, current.block, this.team, current.x, current.y, current.rotation);
+                            boolean hasAllb = infinite || current.isRotation(this.team) || !Structs.contains(current.block.requirements, (ix) -> core != null && !core.items.has(ix.item, Math.min(Mathf.round((float)ix.amount * Vars.state.rules.buildCostMultiplier), 1)));
+                            if (hasAllb) {
+                                Call.beginPlace(this, current.block, this.team, current.x, current.y, current.rotation, current.config);
                             } else {
                                 current.stuck = true;
                             }
@@ -1599,14 +1531,14 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
                         }
 
                         if (tile.build instanceof ConstructBlock.ConstructBuild && !current.initialized) {
-                            Core.app.post(() -> Events.fire(new EventType.BuildSelectEvent(tile, this.team, this, current.breaking)));
+                            Tile finalTile = tile;
+                            Core.app.post(() -> Events.fire(new EventType.BuildSelectEvent(finalTile, this.team, this, current.breaking)));
                             current.initialized = true;
                         }
 
                         if (core != null || infinite) {
                             hasAll = tile.build;
-                            if (hasAll instanceof ConstructBlock.ConstructBuild) {
-                                ConstructBlock.ConstructBuild entity = (ConstructBlock.ConstructBuild)hasAll;
+                            if (hasAll instanceof ConstructBlock.ConstructBuild entity) {
                                 float bs = 1.0F / entity.buildCost * Time.delta * this.type.buildSpeed * this.buildSpeedMultiplier * Vars.state.rules.buildSpeed(this.team);
                                 if (current.breaking) {
                                     entity.deconstruct(this, core, bs);
@@ -1683,10 +1615,9 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         }
 
         for(int i = 0; i < this.buildings.size; ++i) {
-            Building b = (Building)this.buildings.get(i);
+            Building b = this.buildings.get(i);
             this.positions.add(b.x, b.y);
-            if (b instanceof BaseTurret.BaseTurretBuild) {
-                BaseTurret.BaseTurretBuild t = (BaseTurret.BaseTurretBuild)b;
+            if (b instanceof BaseTurret.BaseTurretBuild t) {
                 t.rotation += r;
             }
 
@@ -1698,17 +1629,166 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         TimeReflect.updateDelays(this.runs);
 
         for(int i = 0; i < this.buildings.size; ++i) {
-            Building b = (Building)this.buildings.get(i);
+            Building b = this.buildings.get(i);
             b.x = this.positions.get(i * 2);
             b.y = this.positions.get(i * 2 + 1);
-            if (b instanceof BaseTurret.BaseTurretBuild) {
-                BaseTurret.BaseTurretBuild t = (BaseTurret.BaseTurretBuild)b;
+            if (b instanceof BaseTurret.BaseTurretBuild t) {
                 t.rotation -= r;
             }
         }
 
         TimeReflect.resetRuns();
         Vars.world = ow;
+    }
+
+    @Override
+    public void updateBuildLogic() {
+        if (!(this.type.buildSpeed <= 0.0F)) {
+            if (!Vars.headless) {
+                if (this.lastActive != null && this.buildAlpha <= 0.01F) {
+                    this.lastActive = null;
+                }
+
+                this.buildAlpha = Mathf.lerpDelta(this.buildAlpha, this.activelyBuilding() ? 1.0F : 0.0F, 0.15F);
+            }
+
+            this.validatePlans();
+            if (this.updateBuilding && this.canBuild()) {
+                float finalPlaceDst = Vars.state.rules.infiniteResources ? Float.MAX_VALUE : this.type.buildRange;
+                boolean infinite = Vars.state.rules.infiniteResources || this.team().rules().infiniteResources;
+                this.buildCounter += Time.delta;
+                if (Float.isNaN(this.buildCounter) || Float.isInfinite(this.buildCounter)) {
+                    this.buildCounter = 0.0F;
+                }
+
+                this.buildCounter = Math.min(this.buildCounter, 10.0F);
+                boolean instant = Vars.state.rules.instantBuild && Vars.state.rules.infiniteResources;
+                int maxPerFrame = instant ? this.plans.size : 10;
+                int count = 0;
+                CoreBlock.CoreBuild core = this.core();
+                if (core != null || infinite) {
+                    while((this.buildCounter >= 1.0F || instant) && count++ < maxPerFrame && this.plans.size > 0) {
+                        --this.buildCounter;
+                        if (this.plans.size > 1) {
+                            int total = 0;
+                            int size = this.plans.size;
+                            float bestDst = Float.MAX_VALUE;
+                            boolean foundAny = false;
+
+                            int bestIndex;
+                            for(bestIndex = -1; total < size; ++total) {
+                                BuildPlan plan = this.buildPlan();
+                                float dst = plan.dst2(this);
+                                boolean within = dst <= finalPlaceDst * finalPlaceDst;
+                                if (within && !this.shouldSkip(plan, core)) {
+                                    foundAny = true;
+                                    break;
+                                }
+
+                                if (within && dst < bestDst) {
+                                    bestIndex = total;
+                                    bestDst = dst;
+                                }
+
+                                this.plans.removeFirst();
+                                this.plans.addLast(plan);
+                            }
+
+                            if (!foundAny && bestIndex > 0 && !this.within(this.buildPlan(), finalPlaceDst)) {
+                                for(int i = 0; i < bestIndex; ++i) {
+                                    this.plans.addLast((BuildPlan)this.plans.removeFirst());
+                                }
+                            }
+                        }
+
+                        BuildPlan current = this.buildPlan();
+                        Tile tile = current.tile();
+                        this.lastActive = current;
+                        this.buildAlpha = 1.0F;
+                        if (current.breaking) {
+                            this.lastSize = tile.block().size;
+                        }
+
+                        if (this.within(tile, finalPlaceDst)) {
+                            if (!Vars.headless) {
+                                Vars.control.sound.loop(Sounds.loopBuild, tile, 1.3F);
+                            }
+
+                            boolean allowBuildCurrent = current.block != null && (Vars.state.isEditor() || Vars.state.rules.waves && this.team == Vars.state.rules.waveTeam && current.block.isVisible() || current.block.unlockedNowHost() && current.block.environmentBuildable() && current.block.isPlaceable());
+                            Building bs = tile.build;
+                            if (bs instanceof ConstructBlock.ConstructBuild) {
+                                ConstructBlock.ConstructBuild cb = (ConstructBlock.ConstructBuild)bs;
+                                if (tile.team() != this.team && tile.team() != Team.derelict || !current.breaking && (cb.current != current.block || cb.tile != current.tile())) {
+                                    this.plans.removeFirst();
+                                    continue;
+                                }
+                            } else if (!current.initialized && !current.breaking && Build.validPlaceIgnoreUnits(current.block, this.team, current.x, current.y, current.rotation, true, true) && allowBuildCurrent) {
+                                if (!Build.checkNoUnitOverlap(current.block, current.x, current.y)) {
+                                    this.plans.removeFirst();
+                                    this.plans.addLast(current);
+                                    continue;
+                                }
+
+                                boolean hasAll = infinite || current.isRotation(this.team) || tile.team() == Team.derelict && tile.block() == current.block && tile.build != null && tile.block().allowDerelictRepair && Vars.state.rules.derelictRepair || !Structs.contains(current.block.requirements, (ix) -> !core.items.has(ix.item, Math.min(Mathf.round((float)ix.amount * Vars.state.rules.buildCostMultiplier), 1)));
+                                if (hasAll) {
+                                    Call.beginPlace(this, current.block, this.team, current.x, current.y, current.rotation, current.block.instantBuild ? current.config : null);
+                                    if (!Vars.net.client() && current.block.instantBuild) {
+                                        if (this.plans.size > 0) {
+                                            this.plans.removeFirst();
+                                        }
+                                        continue;
+                                    }
+                                } else {
+                                    current.stuck = true;
+                                }
+                            } else {
+                                if (current.initialized || !current.breaking || !Build.validBreak(this.team, current.x, current.y)) {
+                                    this.plans.removeFirst();
+                                    continue;
+                                }
+
+                                Call.beginBreak(this, this.team, current.x, current.y);
+                            }
+
+                            if (tile.build instanceof ConstructBlock.ConstructBuild && !current.initialized) {
+                                Events.fire(new EventType.BuildSelectEvent(tile, this.team, this, current.breaking));
+                                current.initialized = true;
+                            }
+
+                            bs = tile.build;
+                            if (bs instanceof ConstructBlock.ConstructBuild) {
+                                ConstructBlock.ConstructBuild entity = (ConstructBlock.ConstructBuild)bs;
+                                float bs1 = 1.0F / entity.buildCost * this.type.buildSpeed * this.buildSpeedMultiplier * Vars.state.rules.buildSpeed(this.team);
+                                if (current.breaking) {
+                                    entity.deconstruct(this, core, bs1);
+                                } else if (allowBuildCurrent) {
+                                    entity.construct(this, core, bs1, current.config);
+                                }
+
+                                current.stuck = Mathf.equal(current.progress, entity.progress);
+                                current.progress = entity.progress;
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+    @Override
+    public void validatePlans() {
+
+    }
+
+    @Override
+    public void updateBoosting(boolean b) {
+
+    }
+
+    @Override
+    public void updateBoosting(boolean b, boolean b1) {
+
     }
 
     public int conY(int y) {
@@ -1763,11 +1843,6 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         this.stack.amount = Mathf.clamp(this.stack.amount, 0, this.itemCapacity());
     }
 
-    public void eachGroup(Cons<Unit> cons) {
-        cons.get(this);
-        this.controlling().each(cons);
-    }
-
     public CoreBlock.CoreBuild closestCore() {
         return Vars.state.teams.closestCore(this.x, this.y, this.team);
     }
@@ -1777,12 +1852,10 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     }
 
     public void controller(UnitController next) {
-        this.clearCommand();
         this.controller = next;
         if (this.controller.unit() != this) {
             this.controller.unit(this);
         }
-
     }
 
     public UnitController controller() {
@@ -1791,6 +1864,11 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
 
     public boolean hasWeapons() {
         return this.type.hasWeapons();
+    }
+
+    @Override
+    public boolean hittable() {
+        return false;
     }
 
     public boolean validPlace(Tile tile) {
@@ -1912,7 +1990,12 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     public float speed() {
         float strafePenalty = !this.isGrounded() && this.isPlayer() ? Mathf.lerp(1.0F, this.type.strafePenalty, Angles.angleDist(this.vel().angle(), this.rotation) / 180.0F) : 1.0F;
         float boost = Mathf.lerp(1.0F, this.type.canBoost ? this.type.boostMultiplier : 1.0F, this.elevation);
-        return (this.isCommanding() ? this.minFormationSpeed * 0.98F : this.type.speed) * strafePenalty * boost * this.floorSpeedMultiplier();
+        return this.type.speed * strafePenalty * boost * this.floorSpeedMultiplier();
+    }
+
+    @Override
+    public int collisionLayer() {
+        return this.type.allowLegStep && this.type.legPhysicsLayer ? 1 : (this.isGrounded() ? 0 : 2);
     }
 
     public boolean isValid() {
@@ -1937,6 +2020,16 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
 
     public boolean isGrounded() {
         return this.elevation < 0.001F;
+    }
+
+    @Override
+    public boolean isMissile() {
+        return this instanceof TimedKillc;
+    }
+
+    @Override
+    public boolean isPathImpassable(int tileX, int tileY) {
+        return !this.type.flying && Vars.world.tiles.in(tileX, tileY) && this.type.pathCost.getCost(this.team.id, Vars.pathfinder.get(tileX, tileY)) == -1;
     }
 
     public void damagePierce(float amount, boolean withEffect) {
@@ -1972,42 +2065,19 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         return this.mineTile != null && !this.activelyBuilding();
     }
 
-    public void commandNearby(FormationPattern pattern, Boolf<Unit> include) {
-        Formation formation = new Formation(new Vec3(this.x, this.y, this.rotation), pattern);
-        formation.slotAssignmentStrategy = new DistanceAssignmentStrategy(pattern);
-        units.clear();
-        Units.nearby(this.team, this.x, this.y, this.type.commandRadius, (u) -> {
-            if (u.isAI() && include.get(u) && u != this && u.type.flying == this.type.flying && u.hitSize <= this.hitSize * 1.1F) {
-                units.add(u);
-            }
-
-        });
-        if (!units.isEmpty()) {
-            units.sort(Structs.comps(Structs.comparingFloat((u) -> -u.hitSize), Structs.comparingFloat((u) -> u.dst2(this))));
-            units.truncate(this.type.commandLimit);
-            this.command(formation, units);
-        }
-    }
-
     public boolean canPass(int tileX, int tileY) {
         EntityCollisions.SolidPred s = this.solidity();
         return s == null || !s.solid(tileX, tileY);
     }
 
-    public float floorSpeedMultiplier() {
-        Floor on = !this.isFlying() && !this.hovering ? this.floorOn() : Blocks.air.asFloor();
-        return on.speedMultiplier * this.speedMultiplier;
+    @Override
+    public boolean ignoreSolids() {
+        return false;
     }
 
-    public void clearCommand() {
-        for(Unit unit : this.controlling) {
-            if (unit.controller().isBeingControlled(this)) {
-                unit.controller(unit.type.createController());
-            }
-        }
-
-        this.controlling.clear();
-        this.formation = null;
+    public float floorSpeedMultiplier() {
+        Floor on = !this.isFlying() && !this.type.hovering ? this.floorOn() : Blocks.air.asFloor();
+        return on.speedMultiplier * this.speedMultiplier;
     }
 
     public boolean canPassOn() {
@@ -2028,11 +2098,11 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
     }
 
     public void resetController() {
-        this.controller(this.type.createController());
+        this.controller(this.type.createController(this));
     }
 
     public BuildPlan buildPlan() {
-        return this.plans.size == 0 ? null : (BuildPlan)this.plans.first();
+        return this.plans.size == 0 ? null : this.plans.first();
     }
 
     public void unloaded() {
@@ -2044,17 +2114,16 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         this.drag = type.drag;
         this.armor = type.armor;
         this.hitSize = type.hitSize;
-        this.hovering = type.hovering;
         if (this.controller == null) {
-            this.controller(type.createController());
+            this.controller(type.createController(this));
         }
 
         if (this.mounts().length != type.weapons.size) {
             this.setupWeapons(type);
         }
 
-        if (this.abilities.size != type.abilities.size) {
-            this.abilities = type.abilities.map(Ability::copy);
+        if (this.abilities.length != type.abilities.size) {
+            this.abilities = type.abilities.map(Ability::copy).items;
         }
 
     }
@@ -2069,10 +2138,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         TypeIO.writeTile(write, this.mineTile);
         TypeIO.writeMounts(write, this.mounts);
         write.i(this.plans.size);
-
-        for(int INDEX = 0; INDEX < this.plans.size; ++INDEX) {
-            TypeIO.writeRequest(write, (BuildPlan)this.plans.get(INDEX));
-        }
+        TypeIO.writePlansQueueNet(write, this.plans);
 
         write.f(this.rotation);
         write.f(this.shield);
@@ -2081,7 +2147,7 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         write.i(this.statuses.size);
 
         for(int INDEX = 0; INDEX < this.statuses.size; ++INDEX) {
-            TypeIO.writeStatus(write, (StatusEntry)this.statuses.get(INDEX));
+            TypeIO.writeStatus(write, this.statuses.get(INDEX));
         }
 
         TypeIO.writeTeam(write, this.team);
@@ -2102,6 +2168,11 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
 
     public boolean collides(Hitboxc other) {
         return true;
+    }
+
+    @Override
+    public boolean displayable() {
+        return false;
     }
 
     public void interpolate() {
@@ -2150,9 +2221,24 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         this.damage(amount * Time.delta, this.hitTime <= -1.0F);
     }
 
+    @Override
+    public void damageContinuousArmorMult(float v, float v1) {
+
+    }
+
+    @Override
+    public boolean isSyncHidden(Player player) {
+        return false;
+    }
+
     public void afterSync() {
         this.setType(this.type);
         this.controller.unit(this);
+    }
+
+    @Override
+    public void handleSyncHidden() {
+
     }
 
     public void removeBuild(int x, int y, boolean breaking) {
@@ -2185,6 +2271,16 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         this.plans.clear();
     }
 
+    @Override
+    public void damageArmorMult(float v, float v1) {
+
+    }
+
+    @Override
+    public void damageArmorMult(float v, float v1, boolean b) {
+
+    }
+
     public void damagePierce(float amount) {
         this.damagePierce(amount, true);
     }
@@ -2212,23 +2308,15 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
                     var10000 = null;
                 } else {
                     UnitController var10 = this.controller;
-                    if (var10 instanceof LogicAI) {
-                        LogicAI log = (LogicAI)var10;
+                    if (var10 instanceof LogicAI log) {
                         var10000 = log.controller;
                     } else {
-                        var10 = this.controller;
-                        if (var10 instanceof FormationAI) {
-                            FormationAI form = (FormationAI)var10;
-                            var10000 = form.leader;
-                        } else {
-                            var10000 = this;
-                        }
+                        var10000 = this;
                     }
                 }
                 break;
             case payloadType:
-                if (this instanceof Payloadc) {
-                    Payloadc pay = (Payloadc)this;
+                if (this instanceof Payloadc pay) {
                     if (pay.payloads().isEmpty()) {
                         var10000 = null;
                     } else {
@@ -2268,6 +2356,41 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         });
     }
 
+    @Override
+    public void statusDamageMultiplier(float v) {
+
+    }
+
+    @Override
+    public void statusReloadMultiplier(float v) {
+
+    }
+
+    @Override
+    public void statusArmor(float v) {
+
+    }
+
+    @Override
+    public void statusBuildSpeed(float v) {
+
+    }
+
+    @Override
+    public void statusDrag(float v) {
+
+    }
+
+    @Override
+    public void statusMaxHealth(float v) {
+
+    }
+
+    @Override
+    public void statusSpeed(float v) {
+
+    }
+
     public void heal() {
         this.dead = false;
         this.health = this.maxHealth;
@@ -2293,18 +2416,38 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
         return !this.hasItem() || item == this.stack.item && this.stack.amount + 1 <= this.itemCapacity();
     }
 
-    public void drawPlan(BuildPlan request, float alpha) {
-        request.animScale = 1.0F;
-        if (request.breaking) {
-            Vars.control.input.drawBreaking(request);
+    public void drawPlan(BuildPlan plan, float alpha) {
+        plan.animScale = 1.0F;
+        if (plan.breaking) {
+            Vars.control.input.drawBreaking(plan);
         } else {
-            request.block.drawPlan(request, Vars.control.input.allRequests(), Build.validPlace(request.block, this.team, request.x, request.y, request.rotation) || Vars.control.input.requestMatches(request), alpha);
+            plan.block.drawPlan(plan, Vars.control.input.allPlans(), Build.validPlace(plan.block, this.team, plan.x, plan.y, plan.rotation) || Vars.control.input.planMatches(plan), alpha);
         }
 
     }
 
     public boolean isPlayer() {
         return this.controller instanceof Player;
+    }
+
+    @Override
+    public boolean killable() {
+        return this.type.killable(this);
+    }
+
+    @Override
+    public boolean playerControllable() {
+        return this.type.playerControllable;
+    }
+
+    @Override
+    public boolean shouldUpdateController() {
+        return true;
+    }
+
+    @Override
+    public boolean targetable(Team targeter) {
+        return this.type.targetable(this, targeter);
     }
 
     public void aim(Position pos) {
@@ -2327,10 +2470,6 @@ public class WorldUnit extends Unit implements Statusc, Entityc, Drawc, Hitboxc,
 
     public boolean canBuild() {
         return this.type.buildSpeed > 0.0F && this.buildSpeedMultiplier > 0.0F;
-    }
-
-    public void commandNearby(FormationPattern pattern) {
-        this.commandNearby(pattern, (u) -> true);
     }
 
     public boolean serialize() {

@@ -13,7 +13,7 @@ public interface LightHoldc extends Stemc {
 
     void acceptors(Seq<LightAcceptorType> var1);
 
-    public interface LightHoldBuildc extends Stemc.StemBuildc, Buildingc {
+    interface LightHoldBuildc extends Stemc.StemBuildc, Buildingc {
         boolean acceptLight(Light var1, int var2, int var3);
 
         void add(Light var1, int var2, int var3);

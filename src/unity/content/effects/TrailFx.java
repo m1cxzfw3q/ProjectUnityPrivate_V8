@@ -18,8 +18,7 @@ import unity.type.decal.CapeDecorationType;
 public class TrailFx {
     public static Effect trailFadeLow = (new Effect(400.0F, (e) -> {
         Object trail$temp = e.data;
-        if (trail$temp instanceof Trail) {
-            Trail trail = (Trail)trail$temp;
+        if (trail$temp instanceof Trail trail) {
             e.lifetime = (float)trail.length * 1.4F;
             if (!Vars.state.isPaused()) {
                 trail.shorten();
@@ -70,10 +69,10 @@ public class TrailFx {
     });
     public static Effect endTrail = new Effect(50.0F, (e) -> {
         Draw.color(Color.black, UnityPal.scarColor, Mathf.curve(e.fin(), 0.0F, 0.3F));
-        Angles.randLenVectors((long)e.id, 2, e.finpow() * 7.0F, (x, y) -> Fill.circle(e.x + x, e.y + y, 3.0F * e.fout()));
+        Angles.randLenVectors(e.id, 2, e.finpow() * 7.0F, (x, y) -> Fill.circle(e.x + x, e.y + y, 3.0F * e.fout()));
     });
     public static Effect capeTrail = new Effect(30.0F, (e) -> {
-        CapeDecorationType.CapeEffectData data = (CapeDecorationType.CapeEffectData)e.data();
+        CapeDecorationType.CapeEffectData data = e.data();
         TextureRegion reg = data.type.region;
         Draw.alpha(data.alpha * e.fout());
         Draw.blend(Blending.additive);

@@ -17,8 +17,7 @@ import unity.graphics.UnityPal;
 public class LineFx {
     public static final Effect endPointDefence = new Effect(17.0F, 600.0F, (e) -> {
         Object data$temp = e.data;
-        if (data$temp instanceof Position) {
-            Position data = (Position)data$temp;
+        if (data$temp instanceof Position data) {
 
             for(int i = 0; i < 2; ++i) {
                 float width = (float)(2 - i) * 2.2F * e.fout();
@@ -33,8 +32,7 @@ public class LineFx {
     });
     public static final Effect monolithSoulAbsorb = (new Effect(32.0F, (e) -> {
         Object data$temp = e.data;
-        if (data$temp instanceof Position) {
-            Position data = (Position)data$temp;
+        if (data$temp instanceof Position data) {
             Tmp.v1.trns(Angles.angle(e.x, e.y, data.getX(), data.getY()) - 90.0F, Mathf.randomSeedRange((long)e.id, 3.0F)).scl(Interp.pow3Out.apply(e.fslope()));
             Tmp.v2.trns(Mathf.randomSeed((long)(e.id + 1), 360.0F), e.fin(Interp.pow4Out));
             Tmp.v3.set(data).sub(e.x, e.y).scl(e.fin(Interp.pow4In)).add(Tmp.v2).add(Tmp.v1).add(e.x, e.y);
@@ -50,8 +48,7 @@ public class LineFx {
     })).layer(90.0F);
     public static final Effect monolithSoulTransfer = new Effect(64.0F, (e) -> {
         Object data$temp = e.data;
-        if (data$temp instanceof Position) {
-            Position data = (Position)data$temp;
+        if (data$temp instanceof Position data) {
             Tmp.v1.set(data).sub(e.x, e.y).scl(e.fin(Interp.pow2In)).add(e.x, e.y);
             Draw.color(UnityPal.monolithDark, UnityPal.monolith, e.fslope());
             Angles.randLenVectors((long)e.id, 5, Interp.pow3Out.apply(e.fslope()) * 8.0F, 360.0F, 0.0F, 8.0F, (x, y) -> Fill.circle(Tmp.v1.x + x, Tmp.v1.y + y, 0.5F + e.fslope() * 2.7F));

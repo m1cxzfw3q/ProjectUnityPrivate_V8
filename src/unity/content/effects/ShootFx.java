@@ -35,6 +35,7 @@ import unity.util.Utils;
 
 public class ShootFx {
     private static final Color tmpCol = new Color();
+
     public static Effect laserChargeShoot = new Effect(21.0F, (e) -> {
         Draw.color(e.color, Color.white, e.fout());
 
@@ -43,11 +44,13 @@ public class ShootFx {
         }
 
     });
+
     public static Effect laserChargeShootShort = new Effect(15.0F, (e) -> {
         Draw.color(e.color, Color.white, e.fout());
         Lines.stroke(2.0F * e.fout());
         Lines.square(e.x, e.y, 0.1F + 20.0F * e.finpow(), 45.0F);
     });
+
     public static Effect laserFractalShoot = new Effect(40.0F, (e) -> {
         Draw.color(Tmp.c1.set(e.color).lerp(Color.white, e.fout()));
 
@@ -76,6 +79,7 @@ public class ShootFx {
         }
 
     });
+
     public static Effect laserBreakthroughShoot = new Effect(40.0F, (e) -> {
         Draw.color(e.color);
         Lines.stroke(e.fout() * 2.5F);
@@ -90,14 +94,17 @@ public class ShootFx {
         }
 
     });
+
     public static Effect shootSmallBlaze = new Effect(22.0F, (e) -> {
         Draw.color(Pal.lightFlame, Pal.darkFlame, Pal.gray, e.fin());
         Angles.randLenVectors((long)e.id, 16, e.finpow() * 60.0F, e.rotation, 18.0F, (x, y) -> Fill.circle(e.x + x, e.y + y, 0.85F + e.fout() * 3.5F));
     });
+
     public static Effect shootPyraBlaze = new Effect(32.0F, (e) -> {
         Draw.color(Pal.lightPyraFlame, Pal.darkPyraFlame, Pal.gray, e.fin());
         Angles.randLenVectors((long)e.id, 16, e.finpow() * 60.0F, e.rotation, 18.0F, (x, y) -> Fill.circle(e.x + x, e.y + y, 0.85F + e.fout() * 3.5F));
     });
+
     public static Effect orbShoot = new Effect(21.0F, (e) -> {
         Draw.color(Pal.surge);
 
@@ -107,11 +114,13 @@ public class ShootFx {
         }
 
     });
+
     public static Effect shrapnelShoot = new Effect(13.0F, (e) -> {
         Draw.color(Color.white, Pal.bulletYellow, Pal.lightOrange, e.fin());
         Lines.stroke(e.fout() * 1.2F + 0.5F);
         Angles.randLenVectors((long)e.id, 10, 30.0F * e.finpow(), e.rotation, 50.0F, (x, y) -> Lines.lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fin() * 5.0F + 2.0F));
     });
+
     public static Effect plagueShootSmokeLarge = new Effect(35.0F, (e) -> {
         Draw.color(UnityPal.plagueDark, Color.gray, Color.darkGray, e.fin());
 
@@ -130,6 +139,7 @@ public class ShootFx {
             });
         });
     });
+
     public static Effect scarRailShoot = new Effect(24.0F, (e) -> {
         e.scaled(10.0F, (b) -> {
             Draw.color(Color.white, Color.lightGray, b.fin());
@@ -146,6 +156,7 @@ public class ShootFx {
         }
 
     });
+
     public static Effect endGameShoot = (new Effect(45.0F, 1640.0F, (e) -> {
         float curve = Mathf.curve(e.fin(), 0.0F, 0.2F) * 820.0F;
         float curveB = Mathf.curve(e.fin(), 0.0F, 0.7F);
@@ -154,6 +165,7 @@ public class ShootFx {
         Fill.poly(e.x, e.y, Lines.circleVertices(curve), curve);
         Draw.blend();
     })).layer(110.99F);
+
     public static Effect oppressionShoot = (new Effect(170.0F, 5060.0F, (e) -> {
         Rand r = Utils.seedr;
         Rand r2 = Utils.seedr2;
@@ -213,6 +225,7 @@ public class ShootFx {
         }
 
     })).followParent(true).rotWithParent(true);
+
     public static Effect monumentShoot = new Effect(48.0F, (e) -> {
         Draw.color(UnityPal.monolithLight);
         Drawf.tri(e.x, e.y, 10.0F * e.fout(), 175.0F - 20.0F * e.fin(), e.rotation);
@@ -233,6 +246,7 @@ public class ShootFx {
             Draw.blend();
         });
     });
+
     public static Effect soulConcentrateShoot = new Effect(60.0F, (e) -> {
         int id = e.id;
 
@@ -253,6 +267,7 @@ public class ShootFx {
         }
 
     });
+
     public static Effect tendenceShoot = (new Effect(32.0F, (e) -> {
         TextureRegion reg = Core.atlas.find("unity-monolith-chain");
         Utils.q1.set(Vec3.Z, e.rotation + 90.0F).mul(Utils.q2.set(Vec3.X, 75.0F));
@@ -269,24 +284,8 @@ public class ShootFx {
         UnityDrawf.panningCircle(Core.atlas.find("unity-line-shade"), e.x, e.y, w + 6.0F, h + 6.0F, rad, 360.0F, 0.0F, Utils.q1, true, 89.99F, 115.0F);
         Draw.blend();
     })).layer(115.0F);
-    public static Effect pedestalShootAdd = (new CustomStateEffect(() -> (EffectState)Pools.obtain(State.class, () -> {
-        class State extends EffectState {
-            public void remove() {
-                Object var2 = this.data;
-                if (var2 instanceof Trail[]) {
-                    Trail[] data = (Trail[])var2;
 
-                    for(Trail trail : data) {
-                        Fx.trailFade.at(this.x, this.y, 1.0F, UnityPal.monolithLight, trail.copy());
-                    }
-                }
-
-                super.remove();
-            }
-        }
-
-        return new State();
-    }), 25.0F, (e) -> {
+    public static Effect pedestalShootAdd = (new CustomStateEffect(() -> Pools.obtain(State.class, State::new), 25.0F, (e) -> {
         Object data$temp = e.data;
         if (data$temp instanceof Trail[]) {
             Trail[] data = (Trail[])data$temp;
@@ -319,6 +318,7 @@ public class ShootFx {
             return state;
         }
     }).followParent(true).rotWithParent(true);
+
     public static Effect phantasmalLaserShoot = new Effect(36.0F, (e) -> {
         Object var3 = e.data;
         float var10000;
@@ -347,6 +347,7 @@ public class ShootFx {
         Tmp.v1.trns(e.rotation, 4.0F + Interp.bounceOut.apply(f3) * 8.0F - Interp.pow3In.apply(Mathf.curve(f3, 0.67F, 1.0F)) * 4.0F).add(e.x, e.y);
         UnityDrawf.panningCircle(reg, Tmp.v1.x, Tmp.v1.y, 1.0F, 1.0F, radius * 0.5F, 360.0F, 0.0F, Utils.q1, true, 99.999F, 100.001F);
     });
+
     public static Effect coloredPlasmaShoot = new Effect(25.0F, (e) -> {
         Draw.color(Color.white, e.color, e.fin());
         Angles.randLenVectors((long)e.id, 13, e.finpow() * 20.0F, e.rotation, 23.0F, (x, y) -> {
@@ -354,6 +355,7 @@ public class ShootFx {
             Fill.circle(e.x + x / 1.2F, e.y + y / 1.2F, e.fout() * 3.0F);
         });
     });
+
     public static Effect sapPlasmaShoot = new Effect(25.0F, (e) -> {
         Draw.color(Color.white, Pal.sapBullet, e.fin());
         Angles.randLenVectors((long)e.id, 13, e.finpow() * 20.0F, e.rotation, 23.0F, (x, y) -> {
@@ -361,6 +363,7 @@ public class ShootFx {
             Fill.circle(e.x + x / 1.2F, e.y + y / 1.2F, e.fout() * 3.0F);
         });
     });
+
     public static Effect blueTriangleShoot = new Effect(23.0F, (e) -> {
         Draw.color(Pal.lancerLaser);
         Fill.poly(e.x, e.y, 3, e.fout() * 24.0F, e.rotation);
@@ -368,6 +371,7 @@ public class ShootFx {
         Draw.color(Color.white);
         Fill.circle(e.x, e.y, e.fout() * 9.0F);
     });
+
     public static Effect voidShoot = new Effect(20.0F, (e) -> {
         Draw.color(Color.black);
         Angles.randLenVectors((long)e.id, 14, e.finpow() * 20.0F, e.rotation, 20.0F * Mathf.curve(e.fin(), 0.0F, 0.2F), (x, y) -> {
@@ -375,4 +379,19 @@ public class ShootFx {
             Fill.circle(e.x + x / 2.0F, e.y + y / 2.0F, e.fout() * 3.0F);
         });
     });
+
+    static class State extends EffectState {
+        public void remove() {
+            Object var2 = this.data;
+            if (var2 instanceof Trail[]) {
+                Trail[] data = (Trail[])var2;
+
+                for(Trail trail : data) {
+                    Fx.trailFade.at(this.x, this.y, 1.0F, UnityPal.monolithLight, trail.copy());
+                }
+            }
+
+            super.remove();
+        }
+    }
 }
