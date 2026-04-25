@@ -1,0 +1,45 @@
+package unity.map;
+
+import arc.Core;
+import arc.Events;
+
+public enum GlobalObjective {
+    sectorAccretionComplete;
+
+    private static long currentStatus = 0L;
+
+    public static boolean reached(GlobalObjective objective) {
+        update();
+        return (currentStatus & objective.value()) == objective.value();
+    }
+
+    public static boolean reached(GlobalObjective... objectives) {
+        for(GlobalObjective o : objectives) {
+            if (!reached(o)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static void fire(GlobalObjective objective) {
+        if (!reached(objective)) {
+            currentStatus |= objective.value();
+            Core.settings.put("unity.global-objective.status", currentStatus);
+            Events.fire(objective);
+        }
+    }
+
+    private static void update() {
+        currentStatus = Core.settings.getLong("unity.global-objective.status", 0L);
+    }
+
+    public long value() {
+        return 1L << this.ordinal();
+    }
+
+    static {
+        update();
+    }
+}
