@@ -275,7 +275,7 @@ public class UnityUnitType extends UnitType {
         int i = 0;
 
         for(int len = weaponSeq.size; i < len; ++i) {
-            Weapon w = (Weapon)weaponSeq.get(i);
+            Weapon w = weaponSeq.get(i);
             if (w.recoilTime < 0.0F) {
                 w.recoilTime = w.reload;
             }
@@ -301,7 +301,7 @@ public class UnityUnitType extends UnitType {
 
     public <T extends Unit & Wormc> void drawWorm(T unit) {
         Mechc mech = unit instanceof Mechc ? (Mechc)unit : null;
-        float z = (unit.elevation > 0.5F ? (this.lowAltitude ? 90.0F : 115.0F) : this.groundLayer + Mathf.clamp(this.hitSize / 4000.0F, 0.0F, 0.01F)) - ((Wormc)unit).layer() * 1.0E-5F;
+        float z = (unit.elevation > 0.5F ? (this.lowAltitude ? 90.0F : 115.0F) : this.groundLayer + Mathf.clamp(this.hitSize / 4000.0F, 0.0F, 0.01F)) - unit.layer() * 1.0E-5F;
         if (unit.isFlying()) {
             TextureRegion tmpShadow = this.shadowRegion;
             if (!unit.isHead() || unit.isTail()) {
@@ -551,7 +551,6 @@ public class UnityUnitType extends UnitType {
         if (unit instanceof WormDefaultUnit wormUnit) {
             wormUnit.drawShadow();
         }
-
     }
 
     public void drawSoftShadow(Unit unit) {

@@ -26,7 +26,6 @@ public class RainbowUnitType extends UnityUnitType {
         for(int i = 0; i < this.segments; ++i) {
             this.rainbowRegions[i] = Core.atlas.find(this.name + "-rainbow-" + (i + 1));
         }
-
     }
 
     public void drawBody(Unit unit) {

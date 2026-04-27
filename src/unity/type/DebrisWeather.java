@@ -27,20 +27,19 @@ public class DebrisWeather extends ParticleWeather {
     }
 
     public void update(WeatherState state) {
-        if (Mathf.chanceDelta((double)(state.intensity * this.spawnChance))) {
+        if (Mathf.chanceDelta(state.intensity * this.spawnChance)) {
             float x = (float)Mathf.random(Vars.world.unitWidth());
             float y = (float)Mathf.random(Vars.world.unitHeight());
             Fx.blockExplosionSmoke.at(x, y);
-            Fx.blockExplosion.at(x, y);
+            Fx.breakBlock.at(x, y);
             Damage.damage(x, y, Mathf.random(this.minSplashRadius, this.maxSplashRadius), Mathf.random(this.minDamage, this.maxDamage));
         }
 
         Groups.unit.each((u) -> {
-            if (Mathf.chanceDelta((double)(state.intensity * this.knockbackChance))) {
+            if (Mathf.chanceDelta(state.intensity * this.knockbackChance)) {
                 u.impulse(Tmp.v1.trns(Mathf.angle(this.xspeed, this.yspeed), Mathf.random(this.minKnockback, this.maxKnockback) * 80.0F));
                 u.damage(Mathf.random(this.knockbackDamageMin, this.knockbackDamageMax));
             }
-
         });
         super.update(state);
     }

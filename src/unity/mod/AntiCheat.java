@@ -6,6 +6,7 @@ import arc.struct.IntMap;
 import arc.struct.IntSet;
 import arc.struct.Seq;
 import arc.util.Interval;
+import arc.util.Reflect;
 import arc.util.Time;
 import arc.util.Tmp;
 import arc.util.pooling.Pool;
@@ -31,14 +32,14 @@ import unity.util.ReflectUtils;
 
 public class AntiCheat {
     private final Interval timer = new Interval();
-    private final Seq<UnitQueue> unitSeq = new Seq();
-    private final Seq<BuildingQueue> buildingSeq = new Seq();
-    private final Seq<EntitySampler> sampler = new Seq();
-    private final Seq<EntitySampler> samplerTmp = new Seq();
+    private final Seq<UnitQueue> unitSeq = new Seq<>();
+    private final Seq<BuildingQueue> buildingSeq = new Seq<>();
+    private final Seq<EntitySampler> sampler = new Seq<>();
+    private final Seq<EntitySampler> samplerTmp = new Seq<>();
     private final IntSet exclude = new IntSet(204);
-    private final IntMap<EntitySampler> samplerMap = new IntMap(409);
-    private final Seq<DisableRegenStatus> status = new Seq();
-    private final IntMap<DisableRegenStatus> statusMap = new IntMap(204);
+    private final IntMap<EntitySampler> samplerMap = new IntMap<>(409);
+    private final Seq<DisableRegenStatus> status = new Seq<>();
+    private final IntMap<DisableRegenStatus> statusMap = new IntMap<>(204);
     private float lastTime = 0.0F;
 
     public void setup() {
@@ -65,18 +66,15 @@ public class AntiCheat {
 
     public static void annihilateEntity(Entityc entity, boolean override, boolean setNaN) {
         Groups.all.remove(entity);
-        if (entity instanceof Drawc) {
-            Drawc draw = (Drawc)entity;
+        if (entity instanceof Drawc draw) {
             Groups.draw.remove(draw);
         }
 
-        if (entity instanceof Syncc) {
-            Syncc sync = (Syncc)entity;
+        if (entity instanceof Syncc sync) {
             Groups.sync.remove(sync);
         }
 
-        if (entity instanceof Unit) {
-            Unit unit = (Unit)entity;
+        if (entity instanceof Unit unit) {
             if (Unity.antiCheat != null && override) {
                 Unity.antiCheat.removeUnit(unit);
             }
@@ -84,12 +82,12 @@ public class AntiCheat {
             try {
                 ReflectUtils.setField(unit, ReflectUtils.findField(unit.getClass(), "added", true), false);
             } catch (Exception e) {
-                Unity.print(new Object[]{e});
+                Unity.print(e);
             }
 
             if (unit instanceof WormDefaultUnit) {
                 WormSegmentUnit nullUnit = new WormSegmentUnit();
-                WormSegmentUnit[] tmpArray = (WormSegmentUnit[])Arrays.copyOf(((WormDefaultUnit)unit).segmentUnits, ((WormDefaultUnit)unit).segmentUnits.length);
+                WormSegmentUnit[] tmpArray = Arrays.copyOf(((WormDefaultUnit)unit).segmentUnits, ((WormDefaultUnit)unit).segmentUnits.length);
                 Arrays.fill(((WormDefaultUnit)unit).segmentUnits, nullUnit);
 
                 for(WormSegmentUnit segmentUnit : tmpArray) {
@@ -108,7 +106,6 @@ public class AntiCheat {
             }
 
             unit.team.data().updateCount(unit.type, -1);
-            unit.clearCommand();
             unit.controller().removed(unit);
             Groups.unit.remove(unit);
             if (Vars.net.client()) {
@@ -127,8 +124,7 @@ public class AntiCheat {
             }
         }
 
-        if (entity instanceof Building) {
-            Building building = (Building)entity;
+        if (entity instanceof Building building) {
             Groups.build.remove(building);
             building.tile.remove();
             if (Unity.antiCheat != null && override) {
@@ -139,11 +135,13 @@ public class AntiCheat {
                 building.x = building.y = Float.NaN;
             }
 
-            if (building.sound != null) {
-                building.sound.stop();
-            }
+            //if (building.sound != null) {
+            //    building.sound.stop();
+            //}
 
-            building.added = false;
+            //building.added = false;
+
+            Reflect.set(building, "added", false);
         }
 
     }
@@ -232,7 +230,7 @@ public class AntiCheat {
 
     public void notifyDamage(int unitId, float delta) {
         if (!(delta > 0.0F)) {
-            DisableRegenStatus status = (DisableRegenStatus)this.statusMap.get(unitId);
+            DisableRegenStatus status = this.statusMap.get(unitId);
             if (status != null) {
                 status.lastHealth += delta;
             }
@@ -242,11 +240,11 @@ public class AntiCheat {
 
     public void applyStatus(Unit unit, float duration) {
         if (!this.exclude.contains(unit.id)) {
-            DisableRegenStatus status = (DisableRegenStatus)this.statusMap.get(unit.id);
+            DisableRegenStatus status = this.statusMap.get(unit.id);
             if (status != null) {
                 status.duration = Math.max(status.duration, duration);
             } else {
-                DisableRegenStatus s = (DisableRegenStatus)Pools.obtain(DisableRegenStatus.class, DisableRegenStatus::new);
+                DisableRegenStatus s = Pools.obtain(DisableRegenStatus.class, DisableRegenStatus::new);
                 s.unit = unit;
                 s.lastHealth = unit.health;
                 s.duration = duration;
@@ -268,7 +266,7 @@ public class AntiCheat {
             }
 
             EntitySampler ent;
-            if ((ent = (EntitySampler)this.samplerMap.get(entity.id())) != null) {
+            if ((ent = this.samplerMap.get(entity.id())) != null) {
                 if (entity.health() >= ent.lastHealth && ent.excludeDuration <= 0.0F) {
                     ent.duration = Math.max(30.0F, ent.duration);
                     if (ent.penalty++ >= 5) {
@@ -281,18 +279,18 @@ public class AntiCheat {
                 return;
             }
 
-            EntitySampler s = (EntitySampler)Pools.obtain(EntitySampler.class, EntitySampler::new);
+            EntitySampler s = Pools.obtain(EntitySampler.class, EntitySampler::new);
             s.entity = entity;
             s.duration = 120.0F;
             s.lastHealth = entity.health();
             this.sampler.add(s);
             this.samplerMap.put(entity.id(), s);
         } else {
-            EntitySampler ent = (EntitySampler)this.samplerMap.get(entity.id());
+            EntitySampler ent = this.samplerMap.get(entity.id());
             if (ent != null) {
                 ent.excludeDuration = 120.0F;
             } else {
-                EntitySampler s = (EntitySampler)Pools.obtain(EntitySampler.class, EntitySampler::new);
+                EntitySampler s = Pools.obtain(EntitySampler.class, EntitySampler::new);
                 s.entity = entity;
                 s.excludeDuration = 120.0F;
                 s.duration = 0.0F;
@@ -402,7 +400,7 @@ public class AntiCheat {
                 this.unit.damage(0.0F);
             }
 
-            if (Mathf.chanceDelta((double)0.19F)) {
+            if (Mathf.chanceDelta(0.19F)) {
                 Tmp.v1.rnd(Mathf.range(this.unit.type.hitSize / 2.0F));
                 ParticleFx.endRegenDisable.at(this.unit.x + Tmp.v1.x, this.unit.y + Tmp.v1.y);
             }

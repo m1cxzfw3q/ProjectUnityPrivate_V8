@@ -13,7 +13,7 @@ import mindustry.input.Binding;
 import unity.sync.UnityCall;
 
 public class TapHandler {
-    private final Seq<TapListener> listeners = new Seq();
+    private final Seq<TapListener> listeners = new Seq<>();
     private boolean press = false;
 
     public TapHandler() {

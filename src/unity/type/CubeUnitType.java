@@ -20,7 +20,7 @@ public class CubeUnitType extends UnityUnitType {
     public TextureRegion[] regions;
     public TextureRegion[] outlineRegions;
     public TextureRegion[] cellRegions;
-    public Seq<Seq<Weapon>> weaponsAll = new Seq();
+    public Seq<Seq<Weapon>> weaponsAll = new Seq<>();
     public int tier;
     public int maxEntities = 15;
     public float gridSpacing = 16.0F;
@@ -135,7 +135,7 @@ public class CubeUnitType extends UnityUnitType {
         public int width;
         public int height;
         public int entities;
-        public Seq<Cubec> all = new Seq();
+        public Seq<Cubec> all = new Seq<>();
         public Cubec[] grid = new Cubec[9];
         public Cubec main;
         public CubeUnitType type;

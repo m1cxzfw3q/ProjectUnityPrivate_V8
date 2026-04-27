@@ -2,6 +2,7 @@ package unity.mod;
 
 import arc.Events;
 import arc.func.Cons;
+import mindustry.game.EventType;
 
 public enum Triggers {;
     public static <T> Cons<T> cons(Runnable run) {
@@ -15,10 +16,10 @@ public enum Triggers {;
     }
 
     public static <T> void listen(T trigger, Cons<T> listener) {
-        Events.on(trigger.getClass(), listener);
+        Events.on((Class<T>) trigger.getClass(), listener);
     }
 
     public static <T> void detach(T trigger, Cons<T> run) {
-        Events.remove(trigger.getClass(), run);
+        Events.remove((Class<T>) trigger.getClass(), run);
     }
 }

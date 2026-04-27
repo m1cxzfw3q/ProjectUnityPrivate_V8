@@ -26,13 +26,13 @@ public enum Faction {
     public static void init() {
         if (!Vars.headless) {
             for(Faction faction : all) {
-                faction.localizedName = Core.bundle.format("faction." + faction.name, new Object[]{faction.color});
+                faction.localizedName = Core.bundle.format("faction." + faction.name, faction.color);
             }
 
         }
     }
 
-    private Faction(String name, Color color) {
+    Faction(String name, Color color) {
         this.name = name;
         this.color = color.cpy();
     }

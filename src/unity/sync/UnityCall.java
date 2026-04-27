@@ -28,6 +28,5 @@ public class UnityCall {
     public static void soulJoin(MonolithSoul soul, Entityc ent) {
         if (!Vars.net.server() && !Vars.net.active()) {
         }
-
     }
 }

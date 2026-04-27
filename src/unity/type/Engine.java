@@ -6,7 +6,6 @@ import arc.graphics.g2d.Fill;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.util.Time;
-import mindustry.gen.Trailc;
 import mindustry.gen.Unit;
 import mindustry.graphics.Trail;
 import mindustry.type.UnitType;
@@ -44,11 +43,7 @@ public class Engine {
         Trail var10000;
         if (!this.drawTrail) {
             var10000 = null;
-        } else if (unit instanceof Trailc) {
-            Trailc t = (Trailc)unit;
-            var10000 = t.trail();
-        } else if (unit instanceof CTrailc) {
-            CTrailc t = (CTrailc)unit;
+        } else if (unit instanceof CTrailc t) {
             var10000 = t.trail();
         } else {
             var10000 = null;
@@ -84,11 +79,7 @@ public class Engine {
             Trail var10000;
             if (!this.drawTrail) {
                 var10000 = null;
-            } else if (unit instanceof Trailc) {
-                Trailc t = (Trailc)unit;
-                var10000 = t.trail();
-            } else if (unit instanceof CTrailc) {
-                CTrailc t = (CTrailc)unit;
+            } else if (unit instanceof CTrailc t) {
                 var10000 = t.trail();
             } else {
                 var10000 = null;

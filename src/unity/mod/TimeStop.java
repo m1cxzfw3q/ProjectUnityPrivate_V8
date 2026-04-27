@@ -30,9 +30,9 @@ public class TimeStop {
     private static final float error = 4.0E-5F;
     private static final float slowDownTime = 30.0F;
     private static final float continueTimeDuration = 89.0F;
-    private static final Seq<TimeStopEntity> entities = new Seq();
-    private static final IntMap<TimeStopEntity> map = new IntMap(102);
-    private static final BasicPool<TimeStopEntity> pool = new BasicPool(8, 200, TimeStopEntity::new);
+    private static final Seq<TimeStopEntity> entities = new Seq<>();
+    private static final IntMap<TimeStopEntity> map = new IntMap<>(102);
+    private static final BasicPool<TimeStopEntity> pool = new BasicPool<>(8, 200, TimeStopEntity::new);
     private static final Vec2 movement = new Vec2();
     private static float time = 0.0F;
     private static float lastTime = 0.0F;
@@ -57,13 +57,13 @@ public class TimeStop {
     }
 
     public static float getTime(Entityc entity) {
-        TimeStopEntity e = (TimeStopEntity)map.get(entity.id());
+        TimeStopEntity e = map.get(entity.id());
         return e == null ? 0.0F : e.time;
     }
 
     public static void addEntity(Entityc entity, float time) {
         if (!map.containsKey(entity.id())) {
-            TimeStopEntity te = (TimeStopEntity)pool.obtain();
+            TimeStopEntity te = pool.obtain();
             te.entity = entity;
             te.time = time;
             te.id = entity.id();
@@ -71,7 +71,7 @@ public class TimeStop {
             map.put(entity.id(), te);
             entities.add(te);
         } else {
-            TimeStopEntity te = (TimeStopEntity)map.get(entity.id());
+            TimeStopEntity te = map.get(entity.id());
             te.time = Math.max(te.time, time);
         }
 
@@ -191,29 +191,23 @@ public class TimeStop {
     static void updateMovementDesktop(Unit unit) {
         boolean omni = unit.type.omniMovement;
         float speed = unit.speed();
-        float xa = Core.input.axis(Binding.move_x);
-        float ya = Core.input.axis(Binding.move_y);
+        float xa = Core.input.axis(Binding.moveX);
+        float ya = Core.input.axis(Binding.moveY);
         boolean boosted = unit instanceof Mechc && unit.isFlying();
         movement.set(xa, ya).nor().scl(speed);
-        if (Core.input.keyDown(Binding.mouse_move)) {
+        if (Core.input.keyDown(Binding.mouseMove)) {
             movement.add(Core.input.mouseWorld().sub(Vars.player).scl(0.04F * speed)).limit(speed);
         }
 
         float mouseAngle = Angles.mouseAngle(unit.x, unit.y);
-        boolean aimCursor = omni && Vars.player.shooting && unit.type.hasWeapons() && unit.type.faceTarget && !boosted && unit.type.rotateShooting;
-        if (aimCursor) {
-            unit.lookAt(mouseAngle);
-        } else {
-            unit.lookAt(unit.prefRotation());
-        }
-
+        boolean aimCursor = omni && Vars.player.shooting && unit.type.hasWeapons() && unit.type.faceTarget && !boosted && unit.type.circleTarget;
+        unit.lookAt(aimCursor ? mouseAngle : unit.prefRotation());
         unit.movePref(movement);
     }
 
     static class TimeStopEntity {
         Entityc entity;
-        float time;
-        float fakeTime;
+        float time, fakeTime;
         int id;
     }
 }

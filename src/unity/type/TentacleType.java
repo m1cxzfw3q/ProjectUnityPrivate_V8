@@ -44,11 +44,11 @@ public class TentacleType implements Cloneable {
     }
 
     public float range() {
-        return this.segmentLength * (float)this.segments - 5.0F + (this.bullet != null ? this.bullet.range() * 0.75F : 0.0F);
+        return this.segmentLength * this.segments - 5.0f + (this.bullet != null ? this.bullet.range * 0.75F : 0.0F);
     }
 
     public static void set(Seq<TentacleType> seq) {
-        Seq<TentacleType> mapped = new Seq();
+        Seq<TentacleType> mapped = new Seq<>();
 
         for(TentacleType t : seq) {
             mapped.add(t);
