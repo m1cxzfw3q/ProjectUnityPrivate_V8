@@ -43,3 +43,9 @@ Install JDK 16 or higher. Set `JAVA_HOME` environment variable to where it is lo
 
 - Build output should be located in `main/build/libs/`.
 - If the command returns `Permission Denied` on Linux, run `chmod +x gradlew`.
+
+## NOTE
+
+1. ProjectUnity has stopped updating; both the public version and the internal ones are.
+
+   Stop harboring any hope for this module that has already died.
