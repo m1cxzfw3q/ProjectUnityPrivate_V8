@@ -47,8 +47,8 @@ public class DupeProcessor extends BaseProcessor{
 
     @Override
     public void process(RoundEnvironment roundEnv) throws Exception{
-        comps = comps.addAll((Set<TypeElement>)roundEnv.getElementsAnnotatedWith(DupeComponent.class)).flatMap(t -> Seq.with(t).and(types(t)));
-        inters = inters.addAll((Set<TypeElement>)roundEnv.getElementsAnnotatedWith(DupeInterface.class)).flatMap(t -> Seq.with(t).and(types(t)));
+        comps = comps.addAll((Set<TypeElement>)roundEnv.getElementsAnnotatedWith(DupeComponent.class)).flatMap(t -> Seq.with(t).add(types(t)));
+        inters = inters.addAll((Set<TypeElement>)roundEnv.getElementsAnnotatedWith(DupeInterface.class)).flatMap(t -> Seq.with(t).add(types(t)));
         defs.addAll(roundEnv.getElementsAnnotatedWith(Dupe.class));
 
         if(round == 1){
