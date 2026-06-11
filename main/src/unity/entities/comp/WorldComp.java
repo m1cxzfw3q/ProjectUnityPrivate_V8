@@ -60,8 +60,7 @@ abstract class WorldComp implements Unitc{
             Building b = buildings.get(i);
             positions.add(b.x, b.y);
 
-            if(b instanceof BaseTurretBuild){
-                BaseTurretBuild t = (BaseTurretBuild)b;
+            if(b instanceof BaseTurretBuild t){
                 t.rotation += r;
             }
 
@@ -78,8 +77,7 @@ abstract class WorldComp implements Unitc{
             b.x = positions.get(i * 2);
             b.y = positions.get(i * 2 + 1);
 
-            if(b instanceof BaseTurretBuild){
-                BaseTurretBuild t = (BaseTurretBuild)b;
+            if(b instanceof BaseTurretBuild t){
                 t.rotation -= r;
             }
         }
@@ -101,9 +99,9 @@ abstract class WorldComp implements Unitc{
         tmp.clear();
         tmpr.clear();
         TeamData data = team().data();
-        if(data.buildings != null){
+        if(data.buildingTree != null){
             Tmp.r1.setCentered(x, y, w * Vars.tilesize, h * Vars.tilesize);
-            data.buildings.intersect(Tmp.r1, tmp);
+            data.buildingTree.intersect(Tmp.r1, tmp);
         }
 
         tmpLinks.clear();
@@ -156,8 +154,7 @@ abstract class WorldComp implements Unitc{
                 }
             }
             b.updateProximity();
-            if(b instanceof TurretBuild){
-                TurretBuild tb = (TurretBuild)b;
+            if(b instanceof TurretBuild tb){
                 turrets.add(tb);
             }
         }

@@ -25,7 +25,7 @@ abstract class CLegComp implements Unitc{
         return type.allowLegStep ? EntityCollisions::legsSolid : EntityCollisions::solid;
     }
 
-    @Override
+    //@Override
     @Replace
     public int pathType(){
         return type.allowLegStep ? Pathfinder.costLegs : Pathfinder.costGround;

@@ -12,6 +12,7 @@ import unity.mod.*;
 @EntityDef(value = {Bulletc.class, TimeStopBulletc.class}, serialize = false, pooled = true)
 @EntityComponent
 abstract class TimeStopBulletComp implements Bulletc{
+    @Import float x, y;
     @Import float drag;
     @Import Vec2 vel;
 
@@ -24,9 +25,10 @@ abstract class TimeStopBulletComp implements Bulletc{
     @Override
     public void update(){
         if(!updateVel() && (!Vars.net.client() || isLocal())){
-            move(vel.x * Time.delta, vel.y * Time.delta);
+            x += vel.x * Time.delta;
+            y += vel.y * Time.delta;
 
-            vel.scl(Math.max(1f - drag * Time.delta, 0));
+            vel.scl(Math.max(1f - drag * Time.delta, 0.0F));
         }
     }
 }

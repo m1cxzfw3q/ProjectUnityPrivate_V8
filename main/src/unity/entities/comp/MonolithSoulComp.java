@@ -66,7 +66,7 @@ abstract class MonolithSoulComp implements Unitc, CTrailc, Factionc{
                     if(Core.input.keyTap(Binding.select)){
                         Tile tile = world.tileWorld(mx, my);
                         if(tile != null) form(tile);
-                    }else if(Core.input.keyTap(Binding.break_block)){
+                    }else if(Core.input.keyTap(Binding.breakBlock)){
                         Teamc target = Units.closest(team, mx, my, 1f, this::joinValid);
                         if(target == null) target = world.buildWorld(mx, my);
 

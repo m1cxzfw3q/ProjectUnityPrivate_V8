@@ -10,9 +10,9 @@ import unity.annotations.Annotations.*;
 import unity.gen.*;
 
 @SuppressWarnings("unused")
-@EntityDef({Unitc.class, Endc.class, Wormc.class, Oppressionc.class})
+@EntityDef({Unitc.class, Endc.class, Wormc.class, Oppressionc.class, Segmentc.class})
 @EntityComponent
-abstract class OppressionComp implements Unitc, Wormc{
+abstract class OppressionComp implements Unitc, Wormc, Segmentc{
     @Import float speedMultiplier, rotation;
     @Import WeaponMount[] mounts;
     @Import UnitType type;

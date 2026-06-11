@@ -7,7 +7,7 @@ import unity.annotations.Annotations.*;
 
 @SuppressWarnings({"unused"})
 @EntityComponent
-abstract class TallComp implements Unitc, Flyingc{
+abstract class TallComp implements Unitc{
     @Import UnitType type;
 
     @Override
