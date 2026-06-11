@@ -133,6 +133,11 @@ public class AssistantAI extends FlyingAI{
         }
     }
 
+    protected void attack(float attackLength){
+        moveTo(target, attackLength);
+        unit.lookAt(target);
+    }
+
     public void updateUser(){
         if(userValid()) hooks.get(user.id(), ObjectSet::new).remove(unit);
 
@@ -169,7 +174,7 @@ public class AssistantAI extends FlyingAI{
     }
 
     protected boolean hasAmmo(){
-        return !state.rules.unitAmmo || unit.ammof() > 0f;
+        return true;
     }
 
     public enum Assistance{
@@ -237,7 +242,7 @@ public class AssistantAI extends FlyingAI{
                         mountX = ai.unit.x + Angles.trnsx(rotation, weapon.x, weapon.y),
                         mountY = ai.unit.y + Angles.trnsy(rotation, weapon.x, weapon.y);
 
-                    boolean shoot = tile.within(mountX, mountY, weapon.bullet.range()) && ai.shouldShoot();
+                    boolean shoot = tile.within(mountX, mountY, weapon.bullet.range) && ai.shouldShoot();
 
                     Vec2 to = Predict.intercept(ai.unit, tile, weapon.bullet.speed);
                     mount.aimX = to.x;

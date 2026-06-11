@@ -5,8 +5,6 @@ import mindustry.ai.types.*;
 import mindustry.gen.*;
 import unity.content.*;
 
-import static mindustry.Vars.*;
-
 @Deprecated
 public class HealerAI extends FlyingAI{
     protected float score;
@@ -29,9 +27,8 @@ public class HealerAI extends FlyingAI{
 
     @Override
     public void updateWeapons(){
-        if(target != null && (unit.ammo > 0.0001f || !state.rules.unitAmmo) && target instanceof Unit temp){
+        if(target != null  && target instanceof Unit temp){
             if(timer.get(3, 5f) && unit.within(target, unit.type.range + temp.hitSize)){
-                if(state.rules.unitAmmo) unit.ammo--;
                 UnityFx.healLaser.at(unit.x, unit.y, 0f, new Position[]{unit, temp});
 
                 temp.heal(unit.type.buildSpeed);

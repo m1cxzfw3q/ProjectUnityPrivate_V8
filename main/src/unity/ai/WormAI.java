@@ -23,7 +23,7 @@ public class WormAI extends FlyingAI{
         if(target == null && time > 0){
             moveTo(pos, 0f);
         }
-        if(target != null && unit.hasWeapons() && command() == UnitCommand.attack){
+        if(target != null && unit.hasWeapons()){
             if(!unit.type.circleTarget){
                 moveTo(target, unit.range() * 0.8f);
                 unit.lookAt(target);
@@ -32,13 +32,10 @@ public class WormAI extends FlyingAI{
             }
         }
 
-        if(target == null && time <= 0f && command() == UnitCommand.attack && Vars.state.rules.waves && unit.team == Vars.state.rules.defaultTeam){
+        if(target == null && time <= 0f&& Vars.state.rules.waves && unit.team == Vars.state.rules.defaultTeam){
             moveTo(getClosestSpawner(), Vars.state.rules.dropZoneRadius + 120f);
         }
 
-        if(command() == UnitCommand.rally){
-            moveTo(targetFlag(unit.x, unit.y, BlockFlag.rally, false), 60f);
-        }
         rotateTime = Math.max(0f, rotateTime - Time.delta);
         if(time <= 0) score = 0f;
         time = Math.max(0f, time - Time.delta);
@@ -62,7 +59,6 @@ public class WormAI extends FlyingAI{
         }
     }
 
-    @Override
     protected void attack(float circleLength){
         vec.trns(unit.rotation, unit.speed());
         float diff = Angles.angleDist(unit.rotation, unit.angleTo(target));
