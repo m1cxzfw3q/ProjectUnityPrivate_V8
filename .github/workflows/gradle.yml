@@ -1,6 +1,6 @@
 name: Java CI
 
-on: [workflow_dispatch]
+on: [push]
 
 jobs:
   buildJar:
