@@ -4,8 +4,8 @@ plugins{
 
 sourceSets.main{
     java.srcDirs = [
-        'src/',
-        "${compileJava.temporaryDir}/fetched",
+        "src/",
+        "${compileJava.temporaryDir}/fetched/",
         "$buildDir/generated/sources/annotationProcessor/java/main/"
     ]
 }
@@ -16,8 +16,12 @@ targetCompatibility = 8
 dependencies{
     compileOnly "Anuken:Mindustry:$mindustryVersion"
 
-    compileOnly project(':annotations')
     annotationProcessor project(':annotations')
+    compileOnly project(':annotations')
+
+    annotationProcessor "Anuken:Mindustry:$mindustryVersion"
+    annotationProcessor "com.squareup:javapoet:$javapoetVersion"
+
     annotationProcessor "Anuken:jabel:$jabelVersion"
 }
 
@@ -74,7 +78,10 @@ task dex(type: Jar){
             configurations.runtimeClasspath.asList()
 
         for(def file : files) command += ['--classpath', file.path]
-        command += ['--lib', file("$sdkRoot/platforms/android-$sdkVersion/android.jar")]
+
+        def platformRoot = new File("$sdkRoot/platforms/").listFiles().sort().reverse().find { f -> new File(f, "android.jar").exists() }
+        if (!platformRoot) throw new GradleException("No android.jar found. Ensure that you have an Android platform installed.")
+        command += ['--lib', platformRoot]
 
         if(OS.isWindows) command = ['cmd', '/c'] + command
         command.join(' ').execute(null, new File("$buildDir/libs")).waitForProcessOutput(System.out, System.err)
@@ -105,13 +112,14 @@ class Fetcher{
                 run.run()
                 error = null
             }catch(Throwable e){
+                Log.err(e)
                 error = e
             }
 
             return error != null
         }
 
-        while(exec.get(run)){}
+        exec.get(run)
     }
 }
 
@@ -123,7 +131,7 @@ task fetchComps{
         final CopyOnWriteArrayList<Fetcher> fetches = new CopyOnWriteArrayList<>()
 
         UnsafeRunnable mainRun ={
-            Http.get("https://api.github.com/repos/Anuken/Mindustry/contents/core/src/mindustry/entities/comp?ref=$mindustryVersion")
+            Http.get("https://api.github.com/repos/Anuken/Mindustry/contents/core/src/mindustry/entities/comp?ref=$mindustryFetchVersion")
                 .error({ final t -> throw new RuntimeException(t) })
                 .block({ final res ->
                     final def list = Jval.read(res.getResultAsString()).asArray()
@@ -194,6 +202,14 @@ artifacts{
 }
 
 tasks.withType(JavaCompile){
+    options.fork = true
+    options.forkOptions.jvmArgs += [
+            '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
+    ]
+
     if(!fetchDir.exists() || !fetchTemp.exists()){
         dependsOn fetchComps
     }else{
