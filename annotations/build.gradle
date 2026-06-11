@@ -1,14 +1,16 @@
+apply plugin: 'java-library'
+
 sourceSets.main{
-    java.srcDirs = ['src/']
-    resources.srcDirs = ['assets/']
+    java.srcDirs = ["src/"]
+    resources.srcDirs = ["assets/"]
 }
 
 sourceCompatibility = 8
 targetCompatibility = 8
 
-dependencies{
-    implementation "Anuken:Mindustry:$mindustryVersion"
-    implementation "com.squareup:javapoet:$javapoetVersion"
+dependencies {
+    api "Anuken:Mindustry:$mindustryVersion"
+    api "com.squareup:javapoet:$javapoetVersion"
 }
 
 tasks.withType(JavaCompile){
