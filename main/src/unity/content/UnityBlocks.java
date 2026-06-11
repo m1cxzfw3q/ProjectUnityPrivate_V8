@@ -9,6 +9,8 @@ import mindustry.*;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.entities.bullet.*;
+import mindustry.entities.effect.MultiEffect;
+import mindustry.entities.pattern.ShootAlternate;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
@@ -30,6 +32,7 @@ import unity.entities.bullet.laser.*;
 import unity.gen.*;
 import unity.graphics.*;
 import unity.mod.*;
+import unity.v8.MoreEffect;
 import unity.world.*;
 import unity.world.blocks.*;
 import unity.world.blocks.defense.*;
@@ -301,7 +304,7 @@ public class UnityBlocks{
             drillTime = 450;
             size = 2;
 
-            consumes.liquid(Liquids.water, 0.06f).boost();
+            consumeLiquid(Liquids.water, 0.06f).boost();
         }};
 
         recursiveReconstructor = new SelectableReconstructor("recursive-reconstructor"){{
@@ -329,9 +332,9 @@ public class UnityBlocks{
 
                 new UnitType[]{MonolithUnitTypes.colossus, MonolithUnitTypes.bastion}
             );
-            consumes.power(5f);
-            consumes.items(with(Items.silicon, 1200, Items.metaglass, 800, Items.thorium, 700, Items.surgeAlloy, 400, Items.plastanium, 600, Items.phaseFabric, 350));
-            consumes.liquid(Liquids.cryofluid, 7f);
+            consumePower(5f);
+            consumeItems(with(Items.silicon, 1200, Items.metaglass, 800, Items.thorium, 700, Items.surgeAlloy, 400, Items.plastanium, 600, Items.phaseFabric, 350));
+            consumeLiquid(Liquids.cryofluid, 7f);
         }};
 
         irradiator = new Press("irradiator"){{
@@ -341,8 +344,8 @@ public class UnityBlocks{
             movementSize = 29f;
             fxYVariation = 25f / tilesize;
             craftTime = 50f;
-            consumes.power(1.2f);
-            consumes.items(with(Items.thorium, 5, Items.titanium, 5, Items.surgeAlloy, 1));
+            consumePower(1.2f);
+            consumeItems(with(Items.thorium, 5, Items.titanium, 5, Items.surgeAlloy, 1));
         }};
 
         superCharger = new Reinforcer("supercharger"){{
@@ -350,8 +353,8 @@ public class UnityBlocks{
             size = 2;
             itemCapacity = 15;
             laserColor = Items.surgeAlloy.color;
-            consumes.power(0.4f);
-            consumes.items(with(UnityItems.irradiantSurge, 10));
+            consumePower(0.4f);
+            consumeItems(with(UnityItems.irradiantSurge, 10));
         }};
 
         oreNickel = new UnityOreBlock(UnityItems.nickel){{
@@ -387,24 +390,17 @@ public class UnityBlocks{
                 size = 5;
                 health = 3975;
                 range = 235f;
-                reloadTime = 6f;
+                reload = 6f;
                 coolantMultiplier = 0.5f;
-                restitution = 0.09f;
+                //restitution = 0.09f;
                 inaccuracy = 3f;
-                spread = 12f;
-                shots = 2;
+                shoot = new ShootAlternate(12 / 8);
+                shoot.shots = 2;
                 shootSound = Sounds.shootBig;
-                alternate = true;
-                recoilAmount = 3f;
+                recoil = 3f;
                 rotateSpeed = 4.5f;
                 ammo(Items.graphite, UnityBullets.standardDenseLarge, Items.silicon, UnityBullets.standardHomingLarge, Items.pyratite, UnityBullets.standardIncendiaryLarge, Items.thorium, UnityBullets.standardThoriumLarge);
-            }
-
-
-            @Override
-            public void load(){
-                super.load();
-                baseRegion = atlas.find("unity-block-" + size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
 
@@ -412,16 +408,15 @@ public class UnityBlocks{
             size = 8;
             health = 9750;
             range = 290f;
-            reloadTime = 9f;
+            reload = 9f;
             coolantMultiplier = 0.5f;
-            restitution = 0.08f;
+            //restitution = 0.08f;
             inaccuracy = 3f;
-            shots = 2;
+            shoot = new ShootAlternate(21 / 8);
+            shoot.shots = 2;
             shootSound = Sounds.shootBig;
-            alternate = true;
-            recoilAmount = 5.5f;
+            recoil = 5.5f;
             rotateSpeed = 3.5f;
-            spread = 21f;
             addBarrel(8f, 18.75f, 6f);
             ammo(Items.graphite, UnityBullets.standardDenseHeavy, Items.silicon, UnityBullets.standardHomingHeavy, Items.pyratite, UnityBullets.standardIncendiaryHeavy, Items.thorium, UnityBullets.standardThoriumHeavy);
             requirements(Category.turret, with(Items.copper, 1150, Items.graphite, 1420, Items.silicon, 960, Items.plastanium, 800, Items.thorium, 1230, UnityItems.darkAlloy, 380));
@@ -431,16 +426,15 @@ public class UnityBlocks{
             size = 12;
             health = 22000;
             range = 370f;
-            reloadTime = 12f;
+            reload = 12f;
             coolantMultiplier = 0.5f;
-            restitution = 0.08f;
+            //restitution = 0.08f;
             inaccuracy = 3f;
-            shots = 2;
+            shoot = new ShootAlternate(37 / 8);
+            shoot.shots = 2;
             shootSound = Sounds.shootBig;
-            alternate = true;
-            recoilAmount = 5.5f;
+            recoil = 5.5f;
             rotateSpeed = 3.5f;
-            spread = 37f;
             focus = true;
             addBarrel(23.5f, 36.5f, 9f);
             addBarrel(8.5f, 24.5f, 6f);
@@ -453,16 +447,16 @@ public class UnityBlocks{
                 size = 5;
                 health = 3975;
                 range = 215f;
-                reloadTime = 110f;
+                reload = 110f;
                 coolantMultiplier = 0.8f;
                 shootCone = 40f;
                 shootDuration = 230f;
                 // shootLength = 5f;
-                powerUse = 19f;
-                shootShake = 3f;
+                consumePower(19f);
+                shake = 3f;
                 firingMoveFract = 0.2f;
                 shootEffect = Fx.shootBigSmoke2;
-                recoilAmount = 4f;
+                recoil = 4f;
                 shootSound = Sounds.laserbig;
                 heatColor = Color.valueOf("e04300");
                 rotateSpeed = 3.5f;
@@ -470,13 +464,9 @@ public class UnityBlocks{
                 loopSoundVolume = 2.1f;
                 requirements(Category.turret, with(Items.copper, 450, Items.lead, 350, Items.graphite, 390, Items.silicon, 360, Items.titanium, 250, UnityItems.umbrium, 370, Items.surgeAlloy, 360));
                 shootType = UnityBullets.falloutLaser;
-                consumes.add(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.5f && liquid.flammability < 0.1f, 0.58f)).update(false);
-            }
+                consume(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.5f && liquid.flammability < 0.1f, 0.58f)).update(false);
 
-            @Override
-            public void load(){
-                super.load();
-                baseRegion = atlas.find("unity-block-" + size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
 
@@ -484,16 +474,16 @@ public class UnityBlocks{
             size = 8;
             health = 9750;
             range = 300f;
-            reloadTime = 190f;
+            reload = 190f;
             coolantMultiplier = 0.6f;
             shootCone = 40f;
             shootDuration = 320f;
-            powerUse = 39f;
-            shootShake = 4f;
+            consumePower(39f);
+            shake = 4f;
             firingMoveFract = 0.16f;
             shootEffect = Fx.shootBigSmoke2;
-            recoilAmount = 7f;
-            cooldown = 0.012f;
+            recoil = 7f;
+            cooldownTime = 1 / 0.012f;
             heatColor = Color.white;
             rotateSpeed = 1.9f;
             shootSound = Sounds.laserbig;
@@ -501,23 +491,23 @@ public class UnityBlocks{
             loopSoundVolume = 2.2f;
             requirements(Category.turret, with(Items.copper, 1250, Items.lead, 1320, Items.graphite, 1100, Items.titanium, 1340, Items.surgeAlloy, 1240, Items.silicon, 1350, Items.thorium, 770, UnityItems.darkAlloy, 370));
             shootType = UnityBullets.catastropheLaser;
-            consumes.add(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.4f && liquid.flammability < 0.1f, 1.3f)).update(false);
+            consume(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.4f && liquid.flammability < 0.1f, 1.3f)).update(false);
         }};
 
         calamity = new BigLaserTurret("calamity"){{
             size = 12;
             health = 22000;
             range = 420f;
-            reloadTime = 320f;
+            reload = 320f;
             coolantMultiplier = 0.6f;
             shootCone = 23f;
             shootDuration = 360f;
-            powerUse = 87f;
-            shootShake = 4f;
+            consumePower(87f);
+            shake = 4f;
             firingMoveFract = 0.09f;
             shootEffect = Fx.shootBigSmoke2;
-            recoilAmount = 7f;
-            cooldown = 0.009f;
+            recoil = 7f;
+            cooldownTime = 1 / 0.009f;
             heatColor = Color.white;
             rotateSpeed = 0.97f;
             shootSound = Sounds.laserbig;
@@ -525,7 +515,7 @@ public class UnityBlocks{
             loopSoundVolume = 2.6f;
             requirements(Category.turret, with(Items.copper, 2800, Items.lead, 2970, Items.graphite, 2475, Items.titanium, 3100, Items.surgeAlloy, 2790, Items.silicon, 3025, Items.thorium, 1750, UnityItems.darkAlloy, 1250));
             shootType = UnityBullets.calamityLaser;
-            consumes.add(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.3f && liquid.flammability < 0.1f, 2.1f)).update(false);
+            consume(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.3f && liquid.flammability < 0.1f, 2.1f)).update(false);
         }};
 
         extinction = new BigLaserTurret("extinction"){{
@@ -533,24 +523,24 @@ public class UnityBlocks{
             size = 14;
             health = 29500;
             range = 520f;
-            reloadTime = 380f;
+            reload = 380f;
             coolantMultiplier = 0.4f;
             shootCone = 12f;
             shootDuration = 360f;
             // shootLength = 10f;
-            powerUse = 175f;
-            shootShake = 4f;
+            consumePower(175f);
+            shake = 4f;
             firingMoveFract = 0.09f;
             shootEffect = Fx.shootBigSmoke2;
-            recoilAmount = 7f;
-            cooldown = 0.003f;
+            recoil = 7f;
+            cooldownTime = 1 / 0.003f;
             heatColor = Color.white;
             rotateSpeed = 0.82f;
             shootSound = UnitySounds.extinctionShoot;
             loopSound = UnitySounds.beamIntenseHighpitchTone;
             loopSoundVolume = 2f;
             shootType = UnityBullets.extinctionLaser;
-            consumes.add(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.27f && liquid.flammability < 0.1f, 2.5f)).update(false);
+            consume(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.27f && liquid.flammability < 0.1f, 2.5f)).update(false);
         }};
 
         darkAlloyForge = new StemGenericCrafter("dark-alloy-forge"){{
@@ -563,8 +553,8 @@ public class UnityBlocks{
             ambientSoundVolume = 0.6f;
             drawer = new DrawSmelter();
 
-            consumes.items(with(Items.lead, 2, Items.silicon, 3, Items.blastCompound, 1, Items.phaseFabric, 1, UnityItems.umbrium, 2));
-            consumes.power(3.2f);
+            consumeItems(with(Items.lead, 2, Items.silicon, 3, Items.blastCompound, 1, Items.phaseFabric, 1, UnityItems.umbrium, 2));
+            consumePower(3.2f);
 
             update((StemGenericCrafterBuild e) -> {
                 if(e.consValid() && Mathf.chanceDelta(0.76f)){
@@ -591,10 +581,10 @@ public class UnityBlocks{
             requirements(Category.turret, with(Items.lead, 50, Items.silicon, 35, UnityItems.luminum, 65, Items.titanium, 65));
             size = 2;
             health = 1280;
-            reloadTime = 100f;
+            reload = 100f;
             shootCone = 30f;
             range = 120f;
-            powerUse = 4.5f;
+            consumePower(4.5f);
             heatColor = UnityPal.lightHeat;
             loopSound = Sounds.respawning;
             shootType = new ContinuousLaserBulletType(16f){{
@@ -602,21 +592,22 @@ public class UnityBlocks{
                 length = 130f;
                 width = 4f;
                 colors = new Color[]{Pal.lancerLaser.cpy().a(3.75f), Pal.lancerLaser, Color.white};
-                strokes = new float[]{0.92f, 0.6f, 0.28f};
+                strokeFrom = 0.92f;
+                strokeTo = 0.28f;
                 lightColor = hitColor = Pal.lancerLaser;
             }};
-            consumes.add(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.5f && liquid.flammability < 0.1f, 0.2f)).update(false);
+            consume(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.5f && liquid.flammability < 0.1f, 0.2f)).update(false);
         }};
 
         graviton = new LaserTurret("graviton"){{
             requirements(Category.turret, with(Items.lead, 110, Items.graphite, 90, Items.silicon, 70, UnityItems.luminum, 180, Items.titanium, 135));
             size = 3;
             health = 2780;
-            reloadTime = 150f;
-            recoilAmount = 2f;
+            reload = 150f;
+            recoil = 2f;
             shootCone = 30f;
             range = 230f;
-            powerUse = 5.75f;
+            consumePower(5.75f);
             heatColor = UnityPal.lightHeat;
             loopSound = UnitySounds.xenoBeam;
             shootType = new GravitonLaserBulletType(0.8f){{
@@ -624,19 +615,20 @@ public class UnityBlocks{
                 knockback = -5f;
                 incendChance = -1f;
                 colors = new Color[]{UnityPal.advanceDark.cpy().a(0.1f), Pal.lancerLaser.cpy().a(0.2f)};
-                strokes = new float[]{2.4f, 1.8f};
+                strokeFrom = 2.4f;
+                strokeTo = 1.8f;
             }};
-            consumes.add(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.5f && liquid.flammability < 0.1f, 0.25f)).update(false);
+            consume(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.5f && liquid.flammability < 0.1f, 0.25f)).update(false);
         }};
 
         electron = new PowerTurret("electron"){{
             requirements(Category.turret, with(Items.lead, 110, Items.silicon, 75, UnityItems.luminum, 165, Items.titanium, 125));
             size = 3;
             health = 2540;
-            reloadTime = 60f;
+            reload = 60f;
             coolantMultiplier = 2f;
             range = 170f;
-            powerUse = 6.6f;
+            consumePower(6.6f);
             heatColor = UnityPal.lightHeat;
             shootEffect = ShootFx.blueTriangleShoot;
             shootSound = Sounds.pew;
@@ -665,15 +657,15 @@ public class UnityBlocks{
             requirements(Category.turret, with(Items.lead, 110, Items.silicon, 75, UnityItems.luminum, 165, Items.titanium, 135));
             size = 4;
             health = 2540;
-            reloadTime = 60f;
+            reload = 60f;
             range = 245f;
             shootCone = 20f;
             heatColor = UnityPal.lightHeat;
             rotateSpeed = 1.5f;
-            recoilAmount = 4f;
-            powerUse = 4.9f;
+            recoil = 4f;
+            consumePower(4.9f);
             targetAir = false;
-            cooldown = 0.008f;
+            cooldownTime = 1 / 0.008f;
             shootEffect = ShootFx.blueTriangleShoot;
             shootType = new ArtilleryBulletType(8f, 44f, "unity-electric-shell"){
                 {
@@ -708,14 +700,14 @@ public class UnityBlocks{
             requirements(Category.turret, with(Items.lead, 110, Items.silicon, 75, UnityItems.luminum, 165, Items.titanium, 135));
             size = 4;
             health = 2520;
-            reloadTime = 10f;
+            reload= 10f;
             range = 235f;
             shootCone = 20f;
             heatColor = UnityPal.lightHeat;
             rotateSpeed = 3.9f;
-            recoilAmount = 4f;
-            powerUse = 4.9f;
-            cooldown = 0.008f;
+            recoil = 4f;
+            consumePower(4.9f);
+            cooldownTime = 1 / 0.008f;
             inaccuracy = 3.4f;
             shootEffect = ShootFx.blueTriangleShoot;
             shootType = new FlakBulletType(8.7f, 7f){
@@ -749,15 +741,15 @@ public class UnityBlocks{
             requirements(Category.turret, with(Items.silicon, 300, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 110, UnityItems.lightAlloy, 15));
             size = 4;
             health = 5000;
-            reloadTime = 90f;
+            reload = 90f;
             coolantMultiplier = 3f;
             shootCone = 30f;
             range = 200f;
             heatColor = UnityPal.lightHeat;
             rotateSpeed = 4.3f;
-            recoilAmount = 2f;
-            powerUse = 1.9f;
-            cooldown = 0.012f;
+            recoil = 2f;
+            consumePower(1.9f);
+            cooldownTime = 0.012f;
             shootSound = UnitySounds.gluonShoot;
             shootType = UnityBullets.gluonEnergyBall;
         }};
@@ -767,16 +759,16 @@ public class UnityBlocks{
                 requirements(Category.turret, with(Items.silicon, 300, UnityItems.luminum, 430, Items.titanium, 190, Items.thorium, 110, UnityItems.lightAlloy, 15));
                 health = 4000;
                 size = 5;
-                reloadTime = 90f;
+                reload = 90f;
                 range = 250f;
                 rotateSpeed = 2.5f;
                 shootCone = 20f;
                 heatColor = UnityPal.lightHeat;
-                chargeBeginEffect = ChargeFx.wBosonChargeBeginEffect;
-                chargeEffect = ChargeFx.wBosonChargeEffect;
-                chargeTime = 38f;
-                cooldown = 0.008f;
-                powerUse = 8.6f;
+                shoot.firstShotDelay = 38f;
+                cooldownTime = 1 / 0.008f;
+                consumePower(8.6f);
+
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
 
                 shootType = new DecayBasicBulletType(8.5f, 24f){{
                     drag = 0.026f;
@@ -790,6 +782,9 @@ public class UnityBlocks{
                     decayEffect = UnityFx.wBosonEffectLong;
                     height = 13f;
                     width = 12f;
+
+                    chargeEffect = new MultiEffect(ChargeFx.wBosonChargeBeginEffect, ChargeFx.wBosonChargeEffect);
+
                     decayBullet = new BasicBulletType(4.8f, 24f){
                         {
                             drag = 0.04f;
@@ -828,12 +823,6 @@ public class UnityBlocks{
                     fragLifeMin = 1.2f;
                     fragLifeMax = 1.3f;
                 }};
-            }
-
-            @Override
-            public void load(){
-                super.load();
-                baseRegion = atlas.find("unity-block-" + size);
             }
         };
 
@@ -879,12 +868,7 @@ public class UnityBlocks{
                     hitEffect = Fx.hitLancer;
                     hittable = false;
                 }};
-            }
-
-            @Override
-            public void load(){
-                super.load();
-                baseRegion = atlas.find("unity-block-" + size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
 
@@ -907,19 +891,14 @@ public class UnityBlocks{
                 powerUse = 10.4f;
                 shootSound = UnitySounds.higgsBosonShoot;
                 cooldown = 0.008f;
-                shootType = new RoundLaserBulletType(85f){{
+                shootType = new RoundLaserBulletType(85f) {{
                     length = 270f;
                     width = 5.8f;
                     hitSize = 13f;
                     drawSize = 460f;
                     shootEffect = smokeEffect = Fx.none;
                 }};
-            }
-
-            @Override
-            public void load(){
-                super.load();
-                baseRegion = atlas.find("unity-block-" + size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
 
@@ -939,12 +918,7 @@ public class UnityBlocks{
                 cooldown = 0.012f;
                 shootSound = UnitySounds.singularityShoot;
                 shootType = UnityBullets.singularityEnergyBall;
-            }
-
-            @Override
-            public void load(){
-                super.load();
-                baseRegion = atlas.find("unity-block-" + size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
 
@@ -977,12 +951,7 @@ public class UnityBlocks{
                     shootEffect = Fx.lightningShoot;
                     smokeEffect = Fx.none;
                 }};
-            }
-
-            @Override
-            public void load(){
-                super.load();
-                baseRegion = atlas.find("unity-block-" + size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
 
@@ -1025,12 +994,7 @@ public class UnityBlocks{
                         backColor = Pal.lancerLaser;
                     }};
                 }};
-            }
-
-            @Override
-            public void load(){
-                super.load();
-                baseRegion = atlas.find("unity-block-" + size);
+                ((DrawTurret)drawer).basePrefix = "unity-block-";
             }
         };
 
@@ -1038,7 +1002,7 @@ public class UnityBlocks{
             requirements(Category.crafting, with(Items.lead, 5, Items.metaglass, 10));
 
             lightProduction = 0.6f;
-            consumes.power(1f);
+            consumePower(1f);
 
             drawer = new DrawLightBlock();
         }};
@@ -1050,8 +1014,8 @@ public class UnityBlocks{
             health = 240;
             lightProduction = 2f;
 
-            consumes.power(1.8f);
-            consumes.liquid(Liquids.oil, 0.1f);
+            consumePower(1.8f);
+            consumeLiquid(Liquids.oil, 0.1f);
 
             drawer = new DrawLightBlock();
         }};
@@ -1092,8 +1056,8 @@ public class UnityBlocks{
             size = 4;
             outputItem = new ItemStack(UnityItems.lightAlloy, 3);
 
-            consumes.items(with(Items.copper, 2, Items.silicon, 5, Items.plastanium, 2, UnityItems.luminum, 2));
-            consumes.power(3.5f);
+            consumeItems(with(Items.copper, 2, Items.silicon, 5, Items.plastanium, 2, UnityItems.luminum, 2));
+            consumePower(3.5f);
 
             drawer = new DrawSmelter(UnityPal.lightDark){{
                 flameRadius = 7f;
@@ -1166,23 +1130,22 @@ public class UnityBlocks{
             size = 2;
             health = 480;
             range = 145f;
-            reloadTime = 130f;
+            reload = 130f;
             coolantMultiplier = 2f;
             shootCone = 0.1f;
-            shots = 1;
+            shoot.shots = 1;
             inaccuracy = 12f;
-            chargeTime = 65f;
-            chargeEffects = 5;
-            chargeMaxDelay = 25f;
-            powerUse = 4.2069f;
+            shoot.firstShotDelay = 65f;
+            consumePower(4.2069f);
             targetAir = false;
-            shootType = UnityBullets.orb;
+            shootType = UnityBullets.orb.copy();
+            shootType.chargeEffect = new MultiEffect(
+                    new MoreEffect(5, 25f, UnityFx.orbCharge), UnityFx.orbChargeBegin
+            );
             shootSound = Sounds.laser;
             heatColor = Pal.turretHeat;
             shootEffect = ShootFx.orbShoot;
             smokeEffect = Fx.none;
-            chargeEffect = UnityFx.orbCharge;
-            chargeBeginEffect = UnityFx.orbChargeBegin;
         }};
 
         shockwire = new LaserTurret("shockwire"){{
@@ -1190,15 +1153,15 @@ public class UnityBlocks{
             size = 2;
             health = 860;
             range = 125f;
-            reloadTime = 140f;
+            reload = 140f;
             coolantMultiplier = 2f;
             shootCone = 1f;
             inaccuracy = 0f;
-            powerUse = 6.9420f;
+            consumePower(6.9420f);
             targetAir = false;
             shootType = UnityBullets.shockBeam;
             shootSound = Sounds.thruster;
-            consumes.add(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.5f && liquid.flammability <= 0.1f, 0.4f)).update(false);
+            consume(new ConsumeLiquidFilter(liquid -> liquid.temperature <= 0.5f && liquid.flammability <= 0.1f, 0.4f)).update(false);
         }};
 
         current = new PowerTurret("current"){{

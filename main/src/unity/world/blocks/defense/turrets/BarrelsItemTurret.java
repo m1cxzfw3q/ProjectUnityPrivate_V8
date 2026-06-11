@@ -4,95 +4,98 @@ import arc.*;
 import arc.math.*;
 import arc.math.geom.*;
 import arc.struct.*;
+import arc.util.Time;
 import mindustry.entities.bullet.*;
+import mindustry.entities.pattern.ShootPattern;
 import mindustry.world.blocks.defense.turrets.*;
-
-import static mindustry.Vars.*;
+import mindustry.world.draw.DrawTurret;
 
 public class BarrelsItemTurret extends ItemTurret{
     protected final Seq<Barrel> barrels = new Seq<>(1);
     protected boolean focus;
-    protected Vec2 tr3 = new Vec2();
 
     public BarrelsItemTurret(String name){
         super(name);
+
+        ((DrawTurret) drawer).basePrefix = "unity-block-";
     }
 
-    protected void addBarrel(float x, float y, float reloadTime){
-        barrels.add(new Barrel(x, y, reloadTime));
-    }
-
-    @Override
-    public void load(){
-        super.load();
-        baseRegion = Core.atlas.find("unity-block-" + size);
+    protected void addBarrel(float x, float y, float reload){
+        barrels.add(new Barrel(x, y, reload));
     }
 
     protected class Barrel{
-        public final float x, y, reloadTime;
+        public final float x, y, reload;
 
-        public Barrel(float x, float y, float reloadTime){
+        public Barrel(float x, float y, float reload){
             this.x = x;
             this.y = y;
-            this.reloadTime = reloadTime;
+            this.reload = reload;
         }
     }
 
     public class BarrelsItemTurretBuild extends ItemTurretBuild{
         protected float[] barrelReloads = new float[barrels.size];
-        protected int[] barrelShotCounters = new int[barrels.size];
+        protected int[] barrelCounters = new int[barrels.size];
 
         @Override
-        protected void shoot(BulletType type){
-            if(focus){
-                recoil = recoilAmount;
-                heat = 1f;
-                float i = shotCounter % 2 - 0.5f;
-                
-                tr.trns(rotation - 90f, spread * i + Mathf.range(xRand), size * tilesize / 2f);
-                tr3.trns(rotation, Math.max(Mathf.dst(x, y, targetPos.x, targetPos.y), size * tilesize));
-                
-                float rot = Angles.angle(tr.x, tr.y, tr3.x, tr3.y);
-                
-                bullet(type, rot + Mathf.range(inaccuracy));
-                shotCounter++;
-                effects();
-                useAmmo();
-            }else{
-                super.shoot(type);
+        protected void updateShooting() {
+            super.updateShooting();
+
+            for (int i = 0;i < barrels.size;i++) {
+                Barrel barrel = barrels.get(i);
+                if(barrelReloads[i] >= barrel.reload && !charging() && shootWarmup >= minWarmup){
+                    shootBarrel(peekAmmo(), i);
+                    barrelReloads[i] %= barrel.reload;
+                }
+            }
+        }
+
+        @Override
+        protected void updateReload() {
+            super.updateReload();
+
+            for (int i = 0;i < barrels.size;i++) {
+                Barrel barrel = barrels.get(i);
+                barrelReloads[i] += delta() * ammoReloadMultiplier() * baseReloadSpeed();
+
+                //cap reload for visual reasons
+                barrelReloads[i] = Math.min(barrelReloads[i], barrel.reload);
             }
         }
 
         protected void shootBarrel(BulletType type, int index){
-            recoil = Mathf.clamp(recoil + recoilAmount / 2f, 0f, recoilAmount);
-            
-            float i = barrelShotCounters[index] % 2 - 0.5f;
-            tr.trns(rotation - 90f, barrels.get(index).x * i + Mathf.range(xRand), barrels.get(index).y);
-            float rot = rotation;
-            
-            if(focus){
-                tr3.trns(rotation, Math.max(Mathf.dst(x, y, targetPos.x, targetPos.y), size * tilesize));
-                rot = Angles.angle(tr.x, tr.y, tr3.x, tr3.y);
-            }
-            
-            bullet(type, rot + Mathf.range(inaccuracy));
-            barrelShotCounters[index]++;
-            effects();
-            useAmmo();
-        }
+            Barrel barrel = barrels.get(index);
+            float
+                    bulletX = x + Angles.trnsx(rotation - 90, shootX + barrel.x, shootY + barrel.y),
+                    bulletY = y + Angles.trnsy(rotation - 90, shootX + barrel.x, shootY + barrel.y);
 
-        @Override
-        protected void updateShooting(){
-            super.updateShooting();
-            for(int i = 0, len = barrels.size; i < len; i++){
-                if(hasAmmo()){
-                    if(barrelReloads[i] >= barrels.get(i).reloadTime){
-                        shootBarrel(peekAmmo(), i);
-                        barrelReloads[i] = 0f;
-                    }else{
-                        barrelReloads[i] += delta() * peekAmmo().reloadMultiplier * baseReloadSpeed();
-                    }
+            if(shoot.firstShotDelay > 0){
+                chargeSound.at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax));
+                type.chargeEffect.at(bulletX, bulletY, rotation);
+            }
+
+            ShootPattern pattern = type.shootPattern != null ? type.shootPattern : shoot;
+
+            pattern.shoot(barrelCounters[index], (xOffset, yOffset, angle, delay, mover) -> {
+                queuedBullets++;
+                int barrelCount = barrelCounters[index];
+
+                if(delay > 0f){
+                    Time.run(delay, () -> {
+                        //hack: make sure the barrel is the same as what it was when the bullet was queued to fire
+                        int prev = barrelCounters[index];
+                        barrelCounters[index] = barrelCount;
+                        bullet(type, xOffset + barrel.x, yOffset + barrel.y, angle, mover);
+                        barrelCounters[index] = prev;
+                    });
+                }else{
+                    bullet(type, xOffset + barrel.x, yOffset + barrel.y, angle, mover);
                 }
+            }, () -> barrelCounters[index]++);
+
+            if(consumeAmmoOnce){
+                useAmmo();
             }
         }
     }

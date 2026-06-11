@@ -70,7 +70,7 @@ public class LightProcess implements AsyncProcess{
 
         int size = all.size;
         for(int i = 0; i < size; i++){
-            all.items[i].cast();
+            all.get(i).cast();
         }
 
         end = true;

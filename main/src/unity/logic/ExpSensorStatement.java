@@ -15,6 +15,7 @@ public class ExpSensorStatement extends LStatement{
 
     @Override
     public void build(Table table){
+        table.setColor(UnityPal.exp);
         table.clearChildren();
 
         table.table(t -> {
@@ -58,11 +59,6 @@ public class ExpSensorStatement extends LStatement{
         builder.append(cont.name());
         builder.append(" ");
         builder.append(type);
-    }
-
-    @Override
-    public Color color(){
-        return UnityPal.exp;
     }
 
     @Override
