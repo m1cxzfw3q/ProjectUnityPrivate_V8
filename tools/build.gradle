@@ -1,5 +1,5 @@
 sourceSets.main{
-    java.srcDirs = ['src/']
+    java.srcDirs = ["src/"]
 }
 
 import arc.files.*
@@ -17,7 +17,7 @@ final def usedClasspath =
 
 dependencies{
     if(
-        !usedClasspath.exists() || toolRecompile ||
+    !usedClasspath.exists() || toolRecompile ||
         taskNames.contains('main:deploy') || taskNames.contains('main:dex')
     ){
         implementation project(':main')
