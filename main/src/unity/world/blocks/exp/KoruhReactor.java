@@ -35,7 +35,7 @@ public class KoruhReactor extends ImpactReactor{
     public void setBars(){
         super.setBars();
 
-        bars.add("exp", (KoruhReactor.KoruhReactorBuild entity) -> new Bar(() -> Core.bundle.get("bar.exp"), () -> UnityPal.exp, ()->1f*entity.exp/expCapacity));
+        addBar("exp", (KoruhReactor.KoruhReactorBuild entity) -> new Bar(() -> Core.bundle.get("bar.exp"), () -> UnityPal.exp, ()->1f*entity.exp/expCapacity));
     }
 
     public class KoruhReactorBuild extends ImpactReactorBuild implements ExpHolder{

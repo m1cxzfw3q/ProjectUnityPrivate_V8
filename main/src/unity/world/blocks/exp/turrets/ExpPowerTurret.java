@@ -24,7 +24,7 @@ public class ExpPowerTurret extends ExpTurret {
 
     @Override
     public void init(){
-        consumes.powerCond(powerUse, TurretBuild::isActive);
+        consumePowerCond(powerUse, TurretBuild::isActive);
         super.init();
     }
 
@@ -32,8 +32,6 @@ public class ExpPowerTurret extends ExpTurret {
 
         @Override
         public void updateTile(){
-            unit.ammo(power.status * unit.type().ammoCapacity);
-
             super.updateTile();
         }
 

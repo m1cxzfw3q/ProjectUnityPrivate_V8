@@ -20,4 +20,8 @@ public class MoreEffect extends Effect {
             Time.run(delay * i, () -> effect.render(e));
         }
     }
+
+    public void effect(Effect effect) {
+        this.effect = effect;
+    }
 }

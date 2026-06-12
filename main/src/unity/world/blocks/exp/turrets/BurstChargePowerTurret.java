@@ -1,6 +1,7 @@
 package unity.world.blocks.exp.turrets;
 
 import arc.math.*;
+import arc.math.geom.Vec2;
 import arc.util.*;
 import mindustry.entities.bullet.*;
 
@@ -10,6 +11,7 @@ public class BurstChargePowerTurret extends ExpPowerTurret {
     }
 
     public class BurstChargeTurretBuild extends ExpPowerTurretBuild {
+        Vec2 tr = new Vec2();
 
         protected void shootCharge(BulletType type, float rotation){
             float rx = Mathf.range(xRand);
@@ -31,7 +33,7 @@ public class BurstChargePowerTurret extends ExpPowerTurret {
                 heat = 1f;
                 effects();
                 useAmmo();
-                recoil = recoilAmount;
+                recoil = recoil;
                 bullet(type, rotation + Mathf.range(inaccuracy + type.inaccuracy));
             });
         }

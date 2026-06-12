@@ -44,11 +44,6 @@ public class EndCutterLaserBulletType extends AntiCheatBulletTypeBase{
     }
 
     @Override
-    public float range(){
-        return maxLength / 2f;
-    }
-
-    @Override
     public void draw(Bullet b){
         float fade = Mathf.clamp(b.time > b.lifetime - fadeTime ? 1f - (b.time - (lifetime - fadeTime)) / fadeTime : 1f) * Mathf.clamp(b.time / fadeInTime);
         float tipHeight = width / 2f;
@@ -70,7 +65,7 @@ public class EndCutterLaserBulletType extends AntiCheatBulletTypeBase{
             }
         }
         Tmp.v2.trns(b.rotation(), b.fdata + tipHeight).add(b);
-        Drawf.light(b.team, b.x, b.y, Tmp.v2.x, Tmp.v2.y, width * 2f, colors[0], 0.5f);
+        Drawf.light(b.x, b.y, Tmp.v2.x, Tmp.v2.y, width * 2f, colors[0], 0.5f);
         Draw.reset();
     }
 
@@ -87,8 +82,7 @@ public class EndCutterLaserBulletType extends AntiCheatBulletTypeBase{
 
     @Override
     public void update(Bullet b){
-        if(b.data instanceof LaserData){
-            LaserData vec = (LaserData)b.data;
+        if(b.data instanceof LaserData vec){
             if(vec.restartTime >= 5f){
                 vec.velocity = Mathf.clamp((vec.velocityTime / accel) + vec.velocity, 0f, laserSpeed);
                 b.fdata = Mathf.clamp(b.fdata + (vec.velocity * Time.delta), 0f, maxLength);
@@ -108,8 +102,7 @@ public class EndCutterLaserBulletType extends AntiCheatBulletTypeBase{
                         Tmp.v2.trns(b.rotation(), maxLength * 1.5f).add(b);
                         float dst = Intersector.distanceLinePoint(b.x, b.y, Tmp.v2.x, Tmp.v2.y, building.x, building.y);
                         b.fdata = ((b.dst(building) - (building.block.size * Vars.tilesize / 2f)) + dst) + 4f;
-                        if(b.data instanceof LaserData){
-                            LaserData data = (LaserData)b.data;
+                        if(b.data instanceof LaserData data){
                             data.velocity = 0f;
                             data.restartTime = 0f;
                             data.velocityTime = 0f;
@@ -132,8 +125,7 @@ public class EndCutterLaserBulletType extends AntiCheatBulletTypeBase{
                     Tmp.v2.trns(b.rotation(), maxLength * 1.5f).add(b);
                     float dst = Intersector.distanceLinePoint(b.x, b.y, Tmp.v2.x, Tmp.v2.y, unit.x, unit.y);
                     b.fdata = ((b.dst(unit) - (unit.hitSize / 2f)) + dst) + 4f;
-                    if(b.data instanceof LaserData){
-                        LaserData data = (LaserData)b.data;
+                    if(b.data instanceof LaserData data){
                         data.velocity = 0f;
                         data.restartTime = 0f;
                         data.velocityTime = 0f;
@@ -155,8 +147,7 @@ public class EndCutterLaserBulletType extends AntiCheatBulletTypeBase{
             }, (ex, ey) -> hitEffect.at(ex, ey, b.rotation()), true);
         }
         
-        if(b.data instanceof LaserData){
-            LaserData vec = (LaserData)b.data;
+        if(b.data instanceof LaserData vec){
             if(vec.lightningTime >= 1f && b.fdata > vec.lastLength){
                 int dst = Math.max(Mathf.round((b.fdata - vec.lastLength) / 5), 1);
                 for(int i = 0; i < dst; i++){
