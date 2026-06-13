@@ -23,5 +23,8 @@ public class V7Sounds {
             flame = Sounds.shootFlame,
             splash = Sounds.stepWater,
             railgun = Sounds.shootForeshadow,
-            missile = Sounds.shootMissileShort;
+            missile = Sounds.shootMissileShort,
+            shootSnap = Sounds.shootScatter,
+            artillery = Sounds.shootArtillery,
+            lasershoot = Sounds.shootLaser;
 }

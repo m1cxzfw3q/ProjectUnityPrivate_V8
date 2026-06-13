@@ -4,6 +4,7 @@ import arc.func.*;
 import arc.graphics.*;
 import mindustry.content.*;
 import mindustry.entities.bullet.*;
+import mindustry.entities.pattern.ShootSpread;
 import mindustry.graphics.*;
 import mindustry.type.*;
 import unity.entities.bullet.anticheat.*;
@@ -19,8 +20,7 @@ public class UnityWeaponTemplates{
         apocalypseSmall = new CloneableSetWeapon("unity-ravager-small-turret"){{
             reload = 2f * 60f;
             shootY = 6.5f;
-            shots = 3;
-            spacing = 15f;
+            shoot = new ShootSpread(3, 15f);
             shootCone = 10f;
             shadow = 15f;
             mirror = true;
@@ -46,8 +46,8 @@ public class UnityWeaponTemplates{
             reload = 3.5f * 60f;
             rotateSpeed = 6f;
             shootY = 6.5f;
-            shots = 12;
-            shotDelay = 6f;
+            shoot.shots = 12;
+            shoot.shotDelay = 6f;
             inaccuracy = 20f;
             shootCone = 10f;
             shadow = 24f;
@@ -151,7 +151,7 @@ public class UnityWeaponTemplates{
         plagueSmallMount = new CloneableSetWeapon("unity-small-plague-launcher"){{
             shootY = 4.75f;
             reload = 1.5f * 60f;
-            shots = 4;
+            shoot.shots = 4;
             inaccuracy = 15f;
             mirror = false;
             alternate = true;

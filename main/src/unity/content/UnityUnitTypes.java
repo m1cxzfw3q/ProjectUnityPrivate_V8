@@ -12,15 +12,14 @@ import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.entities.abilities.*;
 import mindustry.entities.bullet.*;
+import mindustry.entities.pattern.ShootSpread;
 import mindustry.entities.units.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
-import mindustry.type.ammo.*;
 import mindustry.type.weapons.*;
 import mindustry.world.meta.*;
 import unity.ai.*;
-import unity.ai.AssistantAI.*;
 import unity.annotations.Annotations.*;
 import unity.content.effects.*;
 import unity.content.units.*;
@@ -35,12 +34,11 @@ import unity.entities.bullet.physical.*;
 import unity.entities.legs.*;
 import unity.entities.legs.BasicLeg.*;
 import unity.entities.units.*;
-import unity.gen.*;
 import unity.graphics.*;
-import unity.graphics.MultiTrail.*;
 import unity.type.*;
 import unity.type.decal.*;
 import unity.type.weapons.*;
+import unity.v8.V7Bullets;
 import unity.v8.V7Sounds;
 
 import static mindustry.Vars.*;
@@ -161,7 +159,7 @@ public class UnityUnitTypes{
 
     public static void load(){
         testLink = new UnityUnitType("test-link"){{
-            defaultController = LinkedAI::new;
+            aiController = LinkedAI::new;
             rotationSpeed = 65f;
             speed = 1f;
             drag = 0.08f;
@@ -175,7 +173,7 @@ public class UnityUnitTypes{
         }};
 
         test = new UnityUnitType("test"){{
-            defaultController = LinkerAI::new;
+            aiController = LinkerAI::new;
             linkType = testLink;
             linkCount = 5;
             rotationSpeed = 65f;
@@ -193,7 +191,7 @@ public class UnityUnitTypes{
         //region flying-units
 
         caelifera = new UnityUnitType("caelifera"){{
-            defaultController = CopterAI::new;
+            aiController = CopterAI::new;
             speed = 5f;
             drag = 0.08f;
             accel = 0.04f;
@@ -223,7 +221,7 @@ public class UnityUnitTypes{
                 x = 4.5f;
                 y = 0.5f;
                 shootY = 2.25f;
-                shootSound = Sounds.shootSnap;
+                shootSound = V7Sounds.shootSnap;
                 ejectEffect = Fx.casing2;
                 bullet = new MissileBulletType(3f, 1f){{
                     speed = 3f;
@@ -241,7 +239,7 @@ public class UnityUnitTypes{
         }};
 
         schistocerca = new UnityUnitType("schistocerca"){{
-            defaultController = CopterAI::new;
+            aiController = CopterAI::new;
             speed = 4.5f;
             drag = 0.07f;
             accel = 0.03f;
@@ -275,7 +273,7 @@ public class UnityUnitTypes{
                 y = 8.75f;
                 shootX = -0.75f;
                 shootY = 3f;
-                shootSound = Sounds.shootSnap;
+                shootSound = V7Sounds.shootSnap;
                 ejectEffect = Fx.casing1;
                 reload = 12f;
                 bullet = new BasicBulletType(4f, 8f){{
@@ -290,10 +288,10 @@ public class UnityUnitTypes{
                 y = 5.75f;
                 shootX = -0.5f;
                 shootY = 2f;
-                shootSound = Sounds.shootSnap;
+                shootSound = V7Sounds.shootSnap;
                 ejectEffect = Fx.casing1;
                 reload = 30f;
-                bullet = Bullets.standardIncendiary;
+                bullet = V7Bullets.standardIncendiary;
             }});
 
             for(int i : Mathf.signs){
@@ -310,7 +308,7 @@ public class UnityUnitTypes{
         }};
 
         anthophila = new UnityUnitType("anthophila"){{
-            defaultController = CopterAI::new;
+            aiController = CopterAI::new;
             speed = 4f;
             drag = 0.07f;
             accel = 0.03f;
@@ -346,8 +344,8 @@ public class UnityUnitTypes{
                 y = 8.25f;
                 shootY = 5.25f;
                 reload = 30f;
-                shots = 3;
-                shootSound = Sounds.spark;
+                shoot.shots = 3;
+                shootSound = V7Sounds.spark;
                 bullet = new LightningBulletType(){{
                     damage = 15f;
                     lightningLength = 12;
@@ -376,7 +374,7 @@ public class UnityUnitTypes{
         }};
 
         vespula = new UnityUnitType("vespula"){{
-            defaultController = CopterAI::new;
+            aiController = CopterAI::new;
             speed = 3.5f;
             drag = 0.07f;
             accel = 0.03f;
@@ -412,17 +410,17 @@ public class UnityUnitTypes{
                 shootX = -0.25f;
                 shootY = 5.75f;
                 reload = 20f;
-                shots = 4;
-                shotDelay = 2f;
-                shootSound = Sounds.shootSnap;
-                bullet = Bullets.standardThorium;
+                shoot.shots = 4;
+                shoot.shotDelay = 2f;
+                shootSound = V7Sounds.shootSnap;
+                bullet = V7Bullets.standardThorium;
             }},
             new Weapon(name + "-laser-gun"){{
                 x = 13.5f;
                 y = 15.5f;
                 shootY = 4.5f;
                 reload = 60f;
-                shootSound = Sounds.laser;
+                shootSound = V7Sounds.laser;
                 bullet = new LaserBulletType(240f){{
                     sideAngle = 45f;
                     length = 200f;
@@ -443,7 +441,7 @@ public class UnityUnitTypes{
         }};
 
         lepidoptera = new UnityUnitType("lepidoptera"){{
-            defaultController = CopterAI::new;
+            aiController = CopterAI::new;
             speed = 3f;
             drag = 0.07f;
             accel = 0.03f;
@@ -478,10 +476,9 @@ public class UnityUnitTypes{
                 x = 17f;
                 y = 14f;
                 shootY = 5.75f;
-                shootSound = Sounds.shootSnap;
+                shootSound = V7Sounds.shootSnap;
                 ejectEffect = Fx.casing2;
-                shots = 2;
-                spacing = 2f;
+                shoot = new ShootSpread(2, 2f);
                 reload = 20f;
                 bullet = new MissileBulletType(6f, 1f){{
                     width = 8f;
@@ -505,9 +502,7 @@ public class UnityUnitTypes{
                 shootY = 6.75f;
                 shootSound = V7Sounds.shotgun;
                 ejectEffect = Fx.none;
-                shots = 3;
-                spacing = 15f;
-                shotDelay = 0f;
+                shoot = new ShootSpread(3, 5f);
                 reload = 45f;
                 bullet = new ShrapnelBulletType(){{
                     toColor = Pal.accent;
@@ -541,7 +536,7 @@ public class UnityUnitTypes{
         }};
 
         mantodea = new UnityUnitType("mantodea"){{
-            defaultController = CopterAI::new;
+            aiController = CopterAI::new;
             speed = 5f;
             drag = 0.1f;
             accel = 0.03f;
@@ -576,9 +571,8 @@ public class UnityUnitTypes{
                 shootY = 10f;
 
                 shootSound = Sounds.shoot;
-                shots = 3;
-                spacing = 0f;
-                shotDelay = 3f;
+                shoot.shots = 3;
+                shoot.shotDelay = 3f;
                 reload = 25f;
 
                 bullet = flak;
@@ -593,9 +587,8 @@ public class UnityUnitTypes{
                 shootY = 10f;
 
                 shootSound = Sounds.shoot;
-                shots = 2;
-                spacing = 0f;
-                shotDelay = 3f;
+                shoot.shots = 2;
+                shoot.shotDelay = 3f;
                 reload = 15f;
 
                 bullet = flak;
@@ -631,7 +624,7 @@ public class UnityUnitTypes{
         }};
 
         cherub = new UnityUnitType("cherub"){{
-            defaultController = NewHealerAI::new;
+            aiController = NewHealerAI::new;
             flying = true;
             hitSize = 13f;
             health = 70f;
@@ -640,7 +633,6 @@ public class UnityUnitTypes{
             speed = 3.5f;
             engineOffset = 6.75f;
             engineSize = 1.75f;
-            isCounted = false;
 
             weapons.add(new RepairBeamWeapon(""){{
                 x = 0f;
@@ -658,7 +650,7 @@ public class UnityUnitTypes{
         }};
 
         malakhim = new UnityUnitType("malakhim"){{
-            defaultController = NewHealerAI::new;
+            aiController = NewHealerAI::new;
             flying = true;
             lowAltitude = true;
             hitSize = 19.5f;
@@ -668,7 +660,6 @@ public class UnityUnitTypes{
             speed = 2.5f;
             engineOffset = 10.25f;
             engineSize = 3f;
-            isCounted = false;
 
             weapons.add(new RepairBeamWeapon("repair-beam-weapon-center-large"){{
                 x = 0f;
@@ -686,7 +677,7 @@ public class UnityUnitTypes{
         }};
 
         seraphim = new UnityUnitType("seraphim"){{
-            defaultController = NewHealerAI::new;
+            aiController = NewHealerAI::new;
             flying = true;
             lowAltitude = true;
             hitSize = 34f;
@@ -746,7 +737,6 @@ public class UnityUnitTypes{
             drag = 0.02f;
             hitSize = 11.5f;
             engineOffset = 7.25f;
-            ammoType = new PowerAmmoType(1000);
 
             weapons.add(new Weapon(){{
                 rotate = false;
@@ -782,7 +772,6 @@ public class UnityUnitTypes{
             drag = 0.06f;
             hitSize = 16.5f;
             engineOffset = 8.25f;
-            ammoType = new PowerAmmoType(1000);
 
             weapons.add(new Weapon(){{
                 rotate = false;
@@ -791,7 +780,7 @@ public class UnityUnitTypes{
                 y = 0f;
                 shootY = 7f;
                 reload = 3f * 60f;
-                firstShotDelay = 70f;
+                shoot.firstShotDelay = 70f;
                 shootStatus = StatusEffects.unmoving;
                 shootStatusDuration = 70f;
                 shootSound = UnitySounds.zbosonShoot;
@@ -826,7 +815,6 @@ public class UnityUnitTypes{
             drag = 0.07f;
             hitSize = 24.5f;
             engineOffset = 3.75f;
-            ammoType = new PowerAmmoType(1000);
 
             weapons.add(new Weapon("unity-emp-launcher"){{
                 rotate = true;
@@ -864,7 +852,7 @@ public class UnityUnitTypes{
                 shootStatus = StatusEffects.unmoving;
                 shootStatusDuration = 70f;
                 reload = 5f * 60f;
-                firstShotDelay = 70f;
+                shoot.firstShotDelay = 70f;
 
                 bullet = new EmpBasicBulletType(6.7f, 8f){{
                     splashDamageRadius = 30f;
@@ -900,7 +888,6 @@ public class UnityUnitTypes{
             drag = 0.07f;
             hitSize = 41.5f;
             engineOffset = 24.25f;
-            ammoType = new PowerAmmoType(2000);
 
             CloneableSetWeapon t = UnityWeaponTemplates.waveformSmallMount;
 
@@ -973,7 +960,6 @@ public class UnityUnitTypes{
             hitSize = 57.5f;
             engineOffset = 33.75f;
             engineSize = 3.5f;
-            ammoType = new PowerAmmoType(2000);
 
             CloneableSetWeapon t = UnityWeaponTemplates.ultravioletMount;
 
@@ -1068,7 +1054,7 @@ public class UnityUnitTypes{
             health = 60000f;
             armor = 16f;
             mechStepParticles = true;
-            mechStepShake = 0.8f;
+            stepShake = 0.8f;
             canDrown = false;
             mechFrontSway = 2f;
             mechSideSway = 0.7f;
@@ -1134,7 +1120,7 @@ public class UnityUnitTypes{
             health = 140000f;
             armor = 20f;
             mechStepParticles = true;
-            mechStepShake = 0.83f;
+            stepShake = 0.83f;
             canDrown = false;
             mechFrontSway = 4f;
             mechSideSway = 0.7f;
@@ -1228,9 +1214,9 @@ public class UnityUnitTypes{
                 rotate = true;
                 rotateSpeed = 4f;
                 inaccuracy = 10f;
-                shots = 8;
+                shoot.shots = 8;
                 velocityRnd = 0.2f;
-                shootSound = Sounds.artillery;
+                shootSound = V7Sounds.artillery;
                 reload = 40f;
 
                 bullet = new ArtilleryBulletType(3f, 15, "shell"){{
@@ -1253,19 +1239,17 @@ public class UnityUnitTypes{
             health = 45000f;
             hitSize = 37f;
             armor = 10f;
-            landShake = 1.5f;
-            commandLimit = 8;
+            mechLandShake = 1.5f;
             rotateSpeed = 1.3f;
 
             legCount = 6;
             legLength = 29f;
             legBaseOffset = 8f;
             legMoveSpace = 0.7f;
-            legTrns = 0.6f;
+            //legTrns = 0.6f;
             hovering = true;
-            visualElevation = 0.23f;
+            //visualElevation = 0.23f;
             allowLegStep = true;
-            ammoType = new PowerAmmoType(2000);
             groundLayer = Layer.legUnit;
 
             weapons.add(new Weapon(){{
@@ -1274,10 +1258,10 @@ public class UnityUnitTypes{
                 mirror = false;
                 reload = 4f * 60f;
                 recoil = 0f;
-                shootSound = Sounds.lasershoot;
+                shootSound = V7Sounds.lasershoot;
                 shootStatus = StatusEffects.slow;
                 shootStatusDuration = 80f;
-                firstShotDelay = ChargeFx.greenLaserChargeParent.lifetime;
+                shoot.firstShotDelay = ChargeFx.greenLaserChargeParent.lifetime;
 
                 bullet = new ReflectingLaserBulletType(500f){{
                     lifetime = 65f;
@@ -1333,17 +1317,16 @@ public class UnityUnitTypes{
             health = 102500;
             hitSize = 55f;
             armor = 12f;
-            landShake = 2f;
-            commandLimit = 8;
+            mechLandShake = 2f;
             rotateSpeed = 0.8f;
 
             legCount = 4;
             legLength = 34.36f;
             legBaseOffset = 11f;
             legMoveSpace = 0.7f;
-            legTrns = 0.6f;
+            //legTrns = 0.6f;
             hovering = true;
-            visualElevation = 0.23f;
+            //visualElevation = 0.23f;
             allowLegStep = true;
             groundLayer = Layer.legUnit;
             drawShields = false;
@@ -1358,7 +1341,7 @@ public class UnityUnitTypes{
                 shootY = 16.75f;
                 reload = 12f * 60f;
                 shootSound = V7Sounds.beam;
-                firstShotDelay = ChargeFx.sagittariusCharge.lifetime;
+                shoot.firstShotDelay = ChargeFx.sagittariusCharge.lifetime;
                 shootStatus = UnityStatusEffects.sagittariusFatigue;
                 shootStatusDuration = 10f * 60f + ChargeFx.sagittariusCharge.lifetime;
                 continuous = true;
@@ -1390,7 +1373,7 @@ public class UnityUnitTypes{
                 inaccuracy = 5f;
                 rotate = true;
                 alternate = false;
-                shots = 2;
+                shoot.shots = 2;
                 shootSound = UnitySounds.energyBolt;
 
                 bullet = new ArrowBulletType(7f, 25f){{
@@ -1427,7 +1410,7 @@ public class UnityUnitTypes{
             legLength = 112f;
             legExtension = -8.25f;
             legBaseOffset = 8f;
-            landShake = 2.4f;
+            mechLandShake = 2.4f;
             legLengthScl = 1f;
             rippleScale = 2f;
             legSpeed = 0.2f;
@@ -1438,7 +1421,7 @@ public class UnityUnitTypes{
 
             armor = 13f;
             allowLegStep = true;
-            visualElevation = 0.95f;
+            //visualElevation = 0.95f;
 
             weapons.add(new Weapon("unity-araneidae-mount"){{
                 x = 15f;
@@ -1449,9 +1432,8 @@ public class UnityUnitTypes{
                 rotateSpeed = 2f;
                 rotate = true;
                 shadow = 15f;
-                shots = 3;
-                spacing = 15f;
-                shootSound = Sounds.laser;
+                shoot = new ShootSpread(3, 15f);
+                shootSound = V7Sounds.laser;
 
                 bullet = UnityBullets.sapLaser;
             }}, new MultiBarrelWeapon("unity-araneidae-cannon"){{
@@ -1493,7 +1475,7 @@ public class UnityUnitTypes{
                     height = 23f;
                     shrinkY = 0f;
                     collidesAir = false;
-                    scaleVelocity = true;
+                    scaleLife = true;
                     pierceCap = 2;
 
                     status = StatusEffects.sapped;
@@ -1523,13 +1505,12 @@ public class UnityUnitTypes{
             legLength = 176f;
             legExtension = -24f;
             legBaseOffset = 9f;
-            visualElevation = 1f;
+            //visualElevation = 1f;
             groundLayer = Layer.legUnit + 0.02f;
             rippleScale = 3.4f;
             legSplashDamage = 130f;
             legSplashRange = 60f;
             targetAir = false;
-            commandLimit = 5;
 
             weapons.add(new LimitedAngleWeapon(name + "-launcher"){{
                 bottomWeapons.add(this);
@@ -1545,7 +1526,7 @@ public class UnityUnitTypes{
                 angleOffset = 45f;
                 inaccuracy = 25f;
                 xRand = 2.25f;
-                shots = 2;
+                shoot.shots = 2;
                 shootSound = V7Sounds.missile;
 
                 bullet = new MissileBulletType(3.7f, 15f){{
@@ -1620,7 +1601,7 @@ public class UnityUnitTypes{
                     height = 27f;
                     shrinkY = 0f;
                     collidesAir = false;
-                    scaleVelocity = true;
+                    scaleLife = true;
                     pierceCap = 3;
 
                     status = StatusEffects.sapped;
@@ -1643,7 +1624,7 @@ public class UnityUnitTypes{
             rotateSpeed = 0.9f;
             flying = true;
             lowAltitude = true;
-            destructibleWreck = false;
+            //destructibleWreck = false;
             targetFlags = new BlockFlag[]{BlockFlag.reactor, null};
             hitSize = 80f;
             engineOffset = 42.75f;
@@ -1686,8 +1667,8 @@ public class UnityUnitTypes{
                 rotate = true;
                 recoil = 5f;
                 reload = 55f;
-                shots = 4;
-                shotDelay = 4f;
+                shoot.shots = 4;
+                shoot.shotDelay = 4f;
                 rotateSpeed = 3f;
                 shadow = 22f;
 
@@ -1700,8 +1681,8 @@ public class UnityUnitTypes{
                 rotate = true;
                 recoil = 5f;
                 reload = 60f;
-                shots = 4;
-                shotDelay = 4f;
+                shoot.shots = 4;
+                shoot.shotDelay = 4f;
                 rotateSpeed = 3f;
                 shadow = 22f;
 
@@ -1718,7 +1699,7 @@ public class UnityUnitTypes{
             rotateSpeed = 0.7f;
             flying = true;
             lowAltitude = true;
-            destructibleWreck = false;
+            //destructibleWreck = false;
             targetFlags = new BlockFlag[]{BlockFlag.reactor, null};
             hitSize = 96f;
             engineOffset = 46.5f;
@@ -1805,7 +1786,7 @@ public class UnityUnitTypes{
         }};
 
         sedec = new UnityUnitType("sedec"){{
-            defaultController = HealingDefenderAI::new;
+            aiController = HealingDefenderAI::new;
             health = 45000f;
             armor = 20f;
             speed = 0.7f;
@@ -1815,17 +1796,12 @@ public class UnityUnitTypes{
             flying = true;
             engineOffset = 48f;
             engineSize = 7.8f;
-            rotateShooting = false;
+            //rotateShooting = false;
             hitSize = 85f;
             payloadCapacity = (6.2f * 6.2f) * tilePayload;
             buildSpeed = 5f;
             drawShields = false;
-            commandLimit = 8;
             buildBeamOffset = 29.5f;
-
-            //ammo resupply mechanics removed in 129 until further notice; TODO remove or rework
-            //ammoCapacity = 1700;
-            //ammoResupplyAmount = 30;
 
             abilities.add(new ForceFieldAbility(190f, 6f, 8000f, 60f * 12), new RepairFieldAbility(180f, 60f * 2, 160f));
 
@@ -1855,7 +1831,7 @@ public class UnityUnitTypes{
         }};
 
         trigintaduo = new UnityUnitType("trigintaduo"){{
-            defaultController = HealingDefenderAI::new;
+            aiController = HealingDefenderAI::new;
             health = 52500f;
             armor = 22f;
             speed = 0.6f;
@@ -1865,17 +1841,12 @@ public class UnityUnitTypes{
             flying = true;
             engineOffset = 41.25f;
             engineSize = 6.5f;
-            rotateShooting = false;
+            //rotateShooting = false;
             hitSize = 92.5f;
             payloadCapacity = (8.1f * 8.1f) * tilePayload;
             buildSpeed = 6f;
             drawShields = false;
-            commandLimit = 12;
             buildBeamOffset = 47.75f;
-
-            //ammo resupply mechanics removed in 129 until further notice; TODO remove or rework
-            //ammoCapacity = 2000;
-            //ammoResupplyAmount = 35;
 
             weapons.add(new Weapon(name + "-heal-mount"){{
                 x = 33.5f;
@@ -1941,11 +1912,11 @@ public class UnityUnitTypes{
             armor = 17f;
             accel = 0.19f;
             rotateSpeed = 0.86f;
-            rotateShooting = false;
+            //rotateShooting = false;
 
             trailLength = 70;
-            trailX = 18f;
-            trailY = -32f;
+            //trailX = 18f;
+            //trailY = -32f;
             trailScl = 3.5f;
 
             weapons.add(new Weapon(name + "-launcher"){{
@@ -1977,7 +1948,7 @@ public class UnityUnitTypes{
                 mirror = false;
                 rotate = true;
                 rotateSpeed = 1f;
-                shots = 3;
+                shoot.shots = 3;
                 inaccuracy = 3f;
                 velocityRnd = 0.1f;
                 reload = 60f * 2f;
@@ -1991,7 +1962,7 @@ public class UnityUnitTypes{
                     trailColor = Pal.bulletYellowBack;
                     hitEffect = HitFx.hitExplosionMassive;
                     lifetime = 65f;
-                    fragBullet = Bullets.artilleryDense;
+                    fragBullet = V7Bullets.artilleryDense;
                     fragBullets = 7;
                     fragLifeMax = 0.15f;
                     fragLifeMin = 0.15f;
@@ -2009,11 +1980,11 @@ public class UnityUnitTypes{
             armor = 18f;
             accel = 0.19f;
             rotateSpeed = 0.78f;
-            rotateShooting = false;
+            //rotateShooting = false;
 
             trailLength = 70;
-            trailX = 26f;
-            trailY = -42f;
+            //trailX = 26f;
+            //trailY = -42f;
             trailScl = 4f;
 
             float spawnTime = 15f * 60f;
@@ -2027,16 +1998,16 @@ public class UnityUnitTypes{
                 y = 30.25f;
                 shootY = 9.5f;
                 recoil = 5f;
-                shots = 5;
-                shotDelay = 3f;
+                shoot.shots = 5;
+                shoot.shotDelay = 3f;
                 inaccuracy = 5f;
                 shootCone = 15f;
                 rotate = true;
                 angleLimit = 3f;
-                shootSound = Sounds.artillery;
+                shootSound = V7Sounds.artillery;
                 reload = 25f;
 
-                bullet = Bullets.standardThoriumBig;
+                bullet = V7Bullets.standardThoriumBig;
             }}, new LimitedAngleWeapon(name + "-side-silo"){
                 {
                     bottomWeapons.add(this);
@@ -2051,8 +2022,8 @@ public class UnityUnitTypes{
                     alternate = false;
                     rotate = true;
                     reload = 50f;
-                    shots = 12;
-                    shotDelay = 3f;
+                    shoot.shots = 12;
+                    shoot.shotDelay = 3f;
                     inaccuracy = 5f;
                     shootSound = V7Sounds.missile;
 
@@ -2073,21 +2044,18 @@ public class UnityUnitTypes{
                 }
 
                 @Override
-                protected Bullet bullet(Unit unit, float shootX, float shootY, float angle, float lifescl){
-                    Bullet b = super.bullet(unit, shootX, shootY, angle, lifescl);
+                protected void bullet(Unit unit, WeaponMount mount, float shootX, float shootY, float angle, Mover mover){
+                    //super.bullet(unit, mount, shootX, shootY, angle, mover);
+                    Bullet b = this.bullet.create(unit, shootX, shootY, angle);
                     if(b.type instanceof GuidedMissileBulletType){
                         WeaponMount m = null;
-                        for(WeaponMount mount : unit.mounts){
-                            if(mount.weapon == this){
-                                m = mount;
-                                break;
-                            }
+                        if(mount.weapon == this){
+                            m = mount;
                         }
                         if(m != null){
                             b.data = m;
                         }
                     }
-                    return b;
                 }
             }, new LimitedAngleWeapon(fin.name + "-launcher"){{
                 x = 0f;
@@ -2129,7 +2097,7 @@ public class UnityUnitTypes{
                     bulletDamage = 18f;
                     width = 8f;
                     height = 12f;
-                    scaleVelocity = true;
+                    scaleLife = true;
                     collidesGround = false;
                     status = StatusEffects.blasted;
                     statusDuration = 60f;
@@ -2153,9 +2121,9 @@ public class UnityUnitTypes{
                     splashDamageRadius = 30f;
                     pierceDamageFactor = 0.15f;
                     pierceCap = -1;
-                    fragBullet = Bullets.standardDense;
+                    fragBullet = V7Bullets.standardDense;
                     fragBullets = 2;
-                    fragCone = 20f;
+                    fragRandomSpread = 20f;
                     fragLifeMin = 0.4f;
                     fragLifeMax = 0.7f;
                     trailSpacing = 40f;
@@ -2175,7 +2143,7 @@ public class UnityUnitTypes{
             armor = 17f;
             accel = 0.19f;
             rotateSpeed = 0.86f;
-            rotateShooting = false;
+            //rotateShooting = false;
 
             weapons.add(new Weapon("aaa"){{
                 rotate = true;
@@ -2228,9 +2196,7 @@ public class UnityUnitTypes{
             }});
         }};
 
-        chelidonura = new UnityUnitType("chelidonura"){{
-
-        }};
+        chelidonura = new UnityUnitType("chelidonura"){};
 
         amphibiNaval = new UnityUnitType("amphibi-naval"){
             {
@@ -2245,19 +2211,19 @@ public class UnityUnitTypes{
                 hitSize = 12f;
                 armor = 2f;
                 immunities.add(StatusEffects.wet);
-                trailX = 3f;
-                trailY = -5f;
+                //trailX = 3f;
+                //trailY = -5f;
                 trailLength = 13;
                 trailScl = 1.75f;
-                rotateShooting = true;
+                //rotateShooting = true;
                 transformTime = 10f;
 
                 weapons.add(new Weapon("artillery"){{
                     reload = 35f;
                     x = 5.5f;
                     y = -4f;
-                    shots = 2;
-                    shotDelay = 2f;
+                    shoot.shots = 2;
+                    shoot.shotDelay = 2f;
                     inaccuracy = 5f;
                     rotate = true;
                     shake = 3f;
@@ -2295,7 +2261,7 @@ public class UnityUnitTypes{
             hitSize = 12f;
             hovering = true;
             allowLegStep = true;
-            visualElevation = 0.5f;
+            //visualElevation = 0.5f;
             legCount = 6;
             legLength = 16f;
             legMoveSpace = 0.7f;
@@ -2304,7 +2270,7 @@ public class UnityUnitTypes{
             legGroupSize = 4;
             legBaseOffset = 0f;
             legExtension = -3f;
-            kinematicScl = 0.6f;
+            //kinematicScl = 0.6f;
             groundLayer = 65f;
             rippleScale = 1f;
             transformTime = 10f;
@@ -2324,11 +2290,11 @@ public class UnityUnitTypes{
                 hitSize = 16f;
                 armor = 2f;
                 immunities.add(StatusEffects.wet);
-                trailX = 3f;
-                trailY = -9f;
+                //trailX = 3f;
+                //trailY = -9f;
                 trailLength = 16;
                 trailScl = 1.85f;
-                rotateShooting = true;
+                //rotateShooting = true;
                 transformTime = 30f;
 
                 weapons.add(new Weapon("unity-laser-weapon"){{
@@ -2365,7 +2331,7 @@ public class UnityUnitTypes{
             hitSize = 16f;
             hovering = true;
             allowLegStep = true;
-            visualElevation = 0.5f;
+            //visualElevation = 0.5f;
             legCount = 6;
             legLength = 18f;
             legMoveSpace = 0.7f;
@@ -2374,7 +2340,7 @@ public class UnityUnitTypes{
             legGroupSize = 4;
             legBaseOffset = 0f;
             legExtension = -3f;
-            kinematicScl = 0.7f;
+            //kinematicScl = 0.7f;
             groundLayer = 65f;
             rippleScale = 1f;
             transformTime = 30f;
@@ -2393,14 +2359,14 @@ public class UnityUnitTypes{
         }};
 
         hovos = new UnityUnitType("hovos"){{
-            defaultController = DistanceGroundAI::new;
+            aiController = DistanceGroundAI::new;
             speed = 0.8f;
             health = 340;
             hitSize = 7.75f * 1.7f;
             range = 350f;
             allowLegStep = true;
             legMoveSpace = 0.7f;
-            legTrns = 0.4f;
+            //legTrns = 0.4f;
             legLength = 30f;
             legExtension = -4.3f;
 
@@ -2419,10 +2385,10 @@ public class UnityUnitTypes{
                     //speed = 59f;
                     //lifetime = 8f;
                     length = 59f * 6f;
-                    updateEffectSeg = 59f;
+                    pointEffectSpace = 59f;
                     shootEffect = ShootFx.scarRailShoot;
                     pierceEffect = HitFx.scarRailHit;
-                    updateEffect = UnityFx.scarRailTrail;
+                    pointEffect = UnityFx.scarRailTrail;
                     hitEffect = Fx.massiveExplosion;
                     pierceDamageFactor = 0.3f;
                 }};
@@ -2430,7 +2396,7 @@ public class UnityUnitTypes{
         }};
 
         ryzer = new UnityUnitType("ryzer"){{
-            defaultController = DistanceGroundAI::new;
+            aiController = DistanceGroundAI::new;
             speed = 0.7f;
             health = 640;
             hitSize = 9.5f * 1.7f;
@@ -2438,7 +2404,7 @@ public class UnityUnitTypes{
             allowLegStep = true;
             legMoveSpace = 0.73f;
             legCount = 6;
-            legTrns = 0.4f;
+            //legTrns = 0.4f;
             legLength = 32f;
             legExtension = -4.3f;
 
@@ -2455,18 +2421,18 @@ public class UnityUnitTypes{
                     //speed = 59f;
                     //lifetime = 8f;
                     length = 59f * 7f;
-                    updateEffectSeg = 59f;
+                    pointEffectSpace = 59f;
                     shootEffect = ShootFx.scarRailShoot;
                     pierceEffect = HitFx.scarRailHit;
-                    updateEffect = UnityFx.scarRailTrail;
+                    pointEffect = UnityFx.scarRailTrail;
                     hitEffect = Fx.massiveExplosion;
                     pierceDamageFactor = 0.3f;
                 }};
             }}, new Weapon("unity-scar-missile-launcher"){{
                 reload = 50f;
                 x = 6.25f;
-                shots = 5;
-                shotDelay = 3f;
+                shoot.shots = 5;
+                shoot.shotDelay = 3f;
                 inaccuracy = 4f;
                 rotate = true;
                 bullet = new MissileBulletType(5f, 1f){{
@@ -2485,7 +2451,7 @@ public class UnityUnitTypes{
         }};
 
         zena = new UnityUnitType("zena"){{
-            defaultController = DistanceGroundAI::new;
+            aiController = DistanceGroundAI::new;
             speed = 0.7f;
             health = 1220;
             hitSize = 17.85f;
@@ -2493,7 +2459,7 @@ public class UnityUnitTypes{
             allowLegStep = true;
             legMoveSpace = 0.73f;
             legCount = 6;
-            legTrns = 0.4f;
+            //legTrns = 0.4f;
             legLength = 40f;
             legExtension = -9.3f;
 
@@ -2510,10 +2476,10 @@ public class UnityUnitTypes{
                     bullet = new RailBulletType(){{
                         damage = 780f;
                         length = 60f * 7f;
-                        updateEffectSeg = 60f;
+                        pointEffectSpace = 60f;
                         shootEffect = ShootFx.scarRailShoot;
                         pierceEffect = HitFx.scarRailHit;
-                        updateEffect = UnityFx.scarRailTrail;
+                        pointEffect = UnityFx.scarRailTrail;
                         hitEffect = Fx.massiveExplosion;
                         pierceDamageFactor = 0.2f;
                     }};
@@ -2527,10 +2493,10 @@ public class UnityUnitTypes{
                     bullet = new RailBulletType(){{
                         damage = 230f;
                         length = 40f * 7f;
-                        updateEffectSeg = 40f;
+                        pointEffectSpace = 40f;
                         shootEffect = ShootFx.scarRailShoot;
                         pierceEffect = HitFx.scarRailHit;
-                        updateEffect = UnityFx.scarRailTrail;
+                        pointEffect = UnityFx.scarRailTrail;
                         hitEffect = Fx.massiveExplosion;
                         pierceDamageFactor = 0.5f;
                     }};
@@ -2538,8 +2504,8 @@ public class UnityUnitTypes{
                     x = 12.25f;
                     y = -5f;
                     rotate = true;
-                    shots = 5;
-                    shotDelay = 3f;
+                    shoot.shots = 5;
+                    shoot.shotDelay = 3f;
                     inaccuracy = 4f;
                     reload = 50f;
                     bullet = new MissileBulletType(5f, 0f){{
@@ -2558,7 +2524,7 @@ public class UnityUnitTypes{
         }};
 
         sundown = new UnityUnitType("sundown"){{
-            defaultController = DistanceGroundAI::new;
+            aiController = DistanceGroundAI::new;
             speed = 0.6f;
             health = 9400;
             hitSize = 36f;
@@ -2568,14 +2534,14 @@ public class UnityUnitTypes{
             rotateSpeed = 2.5f;
             armor = 4f;
             legCount = 4;
-            legTrns = 0.4f;
+            //legTrns = 0.4f;
             legLength = 44f;
             legExtension = -9.3f;
             legSplashDamage = 20f;
             legSplashRange = 30f;
 
             groundLayer = Layer.legUnit;
-            visualElevation = 0.65f;
+            //visualElevation = 0.65f;
 
             weapons.add(new Weapon("unity-scar-large-launcher"){{
                 x = 13.5f;
@@ -2586,7 +2552,7 @@ public class UnityUnitTypes{
                 rotate = true;
                 reload = 80f;
                 shake = 1f;
-                shots = 12;
+                shoot.shots = 12;
                 inaccuracy = 19f;
                 velocityRnd = 0.2f;
                 xRand = 1.2f;
@@ -2601,15 +2567,15 @@ public class UnityUnitTypes{
                 rotate = true;
                 shadow = 12f;
                 reload = 60f * 2.7f;
-                shootSound = Sounds.artillery;
+                shootSound = V7Sounds.artillery;
 
                 bullet = new RailBulletType(){{
                     damage = 880f;
                     length = 61f * 7f;
-                    updateEffectSeg = 61f;
+                    pointEffectSpace = 61f;
                     shootEffect = ShootFx.scarRailShoot;
                     pierceEffect = HitFx.scarRailHit;
-                    updateEffect = UnityFx.scarRailTrail;
+                    pointEffect = UnityFx.scarRailTrail;
                     hitEffect = Fx.massiveExplosion;
                     pierceDamageFactor = 0.2f;
                 }};
@@ -2622,7 +2588,7 @@ public class UnityUnitTypes{
         }};
 
         rex = new UnityUnitType("rex"){{
-            defaultController = DistanceGroundAI::new;
+            aiController = DistanceGroundAI::new;
             speed = 0.55f;
             health = 23000;
             hitSize = 47.5f;
@@ -2633,10 +2599,10 @@ public class UnityUnitTypes{
 
             hovering = true;
             groundLayer = Layer.legUnit + 0.01f;
-            visualElevation = 0.95f;
+            //visualElevation = 0.95f;
 
             legCount = 4;
-            legTrns = 1f;
+            //legTrns = 1f;
             legLength = 56f;
             legExtension = -9.5f;
             legSplashDamage = 90f;
@@ -2653,17 +2619,17 @@ public class UnityUnitTypes{
                 top = false;
                 reload = 60f * 4.5f;
                 recoil = 4f;
-                shootSound = Sounds.artillery;
+                shootSound = V7Sounds.artillery;
 
                 bullet = new RailBulletType(){
                     {
                         damage = 3300f;
                         buildingDamageMultiplier = 0.5f;
                         length = 61f * 8f;
-                        updateEffectSeg = 61f;
+                        pointEffectSpace = 61f;
                         shootEffect = ShootFx.scarRailShoot;
                         pierceEffect = HitFx.scarRailHit;
-                        updateEffect = UnityFx.scarRailTrail;
+                        pointEffect = UnityFx.scarRailTrail;
                         hitEffect = Fx.massiveExplosion;
                         pierceDamageFactor = 0.35f;
                     }
@@ -2671,12 +2637,12 @@ public class UnityUnitTypes{
                     public void init(Bullet b){
                         //super.init(b);
                         b.fdata = length;
-                        Damage.collideLine(b, b.team, b.type.hitEffect, b.x, b.y, b.rotation(), length, true);
+                        Damage.collideLine(b, b.team, b.x, b.y, b.rotation(), length, false, true);
                         float resultLen = b.fdata;
 
                         Vec2 nor = Tmp.v1.set(b.vel).nor();
-                        for(float i = 0; i <= resultLen; i += updateEffectSeg){
-                            updateEffect.at(b.x + nor.x * i, b.y + nor.y * i, b.rotation());
+                        for(float i = 0; i <= resultLen; i += pointEffectSpace){
+                            pointEffect.at(b.x + nor.x * i, b.y + nor.y * i, b.rotation());
                         }
                     }
                 };
@@ -2708,7 +2674,7 @@ public class UnityUnitTypes{
                 rotate = true;
                 reload = 85f;
                 shake = 1f;
-                shots = 9;
+                shoot.shots = 9;
                 inaccuracy = 19f;
                 velocityRnd = 0.2f;
                 xRand = 1.2f;
@@ -2724,7 +2690,7 @@ public class UnityUnitTypes{
                 rotate = true;
                 reload = 90f;
                 shake = 1f;
-                shots = 9;
+                shoot.shots = 9;
                 inaccuracy = 19f;
                 velocityRnd = 0.2f;
                 xRand = 1.2f;
@@ -2740,7 +2706,7 @@ public class UnityUnitTypes{
         }};
 
         excelsus = new UnityUnitType("excelsus"){{
-            defaultController = DistanceGroundAI::new;
+            aiController = DistanceGroundAI::new;
             speed = 0.6f;
             health = 38000;
             hitSize = 66.5f;
@@ -2752,10 +2718,10 @@ public class UnityUnitTypes{
 
             hovering = true;
             groundLayer = Layer.legUnit + 0.03f;
-            visualElevation = 1.1f;
+            //visualElevation = 1.1f;
 
             legCount = 6;
-            legTrns = 1f;
+            //legTrns = 1f;
             legLength = 62f;
             legExtension = -9.5f;
             legSplashDamage = 120f;
@@ -2763,7 +2729,7 @@ public class UnityUnitTypes{
             legSpeed = 0.06f;
             legMoveSpace = 0.57f;
             legPairOffset = 0.8f;
-            kinematicScl = 0.7f;
+            //kinematicScl = 0.7f;
 
             immunities = ObjectSet.with(StatusEffects.burning);
 
@@ -2776,7 +2742,7 @@ public class UnityUnitTypes{
                 rotate = true;
                 reload = 80f;
                 shake = 1f;
-                shots = 12;
+                shoot.shots = 12;
                 inaccuracy = 19f;
                 velocityRnd = 0.2f;
                 xRand = 1.2f;
@@ -2792,7 +2758,7 @@ public class UnityUnitTypes{
                 rotate = true;
                 reload = 75f;
                 shake = 1f;
-                shots = 12;
+                shoot.shots = 12;
                 inaccuracy = 19f;
                 velocityRnd = 0.2f;
                 xRand = 1.2f;
@@ -2884,7 +2850,7 @@ public class UnityUnitTypes{
                     hitEffect = HitFx.coloredHitSmall;
                     lightColor = hitColor = UnityPal.scarColorAlpha;
                     colors = new Color[]{UnityPal.scarColorAlpha, UnityPal.endColor, Color.white};
-                    strokes = new float[]{1.5f, 1f, 0.3f};
+                    //strokes = new float[]{1.5f, 1f, 0.3f};
                 }};
 
                 shootStatusDuration = bullet.lifetime;
@@ -2894,8 +2860,8 @@ public class UnityUnitTypes{
                 x = 4.2f;
                 reload = 50f;
                 inaccuracy = 1.1f;
-                shots = 5;
-                shotDelay = 3f;
+                shoot.shots = 5;
+                shoot.shotDelay = 3f;
 
                 bullet = new MissileBulletType(5f, 1f){{
                     height = 10f;
@@ -2940,8 +2906,8 @@ public class UnityUnitTypes{
                     hitEffect = HitFx.coloredHitSmall;
                     lightColor = hitColor = UnityPal.scarColorAlpha;
                     colors = new Color[]{UnityPal.scarColorAlpha, UnityPal.endColor, Color.white};
-                    strokes = new float[]{1.5f, 1f, 0.3f};
-                    lenscales = new float[]{0.85f, 0.97f, 1f, 1.02f};
+                    //strokes = new float[]{1.5f, 1f, 0.3f};
+                    //lenscales = new float[]{0.85f, 0.97f, 1f, 1.02f};
                 }};
 
                 reload = 60f * 3.2f;
@@ -2952,8 +2918,8 @@ public class UnityUnitTypes{
                 y = -3.5f;
                 reload = 50f;
                 inaccuracy = 1.1f;
-                shots = 6;
-                shotDelay = 4f;
+                shoot.shots = 6;
+                shoot.shotDelay = 4f;
 
                 bullet = new MissileBulletType(5f, 1f){{
                     width = 7f;
@@ -2995,7 +2961,7 @@ public class UnityUnitTypes{
                     hitEffect = HitFx.coloredHitSmall;
                     lightColor = hitColor = UnityPal.scarColorAlpha;
                     colors = new Color[]{UnityPal.scarColorAlpha, UnityPal.endColor, Color.white};
-                    strokes = new float[]{1.5f, 1f, 0.3f};
+                    //strokes = new float[]{1.5f, 1f, 0.3f};
                 }};
 
                 reload = 2f * 60f;
@@ -3017,7 +2983,7 @@ public class UnityUnitTypes{
             faceTarget = false;
             armor = 5f;
             flying = true;
-            visualElevation = 0.8f;
+            //visualElevation = 0.8f;
             range = 210f;
             outlineColor = UnityPal.darkerOutline;
 
@@ -3025,7 +2991,7 @@ public class UnityUnitTypes{
                 x = 0f;
                 reload = 10f;
                 rotateSpeed = 50f;
-                shootSound = Sounds.laser;
+                shootSound = V7Sounds.laser;
                 mirror = rotate = true;
                 minShootVelocity = 2.1f;
                 bullet = new LaserBulletType(200f){{
@@ -3046,7 +3012,7 @@ public class UnityUnitTypes{
         }};
 
         rayTest = new UnityUnitType("ray-test"){{
-            defaultController = GroundAI::new;
+            aiController = GroundAI::new;
             flying = false;
             health = 500;
             speed = 1f;
@@ -3075,11 +3041,11 @@ public class UnityUnitTypes{
             legBaseOffset = 9f;
             legMoveSpace = 0.9f;
             legPairOffset = 1.5f;
-            legTrns = 0.5f;
+            //legTrns = 0.5f;
 
             hovering = true;
             allowLegStep = true;
-            visualElevation = 0.7f;
+            //visualElevation = 0.7f;
             groundLayer = Layer.legUnit + 0.01f;
             outlineColor = UnityPal.darkerOutline;
 
@@ -3111,8 +3077,7 @@ public class UnityUnitTypes{
                 shootY = 6.25f;
                 mirror = true;
                 rotate = true;
-                shots = 3;
-                spacing = 17.5f;
+                shoot = new ShootSpread(3, 17.5f);
                 reload = 1.5f * 60f;
 
                 bullet = new ShrapnelBulletType(){{
@@ -3133,7 +3098,7 @@ public class UnityUnitTypes{
 
             hovering = true;
             allowLegStep = true;
-            visualElevation = 0.7f;
+            //visualElevation = 0.7f;
             groundLayer = Layer.legUnit + 0.01f;
             outlineColor = UnityPal.darkerOutline;
 
@@ -3229,7 +3194,7 @@ public class UnityUnitTypes{
         }};
 
         toxobyte = new UnityUnitType("toxobyte"){{
-            defaultController = WormAI::new;
+            aiController = WormAI::new;
             flying = true;
             health = 200f;
             speed = 3f;
@@ -3252,11 +3217,11 @@ public class UnityUnitTypes{
                 rotate = false;
                 mirror = false;
                 reload = 70f;
-                shots = 12;
+                shoot.shots = 12;
                 shootCone = 90f;
                 inaccuracy = 35f;
                 xRand = 2f;
-                shotDelay = 0.5f;
+                shoot.shotDelay = 0.5f;
                 bullet = new SapBulletType(){{
                     color = UnityPal.plague;
                     damage = 20f;
@@ -3282,7 +3247,7 @@ public class UnityUnitTypes{
         }};
 
         catenapede = new UnityUnitType("catenapede"){{
-            defaultController = WormAI::new;
+            aiController = WormAI::new;
             flying = true;
             health = 750f;
             speed = 2.4f;
@@ -3358,7 +3323,7 @@ public class UnityUnitTypes{
             engineColor = Color.valueOf("d3ddff");
             canBoost = true;
             boostMultiplier = 1.5f;
-            landShake = 1f;
+            mechLandShake = 1f;
 
             weapons.add(new Weapon(name + "-shotgun"){{
                 top = false;
@@ -3368,12 +3333,12 @@ public class UnityUnitTypes{
                 shootX = 0f;
                 shootY = 3.5f;
                 reload = 55f;
-                shotDelay = 3f;
+                shoot.shotDelay = 3f;
                 alternate = true;
-                shots = 2;
+                shoot.shots = 2;
                 inaccuracy = 0f;
                 ejectEffect = Fx.none;
-                shootSound = Sounds.spark;
+                shootSound = V7Sounds.spark;
                 bullet = new LightningBulletType(){{
                     damage = 12;
                     shootEffect = Fx.hitLancer;
@@ -3398,7 +3363,7 @@ public class UnityUnitTypes{
             engineColor = Color.valueOf("feb380");
             health = 350f;
             buildSpeed = 1.5f;
-            landShake = 4f;
+            mechLandShake = 4f;
             rotateSpeed = 3f;
 
             weapons.add(new Weapon(name + "-cannon"){{
@@ -3409,8 +3374,7 @@ public class UnityUnitTypes{
                 shootY = 3f;
                 recoil = 4f;
                 reload = 38f;
-                shots = 4;
-                spacing = 8f;
+                shoot = new ShootSpread(4, 8f);
                 inaccuracy = 8f;
                 alternate = true;
                 ejectEffect = Fx.none;
@@ -3456,12 +3420,11 @@ public class UnityUnitTypes{
                 top = false;
                 shootY = 1.5f;
                 reload = 70f;
-                shots = 4;
+                shoot = new ShootSpread(4, 1f);
                 inaccuracy = 2f;
                 alternate = true;
                 ejectEffect = Fx.none;
                 velocityRnd = 0.2f;
-                spacing = 1f;
                 shootSound = V7Sounds.missile;
                 bullet = new MissileBulletType(5f, 21f){{
                     width = 8f;
@@ -3511,25 +3474,24 @@ public class UnityUnitTypes{
                 x = 0f;
                 y = 0f;
                 reload = 150f;
-                shots = 1;
+                shoot.shots = 1;
                 alternate = false;
                 ejectEffect = Fx.none;
                 bullet = UnityBullets.laserZap;
-                shootSound = Sounds.laser;
+                shootSound = V7Sounds.laser;
                 mirror = false;
             }}, new Weapon(){{
                 x = 0f;
                 y = 0f;
                 reload = 7f;
-                shots = 1;
+                shoot = new ShootSpread(1, 15f);
                 alternate = true;
                 ejectEffect = Fx.none;
                 velocityRnd = 1.5f;
-                spacing = 15f;
                 inaccuracy = 20f;
 
                 bullet = UnityBullets.plasmaBullet;
-                shootSound = Sounds.spark;
+                shootSound = V7Sounds.spark;
             }});
         }};
 
@@ -3553,7 +3515,7 @@ public class UnityUnitTypes{
 
                 float rad = 3f * tilesize + unit.hitSize() / 2f;
                 Groups.bullet.intersect(unit.x - rad, unit.y - rad, rad * 2f, rad * 2f, b -> {
-                    if(unit.team.isEnemy(b.team) && b.within(unit, rad) && b.collides(unit) && should[0] == null){
+                    if(unit.team != b.team && b.within(unit, rad) && b.collides(unit) && should[0] == null){
                         should[0] = b;
                     }
                 });
@@ -3592,7 +3554,7 @@ public class UnityUnitTypes{
         //region kami
 
         kami = new RainbowUnitType("kami-mkii"){{
-            defaultController = EmptyAI::new;
+            aiController = EmptyAI::new;
             health = 120000f;
             speed = 15f;
             hitSize = 36f;
@@ -3887,8 +3849,8 @@ public class UnityUnitTypes{
                 rotate = true;
                 reload = 1.2f * 60f;
                 inaccuracy = 20f;
-                shotDelay = 2f;
-                shots = 10;
+                shoot.shotDelay = 2f;
+                shoot.shots = 10;
 
                 bullet = new MissileBulletType(6f, 170f){{
                     lifetime = 55f;
@@ -3913,9 +3875,9 @@ public class UnityUnitTypes{
             speed = 5f;
             accel = 0.12f;
             drag = 0.1f;
-            defaultController = WormAI::new;
+            aiController = WormAI::new;
             circleTarget = counterDrag = true;
-            rotateShooting = false;
+            //rotateShooting = false;
             splittable = chainable = false;
             hitSize = 39f * 1.55f;
             segmentOffset = (41f * 1.55f) + 7f;
@@ -3924,7 +3886,7 @@ public class UnityUnitTypes{
             segmentCast = 7;
             barrageRange = 240f;
             lowAltitude = true;
-            visualElevation = 2f;
+            //visualElevation = 2f;
             rotateSpeed = 2.2f;
             engineSize = -1f;
             range = 480f;
@@ -3965,7 +3927,7 @@ public class UnityUnitTypes{
                 reload = 15f * 60f;
                 continuous = true;
                 shake = 4f;
-                firstShotDelay = 41f;
+                shoot.firstShotDelay = 41f;
                 chargeSound = UnitySounds.devourerMainLaser;
                 shootSound = UnitySounds.continuousLaserB;
                 bullet = UnityBullets.endLaser;
@@ -3979,8 +3941,8 @@ public class UnityUnitTypes{
                 shadow = 16f;
                 reload = 1.5f * 60;
                 inaccuracy = 1.4f;
-                shots = 6;
-                shotDelay = 4f;
+                shoot.shots = 6;
+                shoot.shotDelay = 4f;
                 shootSound = UnitySounds.endBasic;
 
                 bullet = t;
@@ -3995,8 +3957,8 @@ public class UnityUnitTypes{
                 shadow = 16f;
                 reload = 1.2f * 60;
                 inaccuracy = 1.4f;
-                shots = 8;
-                shotDelay = 3f;
+                shoot.shots = 8;
+                shoot.shotDelay = 3f;
                 xRand = 12f;
                 shootSound = UnitySounds.endMissile;
 
@@ -4032,8 +3994,8 @@ public class UnityUnitTypes{
                 shadow = 16f;
                 reload = 1.5f * 60;
                 inaccuracy = 1.4f;
-                shots = 6;
-                shotDelay = 4f;
+                shoot.shots = 6;
+                shoot.shotDelay = 4f;
                 shootSound = UnitySounds.endBasic;
 
                 bullet = t;
@@ -4058,9 +4020,9 @@ public class UnityUnitTypes{
             speed = 4.5f;
             accel = 0.13f;
             drag = 0.12f;
-            defaultController = WormAI::new;
+            aiController = WormAI::new;
             circleTarget = counterDrag = true;
-            rotateShooting = false;
+            //rotateShooting = false;
             wormDecal = new WormDecal(name + "-hydraulics"){{
                 lineWidth = 11.5f;
                 lineColor = UnityPal.scarColor;
@@ -4079,7 +4041,7 @@ public class UnityUnitTypes{
             segmentCast = 11;
             barrageRange = 490f;
             lowAltitude = true;
-            visualElevation = 3f;
+            //visualElevation = 3f;
             rotateSpeed = 2.2f;
             engineSize = -1f;
             armor = 30f;
@@ -4102,7 +4064,7 @@ public class UnityUnitTypes{
                 continuous = true;
 
                 reload = 25f * 60f;
-                firstShotDelay = ChargeFx.oppressionCharge.lifetime;
+                            shoot.firstShotDelay = ChargeFx.oppressionCharge.lifetime;
                 parentizeEffects = true;
 
                 bullet = new OppressionLaserBulletType();
@@ -4116,8 +4078,8 @@ public class UnityUnitTypes{
                 rotateSpeed = 1.75f;
 
                 reload = 2.3f * 60f;
-                shots = 5;
-                shotDelay = 6f;
+                shoot.shots = 5;
+                shoot.shotDelay = 6f;
                 inaccuracy = 2f;
                 shootSound = UnitySounds.endBasic;
 
@@ -4234,8 +4196,8 @@ public class UnityUnitTypes{
                         inaccuracy = 3f;
                         xRand = 10.25f;
 
-                        shots = 13;
-                        shotDelay = 5f;
+                        shoot.shots = 13;
+                        shoot.shotDelay = 5f;
 
                         reload = 3f * 60f;
 
@@ -4281,7 +4243,7 @@ public class UnityUnitTypes{
                     inaccuracy = 15f;
                     xRand = 6f;
 
-                    shots = 5;
+                    shoot.shots = 5;
 
                     reload = 4f * 60f;
 
@@ -4300,10 +4262,10 @@ public class UnityUnitTypes{
             armor = 17f;
             hitSize = 205f;
             rotateSpeed = 0.3f;
-            visualElevation = 3f;
+            //visualElevation = 3f;
             engineOffset = 116.5f;
             engineSize = 14f;
-            rotateShooting = false;
+            //rotateShooting = false;
             flying = true;
             lowAltitude = true;
             outlineColor = UnityPal.darkerOutline;
@@ -4514,7 +4476,7 @@ public class UnityUnitTypes{
             allowLegStep = true;
             hovering = true;
             groundLayer = Layer.legUnit + 6f;
-            visualElevation = 3f;
+            //visualElevation = 3f;
             legCount = 8;
             legGroupSize = 4;
             legPairOffset = 2f;
@@ -4523,7 +4485,7 @@ public class UnityUnitTypes{
             legExtension = -15f;
             legBaseOffset = 50f;
             legSpeed = 0.15f;
-            legTrns = 0.2f;
+            //legTrns = 0.2f;
             rippleScale = 7f;
 
             legSplashRange = 90f;
@@ -4546,7 +4508,7 @@ public class UnityUnitTypes{
                 bullet = UnityBullets.ravagerLaser;
             }}, new Weapon(name + "-artillery"){{
                 shootY = 11f;
-                shots = 5;
+                shoot.shots = 5;
                 inaccuracy = 10f;
                 shadow = 13.25f * 2f;
                 y = -31.75f;
@@ -4559,7 +4521,7 @@ public class UnityUnitTypes{
                 bullet = UnityBullets.ravagerArtillery;
             }}, new Weapon(name + "-artillery"){{
                 shootY = 11f;
-                shots = 5;
+                shoot.shots = 5;
                 inaccuracy = 10f;
                 shadow = 13.25f * 2f;
                 y = -4.25f;
@@ -4598,7 +4560,7 @@ public class UnityUnitTypes{
         }};
 
         desolation = new UnityUnitType("desolation"){{
-            defaultController = SmartGroundAI::new;
+            aiController = SmartGroundAI::new;
             health = 307300f;
             speed = 0.7f;
             drag = 0.16f;
@@ -4606,14 +4568,14 @@ public class UnityUnitTypes{
             hitSize = 257f;
             rotateSpeed = 0.9f;
 
-            visualElevation = 8f;
+            //visualElevation = 8f;
             groundLayer = Layer.flyingUnitLow + 1f;
 
             allowLegStep = legShadows = hovering = true;
             immuneAll = true;
 
-            legTrns = 0.3f;
-            legLength = 672f * (1f - (legTrns * 0.85f * 0.5f));
+            //legTrns = 0.3f;
+            legLength = 672f * (1f - (0.3f * 0.85f * 0.5f));
             legExtension = -48f;
             legCount = 8;
             legGroupSize = 2;
@@ -4639,8 +4601,8 @@ public class UnityUnitTypes{
                 reload = 35f;
                 shootY = 9f;
                 inaccuracy = 5f;
-                shots = 3;
-                shotDelay = 5f;
+                shoot.shots = 3;
+                shoot.shotDelay = 5f;
                 rotate = true;
                 rotateSpeed = 15f;
                 mirror = false;
@@ -4662,7 +4624,7 @@ public class UnityUnitTypes{
                     fragBullets = 3;
                     fragVelocityMax = 1.2f;
                     fragVelocityMin = 0.5f;
-                    fragCone = 120f;
+                    fragRandomSpread = 120f;
 
                     hitEffect = HitFx.endHitRedSmall;
 
@@ -4689,8 +4651,8 @@ public class UnityUnitTypes{
                 rotateSpeed = 5f;
                 alternate = true;
                 mirror = false;
-                shots = 2;
-                shotDelay = 5;
+                shoot.shots = 2;
+                shoot.shotDelay = 5;
 
                 bullet = new EndBasicBulletType(7f, 380f, "shell"){{
                     lifetime = 95f;
@@ -4766,7 +4728,7 @@ public class UnityUnitTypes{
                 y = 9f;
                 alternate = false;
                 reload = 15f;
-                shots = 7;
+                               shoot.shots = 7;
                 shootCone = 20f;
                 rotationSpeed = 15f;
                 beamEffect = LineFx.endPointDefence;
@@ -4777,7 +4739,7 @@ public class UnityUnitTypes{
                 y = 20.5f;
                 alternate = false;
                 reload = 10f;
-                shots = 5;
+                               shoot.shots = 5;
                 shootCone = 20f;
                 rotationSpeed = 15f;
                 beamEffect = LineFx.endPointDefence;
@@ -4910,7 +4872,7 @@ public class UnityUnitTypes{
 
                     laserColors = new Color[]{UnityPal.scarColorAlpha, UnityPal.scarColor, UnityPal.endColor, Color.black};
                 }};
-                range = bullet.range();
+                range = bullet.range;
             }},
             new TentacleType("unity-apocalypse-tentacle"){{
                 x = 122.75f;
@@ -5054,8 +5016,8 @@ public class UnityUnitTypes{
                 reload = 50f;
                 alternate = true;
                 mirror = false;
-                shotDelay = 3f;
-                shots = 5;
+                shoot.shotDelay = 3f;
+                shoot.shots = 5;
                 xRand = 5.75f;
                 rotate = true;
                 rotateSpeed = 4f;

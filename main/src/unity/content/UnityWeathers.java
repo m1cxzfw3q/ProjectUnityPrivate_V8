@@ -59,7 +59,7 @@ public class UnityWeathers{
             color = Color.darkGray;
             opacityMultiplier = 2f;
 
-            sound = Sounds.windhowl;
+            sound = Sounds.windHowl;
             soundVol = 0f;
             soundVolOscMag = 1.5f;
             soundVolOscScl = 1100f;

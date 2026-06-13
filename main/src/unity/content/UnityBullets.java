@@ -25,6 +25,7 @@ import unity.entities.bullet.misc.BlockStatusEffectBulletType;
 import unity.entities.bullet.monolith.energy.*;
 import unity.gen.*;
 import unity.graphics.*;
+import unity.v8.V7Bullets;
 import unity.v8.V7Sounds;
 import unity.world.blocks.exp.*;
 
@@ -610,8 +611,8 @@ public class UnityBullets{
             }
 
             @Override
-            public void hitTile(Bullet b, Building build, float initialHealth, boolean direct){
-                super.hitTile(b, build, initialHealth, direct);
+            public void hitTile(Bullet b, Building build, float x, float y, float initialHealth, boolean direct){
+                super.hitTile(b, build, x, y, initialHealth, direct);
                 if(b.owner instanceof Healthc owner){
                     owner.heal(Math.max(initialHealth - build.health(), 0f) * 0.2f);
                 }
@@ -638,16 +639,16 @@ public class UnityBullets{
 
         catastropheLaser = new SparkingContinuousLaserBulletType(240f){{
             length = 340f;
-            strokes = new float[]{2 * 1.4f, 1.5f * 1.4f, 1 * 1.4f, 0.3f * 1.4f};
+            //strokes = new float[]{2 * 1.4f, 1.5f * 1.4f, 1 * 1.4f, 0.3f * 1.4f};
             incendSpread = 7f;
             incendAmount = 2;
         }};
 
         calamityLaser = new SparkingContinuousLaserBulletType(580f){{
             length = 450f;
-            strokes = new float[]{2 * 1.7f, 1.5f * 1.7f, 1 * 1.7f, 0.3f * 1.7f};
+            //strokes = new float[]{2 * 1.7f, 1.5f * 1.7f, 1 * 1.7f, 0.3f * 1.7f};
             lightStroke = 70f;
-            spaceMag = 70f;
+            //spaceMag = 70f;
             fromBlockChance = 0.5f;
             fromBlockDamage = 34f;
             fromLaserChance = 0.8f;
@@ -662,9 +663,9 @@ public class UnityBullets{
 
         extinctionLaser = new SparkingContinuousLaserBulletType(770f){{
             length = 560f;
-            strokes = new float[]{2f * 2.2f, 1.5f * 2.2f, 2.2f, 0.3f * 2.2f};
+            //strokes = new float[]{2f * 2.2f, 1.5f * 2.2f, 2.2f, 0.3f * 2.2f};
             lightStroke = 90f;
-            spaceMag = 70f;
+            //spaceMag = 70f;
             fromBlockChance = 0.5f;
             fromBlockDamage = 76f;
             fromBlockAmount = 4;
@@ -824,7 +825,7 @@ public class UnityBullets{
             hitSize = 0;
             hittable = false;
             hitEffect = Fx.hitLiquid;
-            breakSound = Sounds.wave;
+            breakSound = Sounds.waveSpawn;
             maxRadius = 10f;
             shieldHealth = 3000f;
         }};
@@ -875,7 +876,7 @@ public class UnityBullets{
             fragBullets = 8;
             fragLifeMin = 0.8f;
             fragLifeMax = 1.1f;
-            scaleVelocity = true;
+            scaleLife = true;
             fragBullet = plasmaFragTriangle;
 
             lightning = 10;
@@ -906,7 +907,7 @@ public class UnityBullets{
                 for(int i = 0; i < 24; i++){
                     Time.run(2f * i, () -> {
                         pylonLightning.create(b, b.x, b.y, b.vel().angle());
-                        Sounds.spark.at(b.x, b.y, Mathf.random(0.6f, 0.9f));
+                        V7Sounds.spark.at(b.x, b.y, Mathf.random(0.6f, 0.9f));
                     });
                 }
             }
@@ -1427,14 +1428,14 @@ public class UnityBullets{
 
         //only enhanced
 
-        standardDenseLarge = copy(Bullets.standardDenseBig, (BasicBulletType t) -> {
+        standardDenseLarge = copy(V7Bullets.standardDenseBig, (BasicBulletType t) -> {
             t.damage *= 1.4f;
             t.speed *= 1.1f;
             t.width *= 1.12f;
             t.height *= 1.12f;
         });
 
-        standardHomingLarge = copy(Bullets.standardDenseBig, (BasicBulletType t) -> {
+        standardHomingLarge = copy(V7Bullets.standardDenseBig, (BasicBulletType t) -> {
             t.damage *= 1.23f;
             t.reloadMultiplier = 1.3f;
             t.homingPower = 0.09f;
@@ -1443,28 +1444,28 @@ public class UnityBullets{
             t.height *= 1.09f;
         });
 
-        standardIncendiaryLarge = copy(Bullets.standardIncendiaryBig, (BasicBulletType t) -> {
+        standardIncendiaryLarge = copy(V7Bullets.standardIncendiaryBig, (BasicBulletType t) -> {
             t.damage *= 1.4f;
             t.speed *= 1.1f;
             t.width *= 1.12f;
             t.height *= 1.12f;
         });
 
-        standardThoriumLarge = copy(Bullets.standardThoriumBig, (BasicBulletType t) -> {
+        standardThoriumLarge = copy(V7Bullets.standardThoriumBig, (BasicBulletType t) -> {
             t.damage *= 1.4f;
             t.speed *= 1.1f;
             t.width *= 1.12f;
             t.height *= 1.12f;
         });
 
-        standardDenseHeavy = copy(Bullets.standardDenseBig, (BasicBulletType t) -> {
+        standardDenseHeavy = copy(V7Bullets.standardDenseBig, (BasicBulletType t) -> {
             t.damage *= 1.7f;
             t.speed *= 1.3f;
             t.width *= 1.32f;
             t.height *= 1.32f;
         });
 
-        standardHomingHeavy = copy(Bullets.standardDenseBig, (BasicBulletType t) -> {
+        standardHomingHeavy = copy(V7Bullets.standardDenseBig, (BasicBulletType t) -> {
             t.damage *= 1.4f;
             t.reloadMultiplier = 1.3f;
             t.homingPower = 0.09f;
@@ -1473,21 +1474,21 @@ public class UnityBullets{
             t.height *= 1.19f;
         });
 
-        standardIncendiaryHeavy = copy(Bullets.standardIncendiaryBig, (BasicBulletType t) -> {
+        standardIncendiaryHeavy = copy(V7Bullets.standardIncendiaryBig, (BasicBulletType t) -> {
             t.damage *= 1.7f;
             t.speed *= 1.3f;
             t.width *= 1.32f;
             t.height *= 1.32f;
         });
 
-        standardThoriumHeavy = copy(Bullets.standardThoriumBig, (BasicBulletType t) -> {
+        standardThoriumHeavy = copy(V7Bullets.standardThoriumBig, (BasicBulletType t) -> {
             t.damage *= 1.7f;
             t.speed *= 1.3f;
             t.width *= 1.32f;
             t.height *= 1.32f;
         });
 
-        standardDenseMassive = copy(Bullets.standardDenseBig, (BasicBulletType t) -> {
+        standardDenseMassive = copy(V7Bullets.standardDenseBig, (BasicBulletType t) -> {
             t.damage *= 1.8f;
             t.speed *= 1.3f;
             t.width *= 1.34f;
@@ -1495,7 +1496,7 @@ public class UnityBullets{
             t.lifetime *= 1.1f;
         });
 
-        standardHomingMassive = copy(Bullets.standardDenseBig, (BasicBulletType t) -> {
+        standardHomingMassive = copy(V7Bullets.standardDenseBig, (BasicBulletType t) -> {
             t.damage *= 1.6f;
             t.reloadMultiplier = 1.3f;
             t.homingPower = 0.09f;
@@ -1505,7 +1506,7 @@ public class UnityBullets{
             t.lifetime *= 1.1f;
         });
 
-        standardIncendiaryMassive = copy(Bullets.standardIncendiaryBig, (BasicBulletType t) -> {
+        standardIncendiaryMassive = copy(V7Bullets.standardIncendiaryBig, (BasicBulletType t) -> {
             t.damage *= 1.8f;
             t.speed *= 1.3f;
             t.width *= 1.34f;
@@ -1513,7 +1514,7 @@ public class UnityBullets{
             t.lifetime *= 1.1f;
         });
 
-        standardThoriumMassive = copy(Bullets.standardThoriumBig, (BasicBulletType t) -> {
+        standardThoriumMassive = copy(V7Bullets.standardThoriumBig, (BasicBulletType t) -> {
             t.damage *= 1.8f;
             t.speed *= 1.3f;
             t.width *= 1.34f;
@@ -1525,7 +1526,7 @@ public class UnityBullets{
             t.damage = 45f;
         });
 
-        artilleryExplosiveT2 = copy(Bullets.artilleryExplosive, (ArtilleryBulletType t) -> {
+        artilleryExplosiveT2 = copy(V7Bullets.artilleryExplosive, (ArtilleryBulletType t) -> {
             t.speed = 4.5f;
             t.lifetime = 74f;
             t.ammoMultiplier = 2f;

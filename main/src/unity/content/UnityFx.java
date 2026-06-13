@@ -24,6 +24,7 @@ import unity.gen.*;
 import unity.graphics.*;
 import unity.type.*;
 import unity.util.*;
+import unity.v8.V7Lines;
 
 import static arc.graphics.g2d.Draw.*;
 import static arc.graphics.g2d.Lines.*;
@@ -178,10 +179,10 @@ public class UnityFx{
     laserFractalChargeBegin = new Effect(90f, e -> {
         int[] r = {9, 10, 11, 12};
 
-        e.scaled(60, ee -> r[0] *= ee.fin());
-        e.scaled(40, ee -> r[1] *= ee.fin());
-        e.scaled(40, ee -> r[2] *= ee.fin());
-        e.scaled(60, ee -> r[3] *= ee.fin());
+        e.scaled(60, ee -> r[0] *= (int)ee.fin());
+        e.scaled(40, ee -> r[1] *= (int)ee.fin());
+        e.scaled(40, ee -> r[2] *= (int)ee.fin());
+        e.scaled(60, ee -> r[3] *= (int)ee.fin());
 
         Draw.color(UnityPal.lancerSap3.cpy().a(0.1f+0.55f * e.fslope()));
         Lines.arc(e.x, e.y, r[0], 0.6f, Time.time*8-60);
@@ -747,7 +748,7 @@ public class UnityFx{
         if(u == null || !u.isValid() || u.dead) return;
         color(e.color);
         stroke(e.fout() * 1.5f);
-        polySeg(60, 0, (int)(60 * (1 - (e.rotation - Time.time) / whenReady)), u.x, u.y, 8f, 0f);
+        V7Lines.polySeg(60, 0, (int)(60 * (1 - (e.rotation - Time.time) / whenReady)), u.x, u.y, 8f, 0f);
     }).layer(Layer.effect - 0.00001f),
 
     //^ this but better
@@ -757,7 +758,7 @@ public class UnityFx{
 
             color(e.color);
             stroke(e.fout() * 1.5f);
-            polySeg(60, 0, (int)(60f * data.progress()), data.unit().x, data.unit().y, 8f, 0f);
+            V7Lines.polySeg(60, 0, (int)(60f * data.progress()), data.unit().x, data.unit().y, 8f, 0f);
         }
     }).layer(Layer.effect - 0.00001f),
 
@@ -767,7 +768,7 @@ public class UnityFx{
 
             color(e.color);
             stroke(e.fout() * 1.5f);
-            polySeg(90, 0, (int)(90f * data.progress()), data.unit().x, data.unit().y, 12f, 0f);
+            V7Lines.polySeg(90, 0, (int)(90f * data.progress()), data.unit().x, data.unit().y, 12f, 0f);
         }
     }).layer(Layer.effect - 0.00001f),
 
@@ -1230,7 +1231,7 @@ public class UnityFx{
             Effect effect = this;
             if((data instanceof Float[])) effect.lifetime = ((Float[])data)[1];
 
-            create(effect, x, y, rotation, Color.white, data);
+            effect.create(x, y, rotation, Color.white, data);
         }
     },
 

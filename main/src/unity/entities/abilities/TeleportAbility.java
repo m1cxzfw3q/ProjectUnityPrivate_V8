@@ -10,6 +10,7 @@ import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
 import unity.content.*;
+import unity.v8.V7Sounds;
 
 import static mindustry.Vars.*;
 
@@ -19,7 +20,7 @@ public class TeleportAbility<T extends Teamc & Hitboxc> extends BaseAbility{
 
     public float teleportDistance;
 
-    public Sound teleportSound = Sounds.lasershoot;
+    public Sound teleportSound = V7Sounds.lasershoot;
     /** {@code e.data} is <code>{@link Position}[]{before, after}</code>  */
     public Effect teleportEffect = Fx.none;
     /** {@code e.data} is {@link Unit}. Called in each position before and after teleporting */

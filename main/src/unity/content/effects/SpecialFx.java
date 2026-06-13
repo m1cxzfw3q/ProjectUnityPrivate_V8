@@ -141,8 +141,7 @@ public class SpecialFx{
     }),
 
     voidFractureEffect = new Effect(30f, 700f, e -> {
-        if(!(e.data instanceof VoidFractureData)) return;
-        VoidFractureData data = (VoidFractureData)e.data;
+        if(!(e.data instanceof VoidFractureData data)) return;
         float rot = Angles.angle(data.x, data.y, data.x2, data.y2);
 
         Draw.color(Color.black);

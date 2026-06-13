@@ -13,6 +13,8 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.world.blocks.defense.turrets.Turret.*;
 
+import java.util.Objects;
+
 public class ShieldBulletType extends BasicBulletType{
     /** Shield stats */
     public float shieldHealth = 3000f;
@@ -64,7 +66,7 @@ public class ShieldBulletType extends BasicBulletType{
         Groups.bullet.intersect(b.x - radius, b.y - radius, radius * 2, radius * 2, e -> {
             if(e != null && e.team != b.team){
                 if(e.owner instanceof TurretBuild build){
-                    if(build.block.name != "unity-shielder"){
+                    if(!Objects.equals(build.block.name, "unity-shielder")){
                         float health = temp[0] - e.damage;
                         temp[0] = health;
                         temp[1] = 1;

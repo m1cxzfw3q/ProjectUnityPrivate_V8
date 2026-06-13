@@ -155,7 +155,7 @@ public class UnityTechTree{
     }
 
     private static void attach(UnlockableContent parent, Runnable children){
-        context = TechTree.get(parent);
+        context = TechTree.all.find(t -> t.content == parent);
         children.run();
     }
 
@@ -201,7 +201,7 @@ public class UnityTechTree{
     }
 
     private static void nodeProduce(UnlockableContent content, Seq<Objective> objectives, Runnable children){
-        node(content, content.researchRequirements(), objectives.and(new Produce(content)), children);
+        node(content, content.researchRequirements(), objectives.add(new Produce(content)), children);
     }
 
     private static void nodeProduce(UnlockableContent content, Runnable children){
