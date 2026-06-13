@@ -9,6 +9,7 @@ import arc.util.*;
 import mindustry.audio.*;
 import mindustry.entities.*;
 import mindustry.entities.bullet.*;
+import mindustry.entities.pattern.ShootSpread;
 import mindustry.entities.units.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -17,6 +18,7 @@ import unity.ai.*;
 import unity.annotations.Annotations.*;
 import unity.gen.*;
 import unity.type.*;
+import unity.v8.V7Angles;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -70,9 +72,8 @@ public class WormSegmentUnit extends UnitEntity{
         drag = type.drag;
         armor = type.armor;
         hitSize = type.hitSize;
-        hovering = type.hovering;
 
-        if(controller == null) controller(type.createController());
+        if(controller == null) controller(type.createController(this));
         if(mounts().length != type.weapons.size) setupWeapons(type);
         if(type instanceof UnityUnitType w) wormType = w;
         else throw new ClassCastException("you set this unit's type in sneaky way");
@@ -94,8 +95,8 @@ public class WormSegmentUnit extends UnitEntity{
     public void damage(float amount){
         if(wormType.splittable) segmentHealth -= amount * wormType.segmentDamageScl;
         trueParentUnit.damage(amount);
-        if(trueParentUnit.controller instanceof WormAI){
-            ((WormAI)trueParentUnit.controller).setTarget(x, y, amount);
+        if(trueParentUnit.controller() instanceof WormAI){
+            ((WormAI) trueParentUnit.controller()).setTarget(x, y, amount);
         }
     }
 
@@ -109,32 +110,27 @@ public class WormSegmentUnit extends UnitEntity{
             controller = next;
             if(controller.unit() != this) controller.unit(this);
         }else if(trueParentUnit != null){
-            trueParentUnit.controller = next;
-            if(trueParentUnit.controller.unit() != trueParentUnit) trueParentUnit.controller.unit(trueParentUnit);
+            trueParentUnit.controller(next);
+            if(trueParentUnit.controller().unit() != trueParentUnit) trueParentUnit.controller().unit(trueParentUnit);
         }
     }
 
     @Override
     public boolean isPlayer(){
         if(trueParentUnit == null) return false;
-        return trueParentUnit.controller instanceof Player;
+        return trueParentUnit.controller() instanceof Player;
     }
 
     @Override
     public boolean isAI(){
         if(trueParentUnit == null) return true;
-        return trueParentUnit.controller instanceof AIController;
-    }
-
-    @Override
-    public boolean isCounted(){
-        return false;
+        return trueParentUnit.controller() instanceof AIController;
     }
 
     @Override
     public Player getPlayer(){
         if(trueParentUnit == null) return null;
-        return isPlayer() ? (Player)trueParentUnit.controller : null;
+        return isPlayer() ? (Player) trueParentUnit.controller() : null;
     }
 
     @Override
@@ -199,7 +195,6 @@ public class WormSegmentUnit extends UnitEntity{
                 health = segmentHealth;
             }
             hitTime = trueParentUnit.hitTime;
-            ammo = trueParentUnit.ammo;
         }else{
             return;
         }
@@ -307,11 +302,9 @@ public class WormSegmentUnit extends UnitEntity{
                 mount.rotation = 0;
                 mount.targetRotation = angleTo(mount.aimX, mount.aimY);
             }
-            if(mount.shoot && can && (ammo > 0 || !state.rules.unitAmmo || team().rules().infiniteAmmo) && (!weapon.alternate || mount.side == weapon.flipSprite) && (vel.len() >= mount.weapon.minShootVelocity || (net.active() && !isLocal())) && mount.reload <= 1.0E-4F && Angles.within(weapon.rotate ? mount.rotation : this.rotation, mount.targetRotation, mount.weapon.shootCone)){
+            if(mount.shoot && can && (!weapon.alternate || mount.side == weapon.flipSprite) && (vel.len() >= mount.weapon.minShootVelocity || (net.active() && !isLocal())) && mount.reload <= 1.0E-4F && Angles.within(weapon.rotate ? mount.rotation : this.rotation, mount.targetRotation, mount.weapon.shootCone)){
                 shoot(mount, shootX, shootY, mount.aimX, mount.aimY, mountX, mountY, shootAngle, Mathf.sign(weapon.x));
                 mount.reload = weapon.reload;
-                ammo--;
-                if(ammo < 0) ammo = 0;
             }
         }
     }
@@ -321,25 +314,25 @@ public class WormSegmentUnit extends UnitEntity{
         Weapon weapon = mount.weapon;
         float baseX = this.x;
         float baseY = this.y;
-        boolean delay = weapon.firstShotDelay + weapon.shotDelay > 0f;
+        boolean delay = weapon.shoot.firstShotDelay + weapon.shoot.shotDelay > 0f;
         (delay ? weapon.chargeSound : weapon.continuous ? Sounds.none : weapon.shootSound).at(x, y, Mathf.random(weapon.soundPitchMin, weapon.soundPitchMax));
         BulletType ammo = weapon.bullet;
-        float lifeScl = ammo.scaleVelocity ? Mathf.clamp(Mathf.dst(x, y, aimX, aimY) / ammo.range()) : 1f;
+        float lifeScl = ammo.scaleLife ? Mathf.clamp(Mathf.dst(x, y, aimX, aimY) / ammo.range) : 1f;
         //sequenceNum = 0;
         if(delay){
-            Angles.shotgun(weapon.shots, weapon.spacing, rotation, (f)->{
-                Time.run(/*sequenceNum * */weapon.shotDelay + weapon.firstShotDelay, ()->{
+            V7Angles.shotgun(weapon.shoot.shots, (weapon.shoot instanceof ShootSpread shootSpread) ? shootSpread.spread : 1, rotation, (f)->{
+                Time.run(/*sequenceNum * */weapon.shoot.shotDelay + weapon.shoot.firstShotDelay, ()->{
                     if(!isAdded()) return;
                     mount.bullet = bullet(weapon, x + this.x - baseX, y + this.y - baseY, f + Mathf.range(weapon.inaccuracy), lifeScl);
                 });
                 //sequenceNum++;
             });
         } else {
-            Angles.shotgun(weapon.shots, weapon.spacing, rotation, f -> mount.bullet = bullet(weapon, x, y, f + Mathf.range(weapon.inaccuracy), lifeScl));
+            V7Angles.shotgun(weapon.shoot.shots, (weapon.shoot instanceof ShootSpread shootSpread) ? shootSpread.spread : 1, rotation, f -> mount.bullet = bullet(weapon, x, y, f + Mathf.range(weapon.inaccuracy), lifeScl));
         }
         boolean parentize = ammo.keepVelocity;
         if(delay){
-            Time.run(weapon.firstShotDelay, () -> {
+            Time.run(weapon.shoot.firstShotDelay, () -> {
                 if(!isAdded()) return;
                 vel.add(Tmp.v1.trns(rotation + 180f, ammo.recoil));
                 Effect.shake(weapon.shake, weapon.shake, x, y);
@@ -388,7 +381,7 @@ public class WormSegmentUnit extends UnitEntity{
     public void drawShadow(){
         TextureRegion region = segmentType == 0 ? wormType.segmentRegion : wormType.tailRegion;
         Draw.color(Pal.shadow); //seems to not exist in v106
-        float e = Math.max(elevation, type.visualElevation);
+        float e = Math.max(elevation, 1);
         Draw.rect(region, x + (UnitType.shadowTX * e), y + UnitType.shadowTY * e, rotation - 90f);
         Draw.color();
     }

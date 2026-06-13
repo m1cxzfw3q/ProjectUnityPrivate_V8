@@ -11,6 +11,7 @@ import mindustry.entities.bullet.*;
 import mindustry.entities.units.*;
 import mindustry.gen.*;
 import mindustry.type.*;
+import unity.v8.V7Angles;
 
 public class EnergyChargeWeapon extends Weapon{
     public Cons3<Unit, WeaponMount, Float> drawCharge = (unit, mount, charge) -> {};
@@ -18,6 +19,9 @@ public class EnergyChargeWeapon extends Weapon{
     public Cons2<Unit, WeaponMount> chargeCondition;
     public boolean drawTop = true, startUncharged = true, drawRegion = true;
     private int sequenceNum;
+
+    public float firstShotDelay, shotDelay, spacing;
+    public int shots;
 
     public EnergyChargeWeapon(String name){
         super(name);
@@ -61,18 +65,18 @@ public class EnergyChargeWeapon extends Weapon{
 
             if(!controllable && autoTarget){
                 if((mount.retarget -= Time.delta) <= 0f){
-                    mount.target = findTarget(unit, mountX, mountY, bullet.range(), bullet.collidesAir, bullet.collidesGround);
+                    mount.target = findTarget(unit, mountX, mountY, bullet.range, bullet.collidesAir, bullet.collidesGround);
                     mount.retarget = mount.target == null ? targetInterval : targetSwitchInterval;
                 }
 
-                if(mount.target != null && checkTarget(unit, mount.target, mountX, mountY, bullet.range())){
+                if(mount.target != null && checkTarget(unit, mount.target, mountX, mountY, bullet.range)){
                     mount.target = null;
                 }
 
                 boolean shoot = false;
 
                 if(mount.target != null){
-                    shoot = mount.target.within(mountX, mountY, bullet.range() + Math.abs(shootY) + (mount.target instanceof Sized s ? s.hitSize()/2f : 0f)) && can;
+                    shoot = mount.target.within(mountX, mountY, bullet.range + Math.abs(shootY) + (mount.target instanceof Sized s ? s.hitSize()/2f : 0f)) && can;
 
                     if(predictTarget){
                         Vec2 to = Predict.intercept(unit, mount.target, bullet.speed);
@@ -126,27 +130,21 @@ public class EnergyChargeWeapon extends Weapon{
             }
 
             if(mount.shoot && can &&
-            (!useAmmo || unit.ammo > 0 || !Vars.state.rules.unitAmmo || unit.team.rules().infiniteAmmo) &&
             (!alternate || mount.side == flipSprite) &&
             unit.vel.len() >= mount.weapon.minShootVelocity &&
             mount.reload <= 0.0001f &&
             Angles.within(rotate ? mount.rotation : unit.rotation, mount.targetRotation, mount.weapon.shootCone)){
-                shoot(unit, mount, bulletX, bulletY, mount.aimX, mount.aimY, mountX, mountY, shootAngle, Mathf.sign(x));
+                shoot(unit, mount, bulletX, bulletY, shootAngle);
 
                 mount.reload = reload;
-
-                if(useAmmo){
-                    unit.ammo--;
-                    if(unit.ammo < 0) unit.ammo = 0;
-                }
             }
         }
     }
 
     @Override
-    protected void shoot(Unit unit, WeaponMount mount, float shootX, float shootY, float aimX, float aimY, float mountX, float mountY, float rotation, int side){
+    protected void shoot(Unit unit, WeaponMount mount, float shootX, float shootY,float rotation){
         if(chargeCondition == null){
-            super.shoot(unit, mount, shootX, shootY, aimX, aimY, mountX, mountY, rotation, side);
+            super.shoot(unit, mount, shootX, shootY, rotation);
         }else{
             float baseX = unit.x, baseY = unit.y;
             boolean delay = firstShotDelay + shotDelay > 0f;
@@ -154,12 +152,12 @@ public class EnergyChargeWeapon extends Weapon{
             (delay ? chargeSound : continuous ? Sounds.none : shootSound).at(shootX, shootY, Mathf.random(soundPitchMin, soundPitchMax));
 
             BulletType ammo = bullet;
-            float lifeScl = ammo.scaleVelocity ? Mathf.clamp(Mathf.dst(shootX, shootY, aimX, aimY) / ammo.range()) : 1f;
+            float lifeScl = ammo.scaleLife ? Mathf.clamp(Mathf.dst(unit.x, unit.y, shootX, shootY) / ammo.range) : 1f;
             float charge = Math.max(0f, -mount.reload);
 
             sequenceNum = 0;
             if(delay){
-                Angles.shotgun(shots, spacing, rotation, f -> {
+                V7Angles.shotgun(shots, spacing, rotation, f -> {
                     Time.run(sequenceNum * shotDelay + firstShotDelay, () -> {
                         if(!unit.isAdded()) return;
                         mount.bullet = bulletC(unit, shootX + unit.x - baseX, shootY + unit.y - baseY, f + Mathf.range(inaccuracy), lifeScl, charge);
@@ -170,7 +168,7 @@ public class EnergyChargeWeapon extends Weapon{
                     sequenceNum++;
                 });
             }else{
-                Angles.shotgun(shots, spacing, rotation, f -> mount.bullet = bulletC(unit, shootX, shootY, f + Mathf.range(inaccuracy), lifeScl, charge));
+                V7Angles.shotgun(shots, spacing, rotation, f -> mount.bullet = bulletC(unit, shootX, shootY, f + Mathf.range(inaccuracy), lifeScl, charge));
             }
 
             boolean parentize = ammo.keepVelocity;
@@ -192,7 +190,7 @@ public class EnergyChargeWeapon extends Weapon{
                 mount.heat = 1f;
             }
 
-            ejectEffect.at(mountX, mountY, rotation * side);
+            ejectEffect.at(shootX, shootY, rotation * Mathf.sign(x));
             ammo.shootEffect.at(shootX, shootY, rotation, parentize ? unit : null);
             ammo.smokeEffect.at(shootX, shootY, rotation, parentize ? unit : null);
             unit.apply(shootStatus, shootStatusDuration);

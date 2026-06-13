@@ -33,6 +33,7 @@ import unity.type.Engine.*;
 import unity.type.Engine.MultiEngine.*;
 import unity.type.weapons.monolith.*;
 import unity.util.*;
+import unity.v8.V7Sounds;
 
 import static mindustry.Vars.*;
 
@@ -224,7 +225,7 @@ public final class MonolithUnitTypes{
                 reload = 60f;
                 recoil = 2.5f;
                 inaccuracy = 0.5f;
-                shootSound = Sounds.shootBig;
+                shootSound = V7Sounds.shootBig;
 
                 bullet = new JoiningBulletType(3.5f, 36f){{
                     lifetime = 48f;
@@ -292,7 +293,7 @@ public final class MonolithUnitTypes{
                         super.init(b);
                         for(int i = 0; i < 3; i++){
                             subBullet.create(b, b.x, b.y, b.rotation());
-                            Sounds.spark.at(b.x, b.y, Mathf.random(0.6f, 0.8f));
+                            V7Sounds.spark.at(b.x, b.y, Mathf.random(0.6f, 0.8f));
                         }
                     }
                 };
@@ -305,8 +306,8 @@ public final class MonolithUnitTypes{
                     y = 4f;
                     shootX = 0f;
                     shootY = 24f;
-                    shots = 5;
-                    shotDelay = 3f;
+                    shoot.shots = 5;
+                    shoot.shotDelay = 3f;
                     reload = 72f;
                     addSequenceTime = 25f;
                     shootCone = 90f;
@@ -365,7 +366,6 @@ public final class MonolithUnitTypes{
             engineSize = 5f;
             engineOffset = 10f;
 
-            ammoType = new PowerAmmoType(1000);
             outlineColor = UnityPal.darkOutline;
 
             weapons.add(new Weapon("unity-monolith-medium-weapon-mount"){{
@@ -377,7 +377,7 @@ public final class MonolithUnitTypes{
                 rotate = true;
                 recoil = 3f;
                 reload = 40f;
-                shootSound = Sounds.laser;
+                shootSound = V7Sounds.laser;
 
                 bullet = new LaserBulletType(160f){{
                     lifetime = 27f;
@@ -425,7 +425,7 @@ public final class MonolithUnitTypes{
                                 lifetime = 96f;
                                 absorbable = hittable = collides = false;
                                 keepVelocity = false;
-                                hitSound = Sounds.spark;
+                                hitSound = V7Sounds.spark;
                                 hitEffect = despawnEffect = Fx.none;
                             }
 
@@ -587,7 +587,6 @@ public final class MonolithUnitTypes{
             legTrns = 0.5f;
             legBaseOffset = 11f;
 
-            ammoType = new PowerAmmoType(2000);
             groundLayer = Layer.legUnit;
             outlineColor = UnityPal.darkOutline;
 
@@ -604,8 +603,8 @@ public final class MonolithUnitTypes{
 
                 shootStatusDuration = 60f * 1.8f;
                 shootStatus = StatusEffects.unmoving;
-                shootSound = Sounds.laserblast;
-                chargeSound = Sounds.lasercharge;
+                shootSound = V7Sounds.laserblast;
+                chargeSound = V7Sounds.lasercharge;
                 firstShotDelay = UnityFx.pylonLaserCharge.lifetime / 2f;
 
                 bullet = UnityBullets.pylonLaser;
@@ -616,7 +615,7 @@ public final class MonolithUnitTypes{
 
                 rotate = true;
                 rotateSpeed = 3.5f;
-                shootSound = Sounds.laser;
+                shootSound = V7Sounds.laser;
                 shake = 5f;
                 reload = 20f;
                 recoil = 4f;
@@ -689,7 +688,7 @@ public final class MonolithUnitTypes{
                 recoil = shake = 8f;
                 shootCone = 2f;
                 cooldownTime = 210f;
-                shootSound = Sounds.railgun;
+                shootSound = V7Sounds.railgun;
 
                 bullet = UnityBullets.monumentRailBullet;
             }});
@@ -733,9 +732,9 @@ public final class MonolithUnitTypes{
                 recoil = 8f;
                 spacing = 1f;
                 inaccuracy = 6f;
-                shots = 5;
-                shotDelay = 3f;
-                shootSound = Sounds.laserblast;
+                shoot.shots = 5;
+                shoot.shotDelay = 3f;
+                shootSound = V7Sounds.laserblast;
 
                 bullet = new LaserBulletType(1920f){{
                     width = 45f;
@@ -849,7 +848,7 @@ public final class MonolithUnitTypes{
 
                 reload = 30f;
                 recoil = 8f;
-                shootSound = Sounds.shootBig;
+                shootSound = V7Sounds.shootBig;
 
                 bullet = new RicochetBulletType(12.5f, 640f, "shell"){
                     {

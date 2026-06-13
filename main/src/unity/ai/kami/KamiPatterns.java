@@ -12,6 +12,7 @@ import unity.ai.kami.KamiPattern.StagePattern.*;
 import unity.content.*;
 import unity.entities.bullet.kami.*;
 import unity.gen.*;
+import unity.v8.V7Angles;
 
 import static unity.ai.kami.KamiBulletPresets.*;
 import static unity.ai.kami.KamiPattern.PatternType.*;
@@ -90,7 +91,7 @@ public class KamiPatterns{
             if(data.time < 2.5f * 60f && ai.shoot(2, 8f)){
                 int amount = (ai.difficulty * 2) + (int)(ai.reloads[0]) + 1;
                 float spread = 18f / (1f + ai.difficulty / 3f);
-                Angles.shotgun(amount, spread, ai.reloads[1] + Mathf.sin(ai.reloads[3], 3.5f, spread / 1.5f) * ai.reloads[4], f -> {
+                V7Angles.shotgun(amount, spread, ai.reloads[1] + Mathf.sin(ai.reloads[3], 3.5f, spread / 1.5f) * ai.reloads[4], f -> {
                     Vec2 v = Tmp.v1.trns(f, 16f);
                     KamiBullet b = (KamiBullet)UnityBullets.kamiBullet3.create(u, u.team, u.x + v.x, u.y + v.y, f);
                     b.width = b.length = 14f;

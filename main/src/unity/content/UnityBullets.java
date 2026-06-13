@@ -25,6 +25,7 @@ import unity.entities.bullet.misc.BlockStatusEffectBulletType;
 import unity.entities.bullet.monolith.energy.*;
 import unity.gen.*;
 import unity.graphics.*;
+import unity.v8.V7Sounds;
 import unity.world.blocks.exp.*;
 
 import static mindustry.Vars.*;
@@ -845,7 +846,7 @@ public class UnityBullets{
             trailWidth = 3.5f;
             trailLength = 14;
             homingPower = 0.06f;
-            hitSound = Sounds.plasmaboom;
+            hitSound = V7Sounds.plasmaboom;
             hitEffect = HitFx.plasmaTriangleHit;
             despawnEffect = Fx.none;
             fragBullet = plasmaFragTriangle;
@@ -858,7 +859,7 @@ public class UnityBullets{
             backColor = Pal.surge;
             frontColor = Color.white;
             mixColorTo = Color.white;
-            hitSound = Sounds.plasmaboom;
+            hitSound = V7Sounds.plasmaboom;
             despawnShake = 4f;
             collidesAir = false;
             lifetime = 70f;
