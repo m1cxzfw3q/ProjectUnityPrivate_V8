@@ -57,7 +57,7 @@ public class EndGameTurret extends PowerTurret{
 
         health = 68000;
         consumePower(320f);
-        reload= = 300f;
+        reload = 300f;
         absorbLasers = true;
         shake = 2.2f;
         outlineIcon = false;

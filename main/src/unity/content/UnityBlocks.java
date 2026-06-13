@@ -50,7 +50,6 @@ import unity.world.blocks.power.*;
 import unity.world.blocks.production.*;
 import unity.world.blocks.sandbox.*;
 import unity.world.blocks.units.*;
-import unity.world.consumers.*;
 import unity.world.draw.*;
 import unity.world.graphs.*;
 import unity.world.meta.*;
