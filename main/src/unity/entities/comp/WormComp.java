@@ -276,7 +276,6 @@ abstract class WormComp implements Unitc{
         Unit tail = type.constructor.get();
         tail.team = team;
         tail.setType(type);
-        tail.ammo = type.ammoCapacity;
         tail.elevation = type.flying ? 1f : 0;
         tail.heal();
 
@@ -327,9 +326,9 @@ abstract class WormComp implements Unitc{
                     cast--;
                 }
 
-                float nextHealth = (last.health() + u.health()) / 2f;
+                float nextHealth = (last.health() + u.health) / 2f;
                 if(!Mathf.equal(nextHealth, last.health(), 0.0001f)) last.health(Mathf.lerpDelta(last.health(), nextHealth, uType.healthDistribution));
-                if(!Mathf.equal(nextHealth, u.health(), 0.0001f)) u.health(Mathf.lerpDelta(u.health(), nextHealth, uType.healthDistribution));
+                if(!Mathf.equal(nextHealth, u.health, 0.0001f)) u.health(Mathf.lerpDelta(u.health, nextHealth, uType.healthDistribution));
 
                 Wormc wrm = ((Wormc)last);
                 float nextHealthDv = (wrm.splitHealthDiv() + u.splitHealthDiv()) / 2f;
