@@ -30,14 +30,14 @@ public class UnityThruster extends Block{
 
         @Override public void updateTile(){
             super.updateTile();
-            if(consValid()){
+            if(shouldConsume()){
                 if(timer(timerUse, itemDuration / timeScale())){
                     consume();
                 }
                 speed+=acceleration*edelta();
                 speed=Mathf.clamp(speed,0,maxSpeed);
             }else{
-                speed*=0.9;
+                speed*= 0.9F;
             }
             if(speed>0.05){
                 BlockMovement.pushBlock(this,rotation,maxBlocks,speed,building -> true);

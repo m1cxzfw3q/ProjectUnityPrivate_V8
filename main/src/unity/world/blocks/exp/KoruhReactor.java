@@ -82,7 +82,7 @@ public class KoruhReactor extends ImpactReactor{
         @Override
         public void updateTile() {
             super.updateTile();
-            if(consValid()) {
+            if(shouldConsume()) {
                 if (exp >= expUse) {
                     if (productionEfficiency >= 0.8f && Mathf.randomBoolean(0.001f)) {
                         float dir = Mathf.random(360f);

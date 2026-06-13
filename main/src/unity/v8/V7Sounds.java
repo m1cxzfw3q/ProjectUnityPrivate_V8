@@ -26,5 +26,12 @@ public class V7Sounds {
             missile = Sounds.shootMissileShort,
             shootSnap = Sounds.shootScatter,
             artillery = Sounds.shootArtillery,
-            lasershoot = Sounds.shootLaser;
+            lasershoot = Sounds.shootLaser,
+            message = Sounds.uiNotify,
+            spray = Sounds.loopSpray,
+            tractorbeam = Sounds.beamParallax,
+            plasmadrop = Sounds.shootQuad,
+            explosionbig = Vars.tree.loadSound("vanilla/explosionbig"),
+            lasercharge2 = Sounds.chargeVela,
+            respawn = Vars.tree.loadSound("vanilla/respawn");
 }

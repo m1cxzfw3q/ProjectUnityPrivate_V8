@@ -4,6 +4,7 @@ import arc.graphics.g2d.*;
 import arc.math.geom.*;
 import arc.scene.ui.layout.*;
 import arc.util.io.*;
+import mindustry.world.Block;
 import mindustry.world.blocks.production.*;
 import unity.graphics.*;
 import unity.world.blocks.*;
@@ -81,8 +82,8 @@ public class AugerDrill extends Drill implements GraphBlockBase{
         }
 
         @Override
-        public float efficiency(){
-            return super.efficiency() * gms.efficiency();
+        public float efficiencyScale(){
+            return gms.efficiency();
         }
 
         @Override
@@ -148,6 +149,11 @@ public class AugerDrill extends Drill implements GraphBlockBase{
         @Override
         public GraphModules gms(){
             return gms;
+        }
+
+        @Override
+        public int rotation() {
+            return rotation;
         }
 
         @Override

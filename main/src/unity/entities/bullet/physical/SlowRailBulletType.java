@@ -19,7 +19,7 @@ public class SlowRailBulletType extends BasicBulletType{
 
     public SlowRailBulletType(float speed, float damage){
         super(speed, damage);
-        collides = collidesTiles = backMove = reflectable = false;
+        collides = collidesTiles = reflectable = false;
         pierce = pierceBuilding = true;
         trailEffect = TrailFx.coloredRailgunTrail;
     }
@@ -50,7 +50,7 @@ public class SlowRailBulletType extends BasicBulletType{
                 float h = building.health;
                 float sub = Math.max(building.health * pierceDamageFactor, 0);
                 building.collision(b);
-                hitTile(b, building, h, true);
+                hitTile(b, building, building.x, building.y, h, true);
                 b.collided.add(building.id);
                 b.damage -= sub;
             }
@@ -71,8 +71,7 @@ public class SlowRailBulletType extends BasicBulletType{
             }
             hit(b, x, y);
         }, true);
-        if(b.data instanceof RailData){
-            RailData data = (RailData)b.data;
+        if(b.data instanceof RailData data){
             data.lastLen += Mathf.dst(b.lastX, b.lastY, b.x, b.y);
             while(data.len < data.lastLen){
                 Tmp.v1.trns(b.rotation(), data.len).add(data.x, data.y);

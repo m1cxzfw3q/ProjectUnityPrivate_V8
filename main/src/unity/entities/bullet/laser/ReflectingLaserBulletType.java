@@ -53,16 +53,14 @@ public class ReflectingLaserBulletType extends BulletType{
             b.data = data;
         }
 
-        if(b.data instanceof ReflectLaserData){
-            ReflectLaserData data = (ReflectLaserData)b.data;
+        if(b.data instanceof ReflectLaserData data){
             float length = b.fdata;
             Vec2 pos = vec.trns(b.rotation(), length).add(b);
             p = 0;
             Utils.collideLineRawEnemy(collidesTeam ? null : b.team, b.x, b.y, pos.x, pos.y, width / 3f, collidesTiles, true, true, (x, y, h, direct) -> {
                 boolean hit = p > pierceCap;
                 if(direct){
-                    if(h instanceof Teamc){
-                        Teamc t = (Teamc)h;
+                    if(h instanceof Teamc t){
                         if(t.team() != b.team){
                             data.hitX = x;
                             data.hitY = y;
@@ -77,8 +75,7 @@ public class ReflectingLaserBulletType extends BulletType{
                         }
                     }
                 }
-                if(h instanceof Building && ((Building)h).team != b.team){
-                    Building block = (Building)h;
+                if(h instanceof Building block && block.team != b.team){
                     hit |= block.block.absorbLasers;
                 }
                 return hit;
@@ -125,8 +122,7 @@ public class ReflectingLaserBulletType extends BulletType{
 
     @Override
     public void draw(Bullet b){
-        if(b.data instanceof ReflectLaserData){
-            ReflectLaserData data = (ReflectLaserData)b.data;
+        if(b.data instanceof ReflectLaserData data){
             boolean hit = data.hit && data.reflect < reflections;
             float len = b.fdata;
             float f = Mathf.curve(b.fin(), 0f, 0.2f);
@@ -153,7 +149,7 @@ public class ReflectingLaserBulletType extends BulletType{
 
             Tmp.v2.set(p).sub(b).scl(1.1f).add(b);
 
-            Drawf.light(b.team, b.x, b.y, Tmp.v2.x, Tmp.v2.y, width * 1.4f * b.fout(), colors[0], 0.6f);
+            Drawf.light(b.x, b.y, Tmp.v2.x, Tmp.v2.y, width * 1.4f * b.fout(), colors[0], 0.6f);
         }
     }
 
@@ -174,7 +170,6 @@ public class ReflectingLaserBulletType extends BulletType{
         b.initVel(rotation, 0f);
         b.fdata = length;
         b.data = data;
-        b.drag = 0f;
         b.hitSize = hitSize;
         b.damage = s.damage * reflectLoss;
         b.add();

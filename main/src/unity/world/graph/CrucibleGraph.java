@@ -53,7 +53,7 @@ public class CrucibleGraph extends BaseGraph<GraphCrucibleModule, CrucibleGraph>
 
         for(var i : contains){
             if(i.id == meltProd.id) avalslot = i;
-            totalContained += i.volume;
+            totalContained += (int) i.volume;
         }
 
         if(totalContained + am > totalCapacity) return false;
@@ -111,7 +111,7 @@ public class CrucibleGraph extends BaseGraph<GraphCrucibleModule, CrucibleGraph>
             }
             int directNeighbour = 0;
             for(int i = 0; i < 8; i++){
-                Tile tile = module.parent.build.tile().nearby(Geometry.d8(i));
+                Tile tile = module.parent.build.tileOn().nearby(Geometry.d8(i));
 
                 if(tile == null || !(tile.build instanceof GraphBuildBase build)) continue;
 
@@ -123,7 +123,7 @@ public class CrucibleGraph extends BaseGraph<GraphCrucibleModule, CrucibleGraph>
             }
 
             module.tilingIndex = bitmask;
-            module.liquidCap = (module.parent.build.block().size == 1 ? capacityMul[directNeighbour] : 1f) * module.graph.baseLiquidCapcity;
+            module.liquidCap = (module.parent.build.blockOn().size == 1 ? capacityMul[directNeighbour] : 1f) * module.graph.baseLiquidCapcity;
 
             totalCapacity += module.liquidCap;
             crafts |= module.graph.doesCrafting;

@@ -91,5 +91,12 @@ public class V7Bullets {
         frontColor = Pal.missileYellow;
 
         status = StatusEffects.blasted;
+    }},standardCopper = new BasicBulletType(2.5f, 9){{
+        width = 7f;
+        height = 9f;
+        lifetime = 60f;
+        shootEffect = Fx.shootSmall;
+        smokeEffect = Fx.shootSmallSmoke;
+        ammoMultiplier = 2;
     }};
 }

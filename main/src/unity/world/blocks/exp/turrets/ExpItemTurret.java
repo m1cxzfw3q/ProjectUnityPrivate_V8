@@ -1,6 +1,7 @@
 package unity.world.blocks.exp.turrets;
 
 import arc.*;
+import arc.scene.ui.Image;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.io.*;
@@ -12,6 +13,7 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.ui.*;
+import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 import unity.world.blocks.exp.*;
@@ -55,20 +57,21 @@ public class ExpItemTurret extends ExpTurret {
 
     @Override
     public void init(){
-        consumes.add(new ConsumeItemFilter(i -> ammoTypes.containsKey(i)){
+        consume(new ConsumeItemFilter(i -> ammoTypes.containsKey(i)){
             @Override
-            public void build(Building tile, Table table){
+            public void build(Building build, Table table){
                 MultiReqImage image = new MultiReqImage();
-                content.items().each(i -> filter.get(i) && i.unlockedNow(), item -> image.add(new ReqImage(new ItemImage(item.uiIcon),
-                        () -> tile instanceof ExpItemTurretBuild it && !it.ammo.isEmpty() && ((ItemEntry)it.ammo.peek()).item == item)));
+                content.items().each(i -> filter.get(i) && i.unlockedNow(),
+                        item -> image.add(new ReqImage(new Image(item.uiIcon),
+                                () -> build instanceof ItemTurret.ItemTurretBuild it && !it.ammo.isEmpty() && ((ItemTurret.ItemEntry)it.ammo.peek()).item == item)));
 
                 table.add(image).size(8 * 4);
             }
 
             @Override
-            public boolean valid(Building entity){
-                //valid when there's any ammo in the turret
-                return entity instanceof ExpItemTurretBuild it && !it.ammo.isEmpty();
+            public float efficiency(Building build){
+                //valid when it can shoot
+                return build instanceof ItemTurret.ItemTurretBuild it && it.ammo.size > 0 && (it.ammo.peek().amount >= ammoPerShot || it.cheating()) ? 1f : 0f;
             }
 
             @Override
@@ -94,7 +97,7 @@ public class ExpItemTurret extends ExpTurret {
 
         @Override
         public void updateTile(){
-            unit.ammo((float)unit.type().ammoCapacity * totalAmmo / maxAmmo);
+            unit.ammo(1);
 
             super.updateTile();
         }
@@ -138,7 +141,7 @@ public class ExpItemTurret extends ExpTurret {
 
             BulletType type = ammoTypes.get(item);
             if(type == null) return;
-            totalAmmo += type.ammoMultiplier;
+            totalAmmo += (int) type.ammoMultiplier;
 
             //find ammo entry by type
             for(int i = 0; i < ammo.size; i++){
@@ -146,7 +149,7 @@ public class ExpItemTurret extends ExpTurret {
 
                 //if found, put it to the right
                 if(entry.item == item){
-                    entry.amount += type.ammoMultiplier;
+                    entry.amount += (int) type.ammoMultiplier;
                     ammo.swap(i, ammo.size - 1);
                     return;
                 }

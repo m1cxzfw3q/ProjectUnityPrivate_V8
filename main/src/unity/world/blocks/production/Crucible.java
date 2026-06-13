@@ -12,6 +12,7 @@ import unity.gen.*;
 import unity.graphics.*;
 import unity.ui.dialogs.*;
 import unity.util.*;
+import unity.v8.V7Styles;
 import unity.world.blocks.*;
 import unity.world.graph.*;
 import unity.world.meta.*;
@@ -58,8 +59,8 @@ public class Crucible extends GraphBlock{
 
         @Override
         public void buildConfiguration(Table table){
-            table.button(Tex.whiteui, Styles.clearTransi, 50f, new CrucibleDialog(this)::show).size(50f).get().getStyle().imageUp = Icon.chartBar;
-            table.button(Tex.whiteui, Styles.clearTransi, 50f, () -> configure(0)).size(50f).get().getStyle().imageUp = Icon.eye;
+            table.button(Tex.whiteui, V7Styles.clearTransi, 50f, new CrucibleDialog(this)::show).size(50f).get().getStyle().imageUp = Icon.chartBar;
+            table.button(Tex.whiteui, V7Styles.clearTransi, 50f, () -> configure(0)).size(50f).get().getStyle().imageUp = Icon.eye;
         }
 
         @Override

@@ -18,6 +18,7 @@ import mindustry.world.meta.*;
 import unity.content.*;
 import unity.entities.*;
 import unity.graphics.*;
+import unity.v8.V7Sounds;
 
 import static mindustry.Vars.*;
 
@@ -38,7 +39,7 @@ public class ExpBase extends Block {
     public float orbScale = 0.8f;
     public int expScale = 1;
     public Effect upgradeEffect = UnityFx.upgradeBlockFx;
-    public Sound upgradeSound = Sounds.message;
+    public Sound upgradeSound = V7Sounds.message;
 
     public ExpBase(String name){
         super(name);

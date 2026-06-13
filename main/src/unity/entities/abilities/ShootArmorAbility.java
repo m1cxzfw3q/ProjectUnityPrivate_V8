@@ -57,7 +57,7 @@ public class ShootArmorAbility extends Ability{
                             w.x = x - spread * shootHeat;
                         }
                     }
-                }catch(Throwable ignored){};
+                }catch(Throwable ignored){}
             }
         }
     }

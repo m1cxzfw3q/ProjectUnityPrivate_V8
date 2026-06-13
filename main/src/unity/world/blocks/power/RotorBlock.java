@@ -78,8 +78,8 @@ public class RotorBlock extends PowerGenerator implements GraphBlockBase{
         }
 
         @Override
-        public float efficiency(){
-            return super.efficiency() * gms.efficiency();
+        public float efficiencyScale(){
+            return gms.efficiency();
         }
 
         @Override
@@ -148,6 +148,11 @@ public class RotorBlock extends PowerGenerator implements GraphBlockBase{
         }
 
         @Override
+        public int rotation() {
+            return rotation;
+        }
+
+        @Override
         public void drawSelect(){
             super.drawSelect();
 
@@ -160,7 +165,7 @@ public class RotorBlock extends PowerGenerator implements GraphBlockBase{
             float mTorque = flux().getNetwork().flux() * torqueEfficiency * baseTorque;
 
             table.add(new Bar(
-                () -> bundle.format("bar.poweroutput", Strings.fixed((getPowerProduction() - consumes.getPower().usage) * 60f * timeScale, 1)),
+                () -> bundle.format("bar.poweroutput", Strings.fixed((getPowerProduction() - consPower.usage) * 60f * timeScale, 1)),
                 () -> Pal.powerBar,
                 () -> productionEfficiency
             )).growX().row();
@@ -180,7 +185,7 @@ public class RotorBlock extends PowerGenerator implements GraphBlockBase{
         public void updatePre(){
             float flux = flux().getNetwork().flux();
             topSpeed = baseTopSpeed / (1f + flux / fluxEfficiency);
-            float breakEven = consumes.getPower().usage / powerProduction;
+            float breakEven = consPower.usage / powerProduction;
 
             GraphTorqueModule<?> tGraph = torque();
             float rotNeg = Mathf.clamp(tGraph.getNetwork().lastVelocity / topSpeed, 0f, 2f / breakEven);
@@ -188,7 +193,7 @@ public class RotorBlock extends PowerGenerator implements GraphBlockBase{
             productionEfficiency = Mathf.clamp(rotNeg * breakEven, 0f, 2f);
             productionEfficiency *= rotPowerEfficiency;
 
-            tGraph.force = flux * baseTorque * (efficiency() - rotNeg) * delta();
+            tGraph.force = flux * baseTorque * (efficiency - rotNeg) * delta();
         }
 
         @Override

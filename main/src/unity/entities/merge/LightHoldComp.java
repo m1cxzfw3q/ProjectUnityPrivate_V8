@@ -11,7 +11,7 @@ import unity.world.*;
 
 /**
  * A component that defines a type of block that holds light lasers. These lasers acts like some type of consumer;
- * affects {@link Building#efficiency()} and {@link Building#consValid()}.
+ * affects {@link Building#efficiency} and {@link Building#shouldConsume()}.
  * @author GlennFolker
  */
 @SuppressWarnings("unused")
@@ -102,13 +102,13 @@ abstract class LightHoldComp extends Block implements Stemc{
         @Override
         @Replace
         public float efficiency(){
-            return super.efficiency() * (requiresLight() ? Math.min(lightStatus(), 1f) : 1f);
+            return super.efficiency * (requiresLight() ? Math.min(lightStatus(), 1f) : 1f);
         }
 
         @Override
         @Replace
-        public boolean consValid(){
-            return super.consValid() && (!requiresLight() || !Structs.contains(slots, e -> !e.fulfilled()));
+        public boolean shouldConsume() {
+            return super.shouldConsume() && (!requiresLight() || !Structs.contains(slots, e -> !e.fulfilled()));
         }
     }
 }

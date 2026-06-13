@@ -83,7 +83,7 @@ public class AntiCheat{
             }
 
             unit.team.data().updateCount(unit.type, -1);
-            unit.clearCommand();
+            unit.command().clearCommands();
             unit.controller().removed(unit);
 
             Groups.unit.remove(unit);
@@ -109,8 +109,8 @@ public class AntiCheat{
                 building.x = building.y = Float.NaN;
             }
 
-            if(building.sound != null) building.sound.stop();
-            building.added = false;
+            //if(building.sound != null) building.sound.stop();
+            Reflect.set(building, "added", false);
         }
     }
 

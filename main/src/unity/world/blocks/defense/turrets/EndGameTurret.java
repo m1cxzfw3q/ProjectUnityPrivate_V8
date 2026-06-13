@@ -14,6 +14,7 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.consumers.*;
+import mindustry.world.draw.DrawTurret;
 import unity.*;
 import unity.content.*;
 import unity.content.effects.*;
@@ -55,10 +56,10 @@ public class EndGameTurret extends PowerTurret{
         super(name);
 
         health = 68000;
-        powerUse = 320f;
-        reloadTime = 300f;
+        consumePower(320f);
+        reload= = 300f;
         absorbLasers = true;
-        shootShake = 2.2f;
+        shake = 2.2f;
         outlineIcon = false;
         noUpdateDisabled = false;
         loopSound = UnitySounds.endgameActive;
@@ -68,7 +69,7 @@ public class EndGameTurret extends PowerTurret{
     @Override
     public void load(){
         super.load();
-        baseRegion = Core.atlas.find(name + "-base");
+        ((DrawTurret)drawer).base = Core.atlas.find(name + "-base");
         baseLightsRegion = Core.atlas.find(name + "-base-lights");
         bottomLightsRegion = Core.atlas.find(name + "-bottom-lights");
         eyeMainRegion = Core.atlas.find(name + "-eye");
@@ -111,11 +112,6 @@ public class EndGameTurret extends PowerTurret{
         //private final Seq<DeadUnitEntry> tmpArray = new Seq<>();
 
         @Override
-        protected void effects(){
-            shootSound.at(x, y);
-        }
-
-        @Override
         public void damage(float damage){
             if(verify()) return;
             if(damage > 10000) charge += Mathf.clamp(damage - 10000f, 0f, 2000000f) / 150f;
@@ -131,28 +127,19 @@ public class EndGameTurret extends PowerTurret{
 
         @Override
         protected float baseReloadSpeed(){
-            return Mathf.clamp(efficiency() + charge, 0f, 1.2f);
+            return Mathf.clamp(efficiency + charge, 0f, 1.2f);
         }
 
         float trueEfficiency(){
-            return Mathf.clamp(efficiency() + charge);
+            return Mathf.clamp(efficiency + charge);
         }
 
         float deltaB(){
             return (delta() * baseReloadSpeed());
         }
 
-        @Override
         public boolean consValid(){
-            boolean valid = false;
-            if(block.consumes.hasPower()){
-                valid = block.consumes.getPower().valid(this);
-            }
-            valid |= charge > 0.001f;
-            if(block.consumes.has(ConsumeType.item)){
-                valid &= block.consumes.getItem().valid(this);
-            }
-            return valid;
+            return shouldConsume();
         }
 
         @Override
@@ -172,7 +159,7 @@ public class EndGameTurret extends PowerTurret{
         @Override
         public void draw(){
             float oz = Draw.z();
-            Draw.rect(baseRegion, x, y);
+            drawer.draw(this);
             
             Draw.z(oz + 0.01f);
             Draw.rect(ringABottomRegion, x, y, ringProgress[0]);
@@ -412,7 +399,7 @@ public class EndGameTurret extends PowerTurret{
             eyeOffsetB.lerpDelta(eyeTargetOffset, 0.12f);
 
             eyeOffset.set(eyeOffsetB);
-            eyeOffset.add(Mathf.range(reload / reloadTime) / 2, Mathf.range(reload / reloadTime) / 2);
+            eyeOffset.add(Mathf.range(reloadCounter / reload) / 2, Mathf.range(reloadCounter / reload) / 2);
             eyeOffset.limit(2);
             if(((target != null && !isControlled()) || (isControlled() && unit.isShooting())) && consValid() && trueEfficiency() >= 0.0001f){
                 eyeReloads[0] += deltaB();
@@ -486,7 +473,7 @@ public class EndGameTurret extends PowerTurret{
                     ringProgress[i] = Mathf.lerpDelta(ringProgress[i], 360f * (float)ringDirections[i], ringProgresses[i] * trueEfficiency());
                 }
 
-                float chance = (((reload / reloadTime) * 0.90f) + (1f - 0.90f)) * trueEfficiency();
+                float chance = (((reloadCounter / reload) * 0.90f) + (1f - 0.90f)) * trueEfficiency();
                 float randomAngle = Mathf.random(360f);
                 Tmp.v1.trns(randomAngle, 18.5f);
                 Tmp.v1.add(x, y);

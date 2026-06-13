@@ -70,8 +70,8 @@ abstract class CLeg{
             Fx.unitLandSmall.at(foot.x, foot.y, unit.type.rippleScale, floor.mapColor);
         }
 
-        if(unit.type.landShake > 0f){
-            Effect.shake(unit.type.landShake, unit.type.landShake, foot);
+        if(unit.type.mechLandShake > 0f){
+            Effect.shake(unit.type.mechLandShake, unit.type.mechLandShake, foot);
         }
     }
 
@@ -91,8 +91,10 @@ abstract class CLeg{
 
         Drawf.shadow(foot.x, foot.y, ssize, invDrown);
 
-        if(moving && unit.type.visualElevation > 0){
-            float scl = unit.type.visualElevation * invDrown;
+        //if(moving && unit.type.visualElevation > 0){
+        if(moving){
+            //float scl = unit.type.visualElevation * invDrown;
+            float scl = invDrown;
             float elev = Mathf.slope(1f - Mathf.clamp(stage)) * scl;
             Draw.color(Pal.shadow);
             Draw.rect(type.footRegion, foot.x + UnitType.shadowTX * elev, foot.y + UnitType.shadowTY * elev, ang);

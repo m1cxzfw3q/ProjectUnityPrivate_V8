@@ -3,6 +3,7 @@ package unity.world.blocks;
 import arc.scene.ui.layout.*;
 import arc.util.io.*;
 import mindustry.gen.*;
+import mindustry.world.Block;
 import mindustry.world.meta.*;
 import unity.world.graphs.*;
 import unity.world.meta.*;
@@ -23,6 +24,20 @@ public interface GraphBlockBase{
 
     interface GraphBuildBase extends Buildingc{
         GraphModules gms();
+
+        int rotation();
+
+        default void rotation(int rotation){
+            buildOn().rotation = rotation;
+        }
+
+        default boolean enabled(){
+            return buildOn().enabled;
+        }
+
+        default float edelta(){
+            return buildOn().edelta();
+        }
 
         default GraphModule getGraphConnector(GraphType type){
             return gms().getGraphConnector(type);

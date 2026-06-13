@@ -1,6 +1,7 @@
 package unity.world.blocks.production;
 
 import arc.math.*;
+import arc.struct.Seq;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
@@ -25,7 +26,7 @@ public class BurnerSmelter extends StemGenericCrafter{
 
     @Override
     public void init(){
-        if(!consumes.has(ConsumeType.item)) consumes.add(new ConsumeItemFilter(item -> getItemEfficiency(item) > minEfficiency)).update(false).optional(true, false);
+        if(!consumeBuilder.contains(conusme -> conusme instanceof ConsumeItemFilter)) consume(new ConsumeItemFilter(item -> getItemEfficiency(item) > minEfficiency)).update(false).optional(true, false);
         if(input == null) input = UnityItems.stone;
         
         super.init();
@@ -34,7 +35,7 @@ public class BurnerSmelter extends StemGenericCrafter{
     @Override
     public void setBars(){
         super.setBars();
-        bars.add("efficiency", (BurnerSmelterBuild build) -> new Bar(() -> bundle.format("bar.efficiency", (int)(100 * build.productionEfficiency)), () -> Pal.lighterOrange, () -> build.productionEfficiency));
+        addBar("efficiency", (BurnerSmelterBuild build) -> new Bar(() -> bundle.format("bar.efficiency", (int)(100 * build.productionEfficiency)), () -> Pal.lighterOrange, () -> build.productionEfficiency));
     }
 
     @Override
@@ -64,7 +65,7 @@ public class BurnerSmelter extends StemGenericCrafter{
                 if(itemDuration <= 0f){
                     productionEfficiency = 0f;
                     
-                    if(items.has(input) && consValid()){
+                    if(items.has(input) && shouldConsume()){
                         int temp = items.nextIndex(-1);
                         
                         if(temp == input.id) temp = items.nextIndex(temp);

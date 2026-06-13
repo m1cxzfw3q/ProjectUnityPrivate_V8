@@ -197,7 +197,7 @@ public abstract class BaseGraph<M extends GraphModule<? extends Graph, M, G>, G 
                 int portIndex = portInfo.index;
                 if(buildConnector.getNetworkOfPort(portIndex) == null) continue;
                 if(!buildConnector.initialized()) return;
-                Tile tile = build.tile().nearby(portInfo.toPos);
+                Tile tile = build.tileOn().nearby(portInfo.toPos);
                 if(tile == null) return;
 
                 if(tile.build instanceof GraphBuildBase other){
@@ -238,7 +238,7 @@ public abstract class BaseGraph<M extends GraphModule<? extends Graph, M, G>, G 
 
     String connectedToString(){
         StringBuilder s = new StringBuilder("Network:" + id + ":");
-        for(var build : connected) s.append(build.parent.build.block().localizedName).append(", ");
+        for(var build : connected) s.append(build.parent.build.blockOn().localizedName).append(", ");
         return s.toString();
     }
 

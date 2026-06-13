@@ -75,7 +75,7 @@ public class LifeStealerTurret extends GenericTractorBeamTurret<Teamc>{
         @Override
         protected void apply(){
             if(target instanceof Healthc h){
-                float health = (damage / 60f) * efficiency();
+                float health = (damage / 60f) * efficiency;
                 h.damageContinuous(health);
                 contained += health * Time.delta;
             }

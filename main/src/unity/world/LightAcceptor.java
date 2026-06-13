@@ -39,8 +39,8 @@ public class LightAcceptor{
 
     /** Called typically asynchronously. Treat with caution */
     public boolean accepts(Light light, int x, int y){
-        int dx = World.toTile((x * tilesize) - (hold.x() - hold.block().size * tilesize / 2f + tilesize / 2f)),
-            dy = -World.toTile((y * tilesize) - (hold.y() + hold.block().size * tilesize / 2f - tilesize / 2f));
+        int dx = World.toTile((x * tilesize) - (hold.x() - hold.blockOn().size * tilesize / 2f + tilesize / 2f)),
+            dy = -World.toTile((y * tilesize) - (hold.y() + hold.blockOn().size * tilesize / 2f - tilesize / 2f));
 
         return
             dx >= type.x && dx < type.x + type.width &&

@@ -36,11 +36,6 @@ public class PointDrainLaserBulletType extends BulletType{
     }
 
     @Override
-    public float range(){
-        return maxRange;
-    }
-
-    @Override
     public void update(Bullet b){
         if(!(b.data instanceof DrainLaserData dld) || !(b.owner instanceof Healthc hOwner)) return;
         if(b.owner instanceof Unit e){
@@ -94,7 +89,7 @@ public class PointDrainLaserBulletType extends BulletType{
             Lines.line(b.x, b.y, dld.pos.x, dld.pos.y, false);
             Fill.circle(dld.pos.x, dld.pos.y, Math.max((area * fade) - (i * area / 2f), 0f));
         }
-        Drawf.light(b.team, b.x, b.y, dld.pos.x, dld.pos.y, fade * width * 2f, backColor, 0.5f);
+        Drawf.light(b.x, b.y, dld.pos.x, dld.pos.y, fade * width * 2f, backColor, 0.5f);
         Draw.reset();
     }
 

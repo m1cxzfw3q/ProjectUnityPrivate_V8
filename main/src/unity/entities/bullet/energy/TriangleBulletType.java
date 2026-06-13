@@ -8,6 +8,7 @@ import mindustry.entities.*;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import unity.v8.V7Sounds;
 
 import static mindustry.Vars.*;
 
@@ -20,7 +21,7 @@ public class TriangleBulletType extends BulletType{
     public int castInterval = 12;
     /** The radius to detect the closest enemy. */
     public float castRadius = 8f;
-    public Sound castSound = Sounds.spark;
+    public Sound castSound = V7Sounds.spark;
     public float castSoundVolume = 0.4f;
 
     public float length, width;

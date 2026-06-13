@@ -184,17 +184,18 @@ public class TimeStop{
         boolean omni = unit.type.omniMovement;
 
         float speed = unit.speed();
-        float xa = Core.input.axis(Binding.move_x);
-        float ya = Core.input.axis(Binding.move_y);
+        float xa = Core.input.axis(Binding.moveX);
+        float ya = Core.input.axis(Binding.moveY);
         boolean boosted = (unit instanceof Mechc && unit.isFlying());
 
         movement.set(xa, ya).nor().scl(speed);
-        if(Core.input.keyDown(Binding.mouse_move)){
+        if(Core.input.keyDown(Binding.mouseMove)){
             movement.add(Core.input.mouseWorld().sub(Vars.player).scl(1f / 25f * speed)).limit(speed);
         }
 
         float mouseAngle = Angles.mouseAngle(unit.x, unit.y);
-        boolean aimCursor = omni && Vars.player.shooting && unit.type.hasWeapons() && unit.type.faceTarget && !boosted && unit.type.rotateShooting;
+        //boolean aimCursor = omni && Vars.player.shooting && unit.type.hasWeapons() && unit.type.faceTarget && !boosted && unit.type.rotateShooting;
+        boolean aimCursor = omni && Vars.player.shooting && unit.type.hasWeapons() && unit.type.faceTarget && !boosted;
 
         if(aimCursor){
             unit.lookAt(mouseAngle);

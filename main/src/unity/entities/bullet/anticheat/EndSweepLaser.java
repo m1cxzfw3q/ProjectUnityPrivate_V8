@@ -43,11 +43,6 @@ public class EndSweepLaser extends AntiCheatBulletTypeBase{
     }
 
     @Override
-    public float range(){
-        return length;
-    }
-
-    @Override
     public void init(){
         super.init();
         despawnHit = false;
@@ -63,8 +58,7 @@ public class EndSweepLaser extends AntiCheatBulletTypeBase{
     @Override
     public void hit(Bullet b, float x, float y){
         super.hit(b, x, y);
-        if(b.data instanceof Vec2){
-            Vec2 v = (Vec2)b.data;
+        if(b.data instanceof Vec2 v){
             if(v.dst(x, y) > distance){
                 v.set(x, y);
                 hitBullet.create(b.owner, b.team, x, y, b.rotation());

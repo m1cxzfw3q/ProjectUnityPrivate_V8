@@ -12,6 +12,9 @@ public class GravitonLaserBulletType extends ContinuousLaserBulletType{
     public int max = 6;
     private int len;
 
+    public float[] strokes = {}, tscales = {}, lenscales = {};
+    public float spaceMag;
+
     public GravitonLaserBulletType(float damage){
         super(damage);
     }
@@ -65,7 +68,7 @@ public class GravitonLaserBulletType extends ContinuousLaserBulletType{
 
         Tmp.v1.trns(b.rotation(), baseLen * 1.1f);
 
-        Drawf.light(b.team, b.x, b.y, b.x + Tmp.v1.x, b.y + Tmp.v1.y, lightStroke, lightColor, 0.7f);
+        Drawf.light(b.x, b.y, b.x + Tmp.v1.x, b.y + Tmp.v1.y, lightStroke, lightColor, 0.7f);
         Draw.reset();
     }
 }

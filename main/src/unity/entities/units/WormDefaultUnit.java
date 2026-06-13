@@ -437,10 +437,10 @@ public class WormDefaultUnit extends UnitEntity{
             temp.drag = type.drag;
             temp.armor = type.armor;
             temp.hitSize = type.hitSize;
-            temp.hovering = type.hovering;
+            //temp.hovering = type.hovering;
             temp.setupWeapons(type);
             temp.resetController();
-            temp.abilities = type.abilities.map(Ability::copy);
+            temp.abilities = type.abilities.copy().toArray(Ability.class);
             temp.setTrueParent(this);
             temp.setParent(parent);
 

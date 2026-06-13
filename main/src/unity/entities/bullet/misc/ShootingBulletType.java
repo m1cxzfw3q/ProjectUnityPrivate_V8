@@ -10,12 +10,13 @@ import mindustry.entities.*;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
 import unity.content.effects.*;
+import unity.v8.V7Bullets;
 
 public class ShootingBulletType extends BulletType{
     public float targetRange = 220f, minTargetRange = 90f;
     public float smoothness = 35f;
     public float reloadTime = 20f, shootInaccuracy = 0f;
-    public BulletType shootBullet = Bullets.standardCopper;
+    public BulletType shootBullet = V7Bullets.standardCopper;
     public Sound shootSound = Sounds.none;
     public String name;
     protected TextureRegion region;
@@ -65,8 +66,7 @@ public class ShootingBulletType extends BulletType{
         if(b.data instanceof Healthc && Units.invalidateTarget((Healthc)b.data, b.team, b.x, b.y, targetRange * 1.1f)){
             b.data = null;
         }
-        if(b.data instanceof Sized){
-            Sized t = (Sized)b.data;
+        if(b.data instanceof Sized t){
             float angTo = b.angleTo(t);
             int side = Mathf.randomSeed(b.id * 913L + (int)(b.time / 90f), 0, 1) == 0 ? -1 : 1;
             b.fdata = Angles.moveToward(b.fdata, angTo, 3f);
@@ -74,7 +74,7 @@ public class ShootingBulletType extends BulletType{
             Tmp.v1.set(Tmp.v2).sub(b).limit(speed).scl(1f / smoothness);
             b.vel.add(Tmp.v1).limit(speed);
 
-            if(Angles.within(b.fdata, angTo, 2f) && b.within(t, shootBullet.range()) && b.timer(2, reloadTime)){
+            if(Angles.within(b.fdata, angTo, 2f) && b.within(t, shootBullet.range) && b.timer(2, reloadTime)){
                 shootBullet.shootEffect.at(b.x, b.y, b.fdata);
                 shootSound.at(b);
                 shootBullet.create(b, b.team, b.x, b.y, b.fdata + Mathf.range(shootInaccuracy));

@@ -18,6 +18,9 @@ public class SaberContinuousLaserBulletType extends ContinuousLaserBulletType{
     protected float swipeTime = 40f;
     protected float swipeDamageMultiplier = 1f;
 
+    public float[] strokes = {}, tscales = {}, lenscales = {};
+    public float spaceMag;
+
     public SaberContinuousLaserBulletType(float damage){
         super(damage);
     }
@@ -46,7 +49,7 @@ public class SaberContinuousLaserBulletType extends ContinuousLaserBulletType{
             float baseLen = realLength * fout;
 
             if(b.timer(1, 5f)){
-                Damage.collideLine(b, b.team, Fx.none, b.x, b.y, b.rotation(), temp.f, largeHit);
+                Damage.collideLine(b, b.team, b.x, b.y, b.rotation(), temp.f, largeHit);
                 if(angDst > 0.0001f) Utils.collideLineDamageOnly(b.team, (angDst + damageC) * 2f, b.x, b.y, b.rotation(), temp.f, b);
             }
 
@@ -66,7 +69,7 @@ public class SaberContinuousLaserBulletType extends ContinuousLaserBulletType{
         }else{
             temp.f = length;
             if(b.owner instanceof Velc v) temp.f = Mathf.clamp(v.vel().len() * 19f, 0f, length);
-            if(b.timer(1, 5f)) Damage.collideLine(b, b.team, Fx.none, b.x, b.y, b.rotation(), temp.f, largeHit);
+            if(b.timer(1, 5f)) Damage.collideLine(b, b.team, b.x, b.y, b.rotation(), temp.f, largeHit);
         }
     }
 
@@ -87,7 +90,7 @@ public class SaberContinuousLaserBulletType extends ContinuousLaserBulletType{
             }
         }
         Tmp.v1.trns(b.rotation(), baseLen * 1.1f);
-        Drawf.light(b.team, b.x, b.y, b.x + Tmp.v1.x, b.y + Tmp.v1.y, lightStroke, lightColor, 0.7f);
+        Drawf.light(b.x, b.y, b.x + Tmp.v1.x, b.y + Tmp.v1.y, lightStroke, lightColor, 0.7f);
         Draw.reset();
     }
 }

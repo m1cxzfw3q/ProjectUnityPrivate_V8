@@ -20,6 +20,7 @@ import mindustry.world.blocks.storage.CoreBlock.*;
 import mindustry.world.modules.*;
 import unity.graphics.*;
 import unity.util.*;
+import unity.v8.V7Styles;
 import unity.world.blocks.*;
 import unity.world.modules.*;
 import younggamExperimental.Segment;
@@ -282,7 +283,7 @@ public class Chopper extends GraphBlock{
 
         @Override
         public void buildConfiguration(Table table){
-            table.button(Tex.whiteui, Styles.clearTransi, 50f, () -> {
+            table.button(Tex.whiteui, V7Styles.clearTransi, 50f, () -> {
                 BaseDialog dialog = new BaseDialog("Edit Blueprint");
                 dialog.setFillParent(false);
                 ModularConstructorUI mtd = ModularConstructorUI.applyModularConstructorUI(dialog.cont, partsRegion, Math.round(partsRegion.width / 32f), Math.round(partsRegion.height / 32f),

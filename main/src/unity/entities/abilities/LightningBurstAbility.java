@@ -9,6 +9,7 @@ import mindustry.entities.abilities.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import unity.content.*;
+import unity.v8.V7Sounds;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -31,7 +32,7 @@ public class LightningBurstAbility extends Ability{
     protected boolean check;
     protected int left;
     
-    public LightningBurstAbility(){};
+    public LightningBurstAbility(){}
     
     public LightningBurstAbility(float rechargeTime, int bolts, float maxDelay, float damage, int length, Color color){
         this.rechargeTime = rechargeTime;
@@ -65,7 +66,7 @@ public class LightningBurstAbility extends Ability{
             Time.run(Mathf.random(maxDelay), () -> {
               Lightning.create(u.team, Pal.lancerLaser, damage, u.x, u.y, Mathf.random(360), length);
               Effect.shake(fish * 0.25f, fish * 0.25f, u);
-              Sounds.spark.at(u.x, u.y, 1.25f, 0.75f);
+              V7Sounds.spark.at(u.x, u.y, 1.25f, 0.75f);
             });
         }
     }

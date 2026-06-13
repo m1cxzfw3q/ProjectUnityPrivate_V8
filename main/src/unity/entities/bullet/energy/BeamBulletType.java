@@ -93,20 +93,15 @@ public class BeamBulletType extends BulletType{
     }
 
     @Override
-    public float range(){
-        return length;
-    }
-
-    @Override
     public void draw(Bullet b){
         if(b.data instanceof Position data){
             Tmp.v1.set(data);
 
             Draw.color(color);
-            Drawf.laser(b.team, region, endRegion, b.x, b.y, Tmp.v1.x, Tmp.v1.y, beamWidth * b.fout());
+            Drawf.laser(region, endRegion, b.x, b.y, Tmp.v1.x, Tmp.v1.y, beamWidth * b.fout());
             Draw.reset();
 
-            Drawf.light(b.team, b.x, b.y, Tmp.v1.x, Tmp.v1.y, lightWidth * b.fout(), color, 0.6f);
+            Drawf.light(b.x, b.y, Tmp.v1.x, Tmp.v1.y, lightWidth * b.fout(), color, 0.6f);
         }
     }
 }

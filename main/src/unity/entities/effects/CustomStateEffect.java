@@ -70,7 +70,7 @@ public class CustomStateEffect extends Effect{
         create(x, y, rotation, Color.white, data);
     }
 
-    protected void create(float x, float y, float rotation, Color color, Object data){
+    public void create(float x, float y, float rotation, Color color, Object data){
         if(Vars.headless || !Core.settings.getBool("effects")) return;
 
         if(Core.camera.bounds(Tmp.r1).overlaps(Tmp.r2.setCentered(x, y, clip))){

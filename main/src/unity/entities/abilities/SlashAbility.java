@@ -11,6 +11,8 @@ import mindustry.entities.bullet.*;
 import mindustry.gen.*;
 import mindustry.type.*;
 import unity.content.*;
+import unity.v8.UnityDamage;
+import unity.v8.V7Sounds;
 
 import static mindustry.Vars.*;
 
@@ -20,7 +22,7 @@ public class SlashAbility extends BaseAbility{
 
     public Effect teleportEffect = Fx.lightningShoot;
     public Effect postTeleportEffect = Fx.lancerLaserShootSmoke;
-    public Sound teleportSound = Sounds.spark;
+    public Sound teleportSound = V7Sounds.spark;
     public StatusEffect boostedEffect = UnityStatusEffects.boosted;
 
     public BulletType slashBullet = UnityBullets.teleportLightning;
@@ -44,7 +46,7 @@ public class SlashAbility extends BaseAbility{
         teleportEffect.at(unit.x, unit.y, dir);
 
         Bullet b = slashBullet.create(unit, unit.team, unit.x, unit.y, dir, -1f, 1f, 1f, null);
-        Damage.collideLine(b, unit.team, slashEffect, unit.x, unit.y, dir, 16f * tilesize, true);
+        UnityDamage.collideLine(b, unit.team, slashEffect, unit.x, unit.y, dir, 16f * tilesize, true);
 
         unit.apply(boostedEffect, 30f);
 

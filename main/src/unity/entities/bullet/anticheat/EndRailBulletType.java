@@ -38,11 +38,6 @@ public class EndRailBulletType extends AntiCheatBulletTypeBase{
     }
 
     @Override
-    public float range(){
-        return length;
-    }
-
-    @Override
     public void init(){
         super.init();
         drawSize = length * 2f;

@@ -6,6 +6,7 @@ import arc.math.*;
 import arc.struct.*;
 import arc.util.Time;
 import mindustry.Vars;
+import mindustry.entities.Mover;
 import mindustry.entities.bullet.*;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -41,11 +42,11 @@ public class OrbTurret extends PowerTurret {
         public float loader = 0f;
 
         public float getX(int i){
-            return x + Mathf.cosDeg((360f/orbsPerLayer)*(int)(i%orbsPerLayer) + Time.time*5f + offsets.get(i/orbsPerLayer))*(bulletWidth*3f+bulletWidth*2f)*(int)(1+i/orbsPerLayer)*Mathf.cosDeg(90f + Time.time*5f + offsets.get(i/orbsPerLayer));
+            return x + Mathf.cosDeg((360f/orbsPerLayer)* (i%orbsPerLayer) + Time.time*5f + offsets.get(i/orbsPerLayer))*(bulletWidth*3f+bulletWidth*2f)* (1+ (float) i /orbsPerLayer) *Mathf.cosDeg(90f + Time.time*5f + offsets.get(i/orbsPerLayer));
         }
 
         public float getY(int i){
-            return y + Mathf.sinDeg((360f/orbsPerLayer)*(int)(i%orbsPerLayer) + Time.time*5f + offsets.get(i/orbsPerLayer))*(bulletWidth*3f+bulletWidth*2f)*(int)(1+i/orbsPerLayer)/**Mathf.cosDeg(Time.time*5f + offsets.get(i/orbsPerLayer))*/;
+            return y + Mathf.sinDeg((360f/orbsPerLayer)* (i%orbsPerLayer) + Time.time*5f + offsets.get(i/orbsPerLayer))*(bulletWidth*3f+bulletWidth*2f)* (1+ (float) i /orbsPerLayer) /**Mathf.cosDeg(Time.time*5f + offsets.get(i/orbsPerLayer))*/;
         }
 
         public void addTrail(int i){
@@ -70,7 +71,7 @@ public class OrbTurret extends PowerTurret {
             super.placed();
 
             for (int i = 0; i < layers; i++){
-                rand.setSeed(pos() + i*69);
+                rand.setSeed(pos() + i * 69L);
                 offsets.add(rand.nextFloat() * 420f);
             }
         }
@@ -81,15 +82,20 @@ public class OrbTurret extends PowerTurret {
         }
 
         @Override
-        protected void bullet(BulletType type, float angle) {
+        protected void bullet(BulletType type, float xOffset, float yOffset, float angleOffset, Mover mover) {
             int l = (int)Math.ceil((float)trails.size / (float)layers);
-            float xP = getX(trails.size-1) + tr.x;
-            float yP = getY(trails.size-1) + tr.y;
-            Bullet bullet = type.create(this, team, xP, yP, Angles.angle(xP, yP, targetPos.x, targetPos.y), (1f + Mathf.range(velocityInaccuracy)) * (1f + l*layerSpeedMultiplier), 1f);
+
+            float
+                    xSpread = Mathf.range(xRand),
+                    bulletX = x + Angles.trnsx(rotation - 90, getX(trails.size-1) + xOffset + xSpread, getY(trails.size-1) + yOffset),
+                    bulletY = y + Angles.trnsy(rotation - 90, getX(trails.size-1) + xOffset + xSpread, getY(trails.size-1) + yOffset),
+                    shootAngle = rotation + angleOffset + Mathf.range(inaccuracy + type.inaccuracy);
+            Bullet bullet = type.create(this, team, bulletX, bulletY, shootAngle, (1f + Mathf.range(velocityRnd)) * (1f + l*layerSpeedMultiplier), 1f);
             bullet.damage = bullet.damage * (1f + l*layerDamageMultiplier);
+            shootSound.at(bulletX, bulletY, Mathf.random(0.9f, 1.1f));
 
             if(!Vars.headless){
-                UnityFx.orbShot.at(xP, yP, team.color);
+                UnityFx.orbShot.at(bulletX, bulletY, team.color);
             }
 
             bullet.trail = trails.pop();
@@ -102,7 +108,7 @@ public class OrbTurret extends PowerTurret {
 
             if(offsets.size == 0) {
                 for (int i = 0; i < layers; i++) {
-                    rand.setSeed(pos() + i * 69);
+                    rand.setSeed(pos() + i * 69L);
                     offsets.add(rand.nextFloat() * 420f);
                 }
             }
@@ -124,7 +130,7 @@ public class OrbTurret extends PowerTurret {
 
         @Override
         public void draw() {
-            Draw.rect(baseRegion, x, y);
+            drawer.draw(this);
 
             Draw.z(Layer.effect);
 
@@ -135,13 +141,6 @@ public class OrbTurret extends PowerTurret {
             });
 
             Draw.color();
-        }
-
-        @Override
-        protected void effects(){
-            shootSound.at(x + tr.x, y + tr.y, Mathf.random(0.9f, 1.1f));
-
-            recoil = recoilAmount;
         }
     }
 }

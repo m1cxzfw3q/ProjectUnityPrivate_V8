@@ -29,7 +29,8 @@ public class CompositeMesh extends PlanetMesh{
     }
 
     public static Mesh defMesh(Planet planet, int divisions){
-        return MeshBuilder.buildHex(planet.generator, divisions, false, planet.radius, 0.2f);
+        //return MeshBuilder.buildHex(planet.generator, divisions, false, planet.radius, 0.2f);
+        return MeshBuilder.buildHex(planet.generator, divisions, planet.radius, 0.2f);
     }
 
     public static ShaderRef<PlanetShader> defShader(Planet planet){

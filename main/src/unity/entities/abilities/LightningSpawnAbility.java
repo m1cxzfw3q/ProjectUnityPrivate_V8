@@ -12,6 +12,7 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import unity.content.effects.*;
 import unity.graphics.*;
+import unity.v8.V7Sounds;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -29,7 +30,7 @@ public class LightningSpawnAbility extends Ability{
 
     protected int lightningCount;
     protected boolean useAmmo = true;
-    protected Sound shootSound = Sounds.spark;
+    protected Sound shootSound = V7Sounds.spark;
     protected Color backColor = UnityPal.monolithDark.cpy().a(0.5f), frontColor = UnityPal.monolithLight.cpy().a(0.5f);
     protected Effect damageEffect = SpecialFx.chainLightningActive, hitEffect = Fx.hitLaserBlast, trailEffect = ParticleFx.monolithSpark;
 
@@ -70,15 +71,13 @@ public class LightningSpawnAbility extends Ability{
                     hitEffect.at(x, y, unit.angleTo(h), backColor);
 
                     shootSound.at(x, y, Mathf.random(0.8f, 1.2f));
-
-                    if(useAmmo && state.rules.unitAmmo) unit.ammo--;
                 }
             }
 
             if(Mathf.chanceDelta(trailChance)) trailEffect.at(x, y, lightningRadius);
         }
 
-        phase = Mathf.lerpDelta(phase, useAmmo && state.rules.unitAmmo ? unit.ammof() : 1f, phaseSpeed);
+        phase = Mathf.lerpDelta(phase, 1f, phaseSpeed);
     }
 
     @Override

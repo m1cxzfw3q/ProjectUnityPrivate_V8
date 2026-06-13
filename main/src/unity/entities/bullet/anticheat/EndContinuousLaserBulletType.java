@@ -59,11 +59,6 @@ public class EndContinuousLaserBulletType extends AntiCheatBulletTypeBase{
     }
 
     @Override
-    public float range(){
-        return Math.max(length, maxRange);
-    }
-
-    @Override
     public void init(){
         super.init();
 
@@ -123,7 +118,7 @@ public class EndContinuousLaserBulletType extends AntiCheatBulletTypeBase{
 
         Tmp.v1.trns(b.rotation(), baseLen * 1.1f);
 
-        Drawf.light(b.team, b.x, b.y, b.x + Tmp.v1.x, b.y + Tmp.v1.y, lightStroke, lightColor, 0.7f);
+        Drawf.light(b.x, b.y, b.x + Tmp.v1.x, b.y + Tmp.v1.y, lightStroke, lightColor, 0.7f);
         Draw.reset();
     }
 

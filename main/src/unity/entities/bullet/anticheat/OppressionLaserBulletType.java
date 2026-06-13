@@ -68,18 +68,13 @@ public class OppressionLaserBulletType extends AntiCheatBulletTypeBase{
                 shape[id + 1] = f;
                 id += 2;
             }
-            sign *= -1f;
+            sign *= -1;
         }
     }
 
     @Override
     public void load(){
         gradientRegion = Core.atlas.find("unity-gradient");
-    }
-
-    @Override
-    public float range(){
-        return length / 3f;
     }
 
     @Override

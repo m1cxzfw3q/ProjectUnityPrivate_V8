@@ -38,7 +38,7 @@ public class BlockStatusEffectBulletType extends BasicBulletType{
             phaseHeat = bb.phaseHeat;
             phaseBoost = ((BlockOverdriveTurret) bb.block).phaseBoost;
             phaseExpBoost = ((BlockOverdriveTurret) bb.block).phaseExpBoost;
-            efficiency = bb.efficiency();
+            efficiency = bb.efficiency;
         }
 
 

@@ -21,7 +21,7 @@ public class ChangeTeamLaserBulletType extends ContinuousLaserBulletType{
     public void hitEntity(Bullet b, Hitboxc other, float initialHealth){
         super.hitEntity(b, other, initialHealth);
         if(!(other instanceof Teamc t && other instanceof Statusc s)) return;
-        if(convertUnits && (s.healthf() <= minimumHealthPercent || s.health() < minimumHealthOverride)){
+        if(convertUnits && (s.healthMultiplier() <= minimumHealthPercent || s.healthMultiplier() < minimumHealthOverride)){
             t.team(b.team);
             damageOwner(b, initialHealth * ownerDamageRatio);
             s.apply(conversionStatusEffect);
@@ -29,8 +29,8 @@ public class ChangeTeamLaserBulletType extends ContinuousLaserBulletType{
     }
 
     @Override
-    public void hitTile(Bullet b, Building build, float initialHealth, boolean direct){
-        super.hitTile(b, build, initialHealth, direct);
+    public void hitTile(Bullet b, Building build, float x, float y,float initialHealth, boolean direct){
+        super.hitTile(b, build, x, y, initialHealth, direct);
         if(convertBlocks && (build.healthf() <= minimumHealthPercent || build.health < minimumHealthOverride)){
             build.team(b.team);
             damageOwner(b, initialHealth * ownerDamageRatio);

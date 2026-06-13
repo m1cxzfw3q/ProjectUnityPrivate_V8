@@ -58,11 +58,6 @@ public class ContinuousSingularityLaserBulletType extends AntiCheatBulletTypeBas
     }
 
     @Override
-    public float range(){
-        return maxRange > 0 ? maxRange : maxLength / 1.5f;
-    }
-
-    @Override
     public void init(Bullet b){
         super.init(b);
         b.data = new VoidLaserData();
@@ -207,7 +202,7 @@ public class ContinuousSingularityLaserBulletType extends AntiCheatBulletTypeBas
             }
         }
         Tmp.v2.trns(b.rotation(), b.fdata + tipHeight).add(b);
-        Drawf.light(b.team, b.x, b.y, Tmp.v2.x, Tmp.v2.y, width * 2f, colors[0], 0.5f);
+        Drawf.light(b.x, b.y, Tmp.v2.x, Tmp.v2.y, width * 2f, colors[0], 0.5f);
         Draw.reset();
     }
 

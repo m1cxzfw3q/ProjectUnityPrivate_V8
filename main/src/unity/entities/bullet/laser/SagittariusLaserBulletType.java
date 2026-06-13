@@ -33,11 +33,6 @@ public class SagittariusLaserBulletType extends BulletType{
     }
 
     @Override
-    public float range(){
-        return length;
-    }
-
-    @Override
     public void init(){
         super.init();
         despawnHit = false;
@@ -52,15 +47,13 @@ public class SagittariusLaserBulletType extends BulletType{
 
     @Override
     public void update(Bullet b){
-        if(b.timer(1, 5f) && b.data instanceof SagittariusLaserData){
-            SagittariusLaserData data = (SagittariusLaserData)b.data;
+        if(b.timer(1, 5f) && b.data instanceof SagittariusLaserData data){
 
             float fin = b.time < 200 ? b.time / 200f : 1f;
             float sfn = (b.time < 60f ? b.time / 60f : 1f);
             float fn = sfn + (fin / 15f);
             float w = (width * sfn) / 3f;
-            if(b.owner instanceof Physicsc){
-                Physicsc owner = (Physicsc)b.owner;
+            if(b.owner instanceof Physicsc owner){
                 Tmp.v1.trns(b.rotation() + 180f, 25f * fin);
                 owner.impulse(Tmp.v1);
             }
@@ -111,8 +104,7 @@ public class SagittariusLaserBulletType extends BulletType{
 
     @Override
     public void draw(Bullet b){
-        if(b.data instanceof SagittariusLaserData){
-            SagittariusLaserData data = (SagittariusLaserData)b.data;
+        if(b.data instanceof SagittariusLaserData data){
             float cw = width + Mathf.absin(0.8f, 1.5f);
             float fout = Mathf.clamp((b.lifetime - b.time) / 16f);
             float fin = b.time < 200 ? b.time / 200f : 1f;
@@ -136,7 +128,7 @@ public class SagittariusLaserBulletType extends BulletType{
                     Drawf.tri(end.x, end.y, Lines.getStroke() * 1.22f, cw * 3 + width / 1.5f, rot);
                     Draw.color(Tmp.c1.set(color).a(Mathf.pow(color.a, lasers / 3f)));
                     Fill.circle(p.x, p.y, w);
-                    if(color == colors[0]) Drawf.light(b.team, p.x, p.y, end.x, end.y, w * 1.7f * b.fout(), colors[0], 0.6f);
+                    if(color == colors[0]) Drawf.light(p.x, p.y, end.x, end.y, w * 1.7f * b.fout(), colors[0], 0.6f);
                 }
                 cw *= 0.5f;
             }

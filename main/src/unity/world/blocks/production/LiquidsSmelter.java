@@ -4,6 +4,7 @@ import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.blocks.production.*;
 import mindustry.world.consumers.*;
+import mindustry.world.consumers.ConsumeLiquids;
 import unity.annotations.Annotations.*;
 import unity.gen.*;
 import unity.world.consumers.*;
@@ -35,9 +36,9 @@ public class LiquidsSmelter extends StemGenericCrafter{
     public void setBars(){
         super.setBars();
         
-        bars.remove("liquid");
+        removeBar("liquid");
         for(Liquid liquid : liquids){
-            bars.add(liquid.name, build -> new Bar(() -> build.liquids.get(liquid) <= 0.001f ? bundle.get("bar.liquid") : liquid.localizedName, liquid::barColor, () -> build.liquids.get(liquid) / liquidCapacity));
+            addBar(liquid.name, build -> new Bar(() -> build.liquids.get(liquid) <= 0.001f ? bundle.get("bar.liquid") : liquid.localizedName, liquid::barColor, () -> build.liquids.get(liquid) / liquidCapacity));
         }
     }
 }

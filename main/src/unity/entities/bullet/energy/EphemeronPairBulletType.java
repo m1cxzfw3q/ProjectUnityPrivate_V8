@@ -7,6 +7,7 @@ import mindustry.entities.*;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
 import unity.content.effects.*;
+import unity.v8.V7Sounds;
 
 public class EphemeronPairBulletType extends BasicBulletType{
     public boolean positive;
@@ -17,7 +18,7 @@ public class EphemeronPairBulletType extends BasicBulletType{
         lifetime = 360f;
         hitEffect = Fx.hitLancer;
         despawnEffect = Fx.none;
-        hitSound = Sounds.spark;
+        hitSound = V7Sounds.spark;
         hitSize = 8f;
         drag = 0.015f;
         pierce = true;
@@ -36,7 +37,7 @@ public class EphemeronPairBulletType extends BasicBulletType{
     public void update(Bullet b){
         super.update(b);
 
-        if(b.data instanceof Bullet n && n.added){
+        if(b.data instanceof Bullet n && n.isAdded()){
             float dst = hitSize / Math.max(b.dst(n) / 2f, hitSize);
             Tmp.v1.set(n).sub(b).nor().scl(dst);
             b.vel.add(Tmp.v1);

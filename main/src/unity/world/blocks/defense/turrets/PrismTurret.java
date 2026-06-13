@@ -60,7 +60,7 @@ public class PrismTurret extends SoulPowerTurret{
             super.updateTile();
 
             boolean act = isActive();
-            prismHeat = Mathf.lerpDelta(prismHeat, act ? efficiency() : 0f, act ? warmup : cooldown);
+            prismHeat = Mathf.lerpDelta(prismHeat, act ? efficiency : 0f, act ? warmup : cooldownTime);
             prismRotation += prismHeat * prismRotateSpeed * Mathf.signs[id % 2];
 
             inst.transform.set(
@@ -105,7 +105,7 @@ public class PrismTurret extends SoulPowerTurret{
                     if(!isValid() || u == null || !(u instanceof Healthc h ? h.isValid() : u.isAdded())) return;
 
                     float angle = angleTo(u);
-                    shootType.create(this, u.x(), u.y(), angle);
+                    shootType.create(this, team, u.x(), u.y(), angle);
 
                     heat = 1f;
 
@@ -118,7 +118,19 @@ public class PrismTurret extends SoulPowerTurret{
 
                     type.hitEffect.at(u.x(), u.y(), angle);
 
-                    effects();
+                    (shootEffect == null ? type.shootEffect : shootEffect).at(bulletX, bulletY, rotation + angleOffset, type.hitColor);
+                    (smokeEffect == null ? type.smokeEffect : smokeEffect).at(bulletX, bulletY, rotation + angleOffset, type.hitColor);
+                    (type.shootSound != Sounds.none ? type.shootSound : shootSound).at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax), shootSoundVolume);
+
+                    ammoUseEffect.at(
+                            x - Angles.trnsx(rotation, ammoEjectBack),
+                            y - Angles.trnsy(rotation, ammoEjectBack),
+                            rotation * Mathf.sign(xOffset)
+                    );
+
+                    if(shake > 0){
+                        Effect.shake(shake, shake, this);
+                    }
                 });
             }
         }

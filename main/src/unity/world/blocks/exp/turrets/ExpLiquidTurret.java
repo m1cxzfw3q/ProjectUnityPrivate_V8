@@ -1,6 +1,7 @@
 package unity.world.blocks.exp.turrets;
 
 import arc.graphics.g2d.*;
+import arc.math.Angles;
 import arc.struct.*;
 import mindustry.content.*;
 import mindustry.core.*;
@@ -11,7 +12,9 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.consumers.*;
+import mindustry.world.draw.DrawTurret;
 import mindustry.world.meta.*;
+import unity.v8.V7Sounds;
 import unity.world.blocks.exp.*;
 
 import static arc.Core.atlas;
@@ -25,9 +28,8 @@ public class ExpLiquidTurret extends ExpTurret {
 
     public ExpLiquidTurret(String name){
         super(name);
-        acceptCoolant = false;
         hasLiquids = true;
-        loopSound = Sounds.spray;
+        loopSound = V7Sounds.spray;
         shootSound = Sounds.none;
         smokeEffect = Fx.none;
         shootEffect = Fx.none;
@@ -48,14 +50,9 @@ public class ExpLiquidTurret extends ExpTurret {
 
     @Override
     public void init(){
-        consumes.add(new ConsumeLiquidFilter(i -> ammoTypes.containsKey(i), 1f){
+        consume(new ConsumeLiquidFilter(i -> ammoTypes.containsKey(i), 1f){
             @Override
-            public boolean valid(Building entity){
-                return entity.liquids.total() > 0.001f;
-            }
-
-            @Override
-            public void update(Building entity){
+            public void update(Building build){
 
             }
 
@@ -77,7 +74,7 @@ public class ExpLiquidTurret extends ExpTurret {
 
     @Override
     public TextureRegion[] icons(){
-        if(topRegion.found()) return new TextureRegion[]{baseRegion, region, topRegion};
+        if(topRegion.found()) return new TextureRegion[]{((DrawTurret)drawer).base, region, topRegion};
         return super.icons();
     }
 
@@ -86,10 +83,14 @@ public class ExpLiquidTurret extends ExpTurret {
         public void draw(){
             super.draw();
 
+            float
+                    dX = x + Angles.trnsx(rotation - 90, shootX, shootY),
+                    dY = y + Angles.trnsy(rotation - 90, shootX, shootY);
+
             if(liquidRegion.found()){
-                Drawf.liquid(liquidRegion, x + tr2.x, y + tr2.y, liquids.total() / liquidCapacity, liquids.current().color, rotation - 90);
+                Drawf.liquid(liquidRegion, dX, dY, liquids.currentAmount() / liquidCapacity, liquids.current().color, rotation - 90);
             }
-            if(topRegion.found()) Draw.rect(topRegion, x + tr2.x, y + tr2.y, rotation - 90);
+            if(topRegion.found()) Draw.rect(topRegion, dX, dY, rotation - 90);
         }
 
         @Override
@@ -99,7 +100,7 @@ public class ExpLiquidTurret extends ExpTurret {
 
         @Override
         public void updateTile(){
-            unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
+            unit.ammo(1);
 
             super.updateTile();
         }
@@ -135,24 +136,6 @@ public class ExpLiquidTurret extends ExpTurret {
         }
 
         @Override
-        protected void effects(){
-            BulletType type = peekAmmo();
-
-            Effect fshootEffect = shootEffect == Fx.none ? type.shootEffect : shootEffect;
-            Effect fsmokeEffect = smokeEffect == Fx.none ? type.smokeEffect : smokeEffect;
-
-            fshootEffect.at(x + tr.x, y + tr.y, rotation, liquids.current().color);
-            fsmokeEffect.at(x + tr.x, y + tr.y, rotation, liquids.current().color);
-            shootSound.at(tile);
-
-            if(shootShake > 0){
-                Effect.shake(shootShake, shootShake, tile.build);
-            }
-
-            recoil = recoilAmount;
-        }
-
-        @Override
         public BulletType useAmmo(){
             if(cheating()) return ammoTypes.get(liquids.current());
             BulletType type = ammoTypes.get(liquids.current());
@@ -167,7 +150,7 @@ public class ExpLiquidTurret extends ExpTurret {
 
         @Override
         public boolean hasAmmo(){
-            return ammoTypes.get(liquids.current()) != null && liquids.total() >= 1f / ammoTypes.get(liquids.current()).ammoMultiplier;
+            return ammoTypes.get(liquids.current()) != null && liquids.currentAmount() >= 1f / ammoTypes.get(liquids.current()).ammoMultiplier;
         }
 
         @Override

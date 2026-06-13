@@ -21,6 +21,7 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
     BaseGenerator basegen = new BaseGenerator();
     float scl = 6f;
     float waterOffset = 0.07f;
+    Seq<Integer> ints = new Seq<>();
 
     Block[][] arr = {
         {metalFloor2, electroTile, darkMetal, deepwater, electroTile, deepwater, electroTile, deepwater, deepwater, electroTile, ice, ice, ice},
@@ -43,7 +44,7 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
 
     float rawHeight(Vec3 position){
         position = Tmp.v33.set(position).scl(scl);
-        return (Mathf.pow((float)Simplex.noise3d(0, 5, 0.5f, 1f / 3f, position.x, position.y, position.z), 3f) + Math.abs(Mathf.sin(position.x) + Mathf.cos(position.y)) / 5 + waterOffset) / (1f + waterOffset);
+        return (Mathf.pow(Simplex.noise3d(0, 5, 0.5f, 1f / 3f, position.x, position.y, position.z), 3f) + Math.abs(Mathf.sin(position.x) + Mathf.cos(position.y)) / 5 + waterOffset) / (1f + waterOffset);
     }
 
     @Override
@@ -53,11 +54,14 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
     }
 
     @Override
-    public Color getColor(Vec3 position){
+    public void getColor(Vec3 position, Color out){
         Block block = getBlock(position);
 
-        if(block == null) return Color.white.cpy();
-        return Tmp.c1.set(block.mapColor).a(1f - block.albedo);
+        if(block == null) {
+            out.set(Color.white);
+            return;
+        }
+        out.set(Tmp.c1.set(block.mapColor).a(1f - block.albedo));
     }
 
     @Override
@@ -78,7 +82,7 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
 
         float rad = scl;
         float temp = Mathf.clamp(Math.abs(position.y * 2f) / (rad));
-        float tnoise = (float)Simplex.noise3d(0, 7, 0.56, 1f / 3f, position.x, position.y + 999f, position.z);
+        float tnoise = Simplex.noise3d(0, 7, 0.56, 1f / 3f, position.x, position.y + 999f, position.z);
 
         temp = Mathf.lerp(temp, tnoise, 0.5f);
         height *= 1.2f;
@@ -90,7 +94,7 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
     @Override
     protected float noise(float x, float y, double octaves, double falloff, double scl, double mag){
         Vec3 v = sector.rect.project(x, y).scl(5f);
-        return (float)Simplex.noise3d(0, octaves, falloff, 1f / scl, v.x, v.y, v.z) * (float)mag;
+        return Simplex.noise3d(0, octaves, falloff, 1f / scl, v.x, v.y, v.z) * (float)mag;
     }
 
     @Override
@@ -144,8 +148,8 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
         int waterCheckRad = 5;
         for(int i = 0; i < 360; i += angleStep){
             int angle = offset + i;
-            int cx = (int)(width / 2 + Angles.trnsx(angle, length));
-            int cy = (int)(height / 2 + Angles.trnsy(angle, length));
+            int cx = (int)(width / 2f + Angles.trnsx(angle, length));
+            int cy = (int)(height / 2f + Angles.trnsy(angle, length));
 
             int waterTiles = 0;
 
@@ -185,13 +189,17 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
         }
 
         for(Room room : roomseq){
-            spawn.connect(room);
+            if (spawn != null) {
+                spawn.connect(room);
+            }
         }
 
         cells(1);
         distort(10f, 6f);
 
-        inverseFloodFill(tiles.getn(spawn.x, spawn.y));
+        if (spawn != null) {
+            inverseFloodFill(tiles.getn(spawn.x, spawn.y));
+        }
 
         Seq<Block> ores = Seq.with(Blocks.oreCopper, Blocks.oreLead);
         float poles = Math.abs(sector.tile.v.y);
@@ -255,7 +263,7 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
                 }
             }
 
-            ints.shuffle(rand);
+            ints.shuffle();
 
             int placed = 0;
             float diffRange = 0.4f;
@@ -265,7 +273,7 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
                 int x = Point2.x(val), y = Point2.y(val);
 
                 //do not overwrite player spawn
-                if(Mathf.within(x, y, spawn.x, spawn.y, 18f)){
+                if (spawn != null && Mathf.within(x, y, spawn.x, spawn.y, 18f)) {
                     continue;
                 }
 
@@ -283,7 +291,7 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
                 }
 
                 //actually place the part
-                if(part != null && BaseGenerator.tryPlace(part, x, y, Team.derelict, (cx, cy) -> {
+                if(part != null && BaseGenerator.tryPlace(part, x, y, Team.derelict, rand, (cx, cy) -> {
                     Tile other = tiles.getn(cx, cy);
                     other.setOverlay(Blocks.oreScrap);
                     for(int j = 1; j <= 2; j++){
@@ -315,14 +323,18 @@ public class ElectrodePlanetGenerator extends PlanetGenerator{
             }
         }
 
-        Schematics.placeLaunchLoadout(spawn.x, spawn.y);
+        if (spawn != null) {
+            Schematics.placeLaunchLoadout(spawn.x, spawn.y);
+        }
 
         for(Room espawn : enemies){
             tiles.getn(espawn.x, espawn.y).setOverlay(Blocks.spawn);
         }
 
         if(sector.hasEnemyBase()){
-            basegen.generate(tiles, enemies.map(r -> tiles.getn(r.x, r.y)), tiles.get(spawn.x, spawn.y), state.rules.waveTeam, sector, difficulty);
+            if (spawn != null) {
+                basegen.generate(tiles, enemies.map(r -> tiles.getn(r.x, r.y)), tiles.get(spawn.x, spawn.y), state.rules.waveTeam, sector, difficulty);
+            }
 
             state.rules.attackMode = true;
         }else{

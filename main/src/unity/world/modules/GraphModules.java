@@ -68,7 +68,7 @@ public class GraphModules{
     }
 
     public GraphData getConnectSidePos(int index){
-        return GraphData.getConnectSidePos(index, build.block().size, build.rotation());
+        return GraphData.getConnectSidePos(index, build.blockOn().size, build.rotation());
     }
 
     public void created(){
@@ -99,7 +99,7 @@ public class GraphModules{
     }
 
     public void updateTile(){
-        if(!build.block().rotate) build.rotation(0);
+        if(!build.blockOn().rotate) build.rotation(0);
         if(prevTileRotation != build.rotation()){
             if(hasHeat) heat.onRotationChanged(prevTileRotation, build.rotation());
             if(hasTorque) torque.onRotationChanged(prevTileRotation, build.rotation());

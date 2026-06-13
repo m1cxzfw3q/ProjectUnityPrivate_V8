@@ -88,7 +88,7 @@ public class DirectionShieldAbility extends Ability{
         }
         if(timer.get(1.5f)){
             Groups.bullet.intersect(Tmp.r1.x, Tmp.r1.y, Tmp.r1.width, Tmp.r1.height, b -> {
-                if(b.team != unit.team && !(b.type instanceof ContinuousLaserBulletType || b.type instanceof LaserBulletType) && !b.type.scaleVelocity && b.vel().len() > 0.1f){
+                if(b.team != unit.team && !(b.type instanceof ContinuousLaserBulletType || b.type instanceof LaserBulletType) && !b.type.scaleLife && b.vel().len() > 0.1f){
                     b.hitbox(Tmp.r2);
                     Tmp.r3.set(Tmp.r2).grow(shieldWidth).move(b.vel.x / 2f, b.vel.y / 2f);
                     Tmp.r2.grow(shieldWidth);
@@ -161,8 +161,7 @@ public class DirectionShieldAbility extends Ability{
     @Override
     public void draw(Unit unit){
         float z = Draw.z();
-        if(!(unit.type instanceof UnityUnitType)) return;
-        UnityUnitType type = (UnityUnitType)unit.type;
+        if(!(unit.type instanceof UnityUnitType type)) return;
         TextureRegion region = type.abilityRegions[AbilityTextures.shield.ordinal()];
         float size = (Math.max(region.width, region.height) * Draw.scl) * 1.3f;
         Lines.stroke(1.5f);

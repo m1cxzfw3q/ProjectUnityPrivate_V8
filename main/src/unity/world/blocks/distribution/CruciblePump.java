@@ -13,6 +13,7 @@ import mindustry.ui.*;
 import mindustry.world.blocks.*;
 import mindustry.world.meta.*;
 import unity.graphics.*;
+import unity.v8.V7Styles;
 import unity.world.blocks.*;
 import unity.world.graph.*;
 import unity.world.meta.*;
@@ -55,9 +56,9 @@ public class CruciblePump extends GraphBlock{
         public void buildConfiguration(Table table){
             table.labelWrap("Fill until:").growX().pad(5f).center().row();
             table.table(bt -> {
-                bt.button("Full", Styles.clearPartialt, () -> configure(0)).left().size(50f).disabled(b -> pumpMode == 0);
-                bt.button("50%", Styles.clearPartialt, () -> configure(1)).left().size(50f).disabled(b -> pumpMode == 1);
-                bt.button("25%", Styles.clearPartialt, () -> configure(2)).left().size(50f).disabled(b -> pumpMode == 2);
+                bt.button("Full", V7Styles.clearPartialt, () -> configure(0)).left().size(50f).disabled(b -> pumpMode == 0);
+                bt.button("50%", V7Styles.clearPartialt, () -> configure(1)).left().size(50f).disabled(b -> pumpMode == 1);
+                bt.button("25%", V7Styles.clearPartialt, () -> configure(2)).left().size(50f).disabled(b -> pumpMode == 2);
             }).row();
 
             table.labelWrap("Pump:").growX().pad(5f).center().row();

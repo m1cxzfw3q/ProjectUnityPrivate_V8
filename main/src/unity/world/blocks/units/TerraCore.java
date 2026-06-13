@@ -11,6 +11,7 @@ import mindustry.world.*;
 import unity.content.*;
 import unity.gen.*;
 import unity.type.*;
+import unity.v8.V7Styles;
 
 public class TerraCore extends Block{
     UnityUnitType type = (UnityUnitType)UnityUnitTypes.terra;
@@ -22,7 +23,7 @@ public class TerraCore extends Block{
         hasItems = true;
         itemCapacity = 150;
         separateItemCapacity = true;
-        highUnloadPriority = true;
+        //highUnloadPriority = true;
     }
 
     public class TerraCoreBuild extends Building{
@@ -30,7 +31,7 @@ public class TerraCore extends Block{
 
         @Override
         public void buildConfiguration(Table table){
-            table.button(Icon.units, Styles.clearTransi, () -> {
+            table.button(Icon.units, V7Styles.clearTransi, () -> {
                 Unit u = type.create(team);
                 if(u instanceof Worldc){
                     u.x = x;

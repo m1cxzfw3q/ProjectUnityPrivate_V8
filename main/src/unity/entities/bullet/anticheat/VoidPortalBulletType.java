@@ -42,11 +42,6 @@ public class VoidPortalBulletType extends AntiCheatBulletTypeBase{
     }
 
     @Override
-    public float range(){
-        return length;
-    }
-
-    @Override
     public float estimateDPS(){
         return damage * (lifetime / 2f) / 5f * 3f;
     }
@@ -90,8 +85,7 @@ public class VoidPortalBulletType extends AntiCheatBulletTypeBase{
                 hitUnitAntiCheat(b, u);
             });
         }
-        if(b.data instanceof VoidPortalData){
-            VoidPortalData data = (VoidPortalData)b.data;
+        if(b.data instanceof VoidPortalData data){
             if(Mathf.chanceDelta(0.2f)){
                 Tmp.v1.set(b).sub(mid);
                 float l = Mathf.range(1f);
@@ -148,8 +142,7 @@ public class VoidPortalBulletType extends AntiCheatBulletTypeBase{
     @Override
     public void removed(Bullet b){
         super.removed(b);
-        if(b.data instanceof VoidPortalData){
-            VoidPortalData data = (VoidPortalData)b.data;
+        if(b.data instanceof VoidPortalData data){
             for(VoidTentacle tentacle : data.tentacles){
                 tentaclePool.free(tentacle);
             }

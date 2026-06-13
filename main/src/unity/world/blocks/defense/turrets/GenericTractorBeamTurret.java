@@ -17,6 +17,7 @@ import mindustry.logic.*;
 import mindustry.world.blocks.*;
 import mindustry.world.blocks.defense.turrets.*;
 import unity.graphics.*;
+import unity.v8.V7Sounds;
 
 import static mindustry.Vars.*;
 
@@ -37,7 +38,7 @@ public abstract class GenericTractorBeamTurret<T extends Teamc> extends BaseTurr
     public float powerUse = 1f;
     public float powerUseThreshold = 0f;
 
-    public Sound shootSound = Sounds.tractorbeam;
+    public Sound shootSound = V7Sounds.tractorbeam;
     public float shootSoundVolume = 0.9f;
 
     public Color laserColor = UnityPal.monolith;
@@ -47,7 +48,7 @@ public abstract class GenericTractorBeamTurret<T extends Teamc> extends BaseTurr
 
     protected Vec2 tr = new Vec2();
     protected Vec2 drawTargetPos = new Vec2();
-    protected Floatf<GenericTractorBeamTurretBuild> laserAlpha = Building::efficiency;
+    protected Floatf<GenericTractorBeamTurretBuild> laserAlpha = build -> build.efficiency;
 
     protected GenericTractorBeamTurret(String name){
         super(name);
@@ -55,7 +56,6 @@ public abstract class GenericTractorBeamTurret<T extends Teamc> extends BaseTurr
         rotateSpeed = 20f;
         hasItems = hasLiquids = false;
         hasPower = consumesPower = true;
-        acceptCoolant = false;
     }
 
     public <E extends GenericTractorBeamTurretBuild> void laserAlpha(Floatf<E> laserAlpha){
@@ -64,7 +64,7 @@ public abstract class GenericTractorBeamTurret<T extends Teamc> extends BaseTurr
 
     @Override
     public void init(){
-        consumes.powerCond(powerUse, (GenericTractorBeamTurretBuild build) -> build.target != null);
+        consumePowerCond(powerUse, (GenericTractorBeamTurretBuild build) -> build.target != null);
         clipSize = Math.max(clipSize, range * 2f + size * tilesize);
 
         super.init();
@@ -195,7 +195,7 @@ public abstract class GenericTractorBeamTurret<T extends Teamc> extends BaseTurr
             }
 
             if(shot){
-                strength = Mathf.lerpDelta(strength, Mathf.clamp(efficiency()), 0.1f);
+                strength = Mathf.lerpDelta(strength, Mathf.clamp(efficiency), 0.1f);
                 if(strength > 0.1f && !headless) control.sound.loop(shootSound, this, shootSoundVolume);
             }else{
                 strength = Mathf.lerpDelta(strength, 0f, 0.1f);
@@ -225,7 +225,7 @@ public abstract class GenericTractorBeamTurret<T extends Teamc> extends BaseTurr
         }
 
         public boolean canShoot(){
-            return efficiency() > powerUseThreshold;
+            return efficiency > powerUseThreshold;
         }
 
         protected abstract void findTarget();
@@ -248,13 +248,7 @@ public abstract class GenericTractorBeamTurret<T extends Teamc> extends BaseTurr
                 Draw.mixcol(laserColor, Mathf.absin(4f, 0.6f));
                 Draw.alpha(laserAlpha());
 
-                Drawf.laser(team, laser, laserEnd,
-                x + tr.x,
-                y + tr.y,
-                drawTargetPos.x,
-                drawTargetPos.y,
-                strength * laserWidth
-                );
+                Drawf.laser(laser, laserEnd, x + tr.x, y + tr.y, drawTargetPos.x, drawTargetPos.y, strength * laserWidth);
 
                 Draw.mixcol();
             }

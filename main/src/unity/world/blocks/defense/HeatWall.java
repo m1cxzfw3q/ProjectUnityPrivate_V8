@@ -64,8 +64,8 @@ public class HeatWall extends Block implements GraphBlockBase{
         }
 
         @Override
-        public float efficiency(){
-            return super.efficiency() * gms.efficiency();
+        public float efficiencyScale(){
+            return gms.efficiency();
         }
 
         @Override
@@ -129,6 +129,11 @@ public class HeatWall extends Block implements GraphBlockBase{
         @Override
         public GraphModules gms(){
             return gms;
+        }
+
+        @Override
+        public int rotation() {
+            return rotation;
         }
 
         //not common probably separated?

@@ -20,11 +20,6 @@ public class SlowLightningBulletType extends AntiCheatBulletTypeBase{
     }
 
     @Override
-    public float range(){
-        return range * 0.8f;
-    }
-
-    @Override
     public void init(){
         super.init();
 
@@ -75,8 +70,7 @@ public class SlowLightningBulletType extends AntiCheatBulletTypeBase{
 
     @Override
     public void update(Bullet b){
-        if(b.data instanceof SlowLightning){
-            SlowLightning data = (SlowLightning)b.data;
+        if(b.data instanceof SlowLightning data){
             b.x = data.x;
             b.y = data.y;
         }

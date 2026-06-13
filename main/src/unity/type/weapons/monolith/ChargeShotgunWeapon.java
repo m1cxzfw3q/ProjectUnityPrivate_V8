@@ -17,7 +17,7 @@ import unity.util.*;
 import static mindustry.Vars.*;
 
 /**
- * Charges up {@linkplain #shots some} bullets over time, and shoots them all at once when signaled.
+ * Charges up {@linkplain #shoot some} bullets over time, and shoots them all at once when signaled.
  * {@link #continuous} isn't supported (yet).
  * @author GlennFolker
  */
@@ -92,7 +92,7 @@ public class ChargeShotgunWeapon extends Weapon{
 
         if(!m.releasing){
             if(!m.adding){
-                if(m.loaded() < shots && (m.add += Time.delta * unit.reloadMultiplier) >= addTime){
+                if(m.loaded() < shoot.shots && (m.add += Time.delta * unit.reloadMultiplier) >= addTime){
                     m.adding = true;
 
                     m.added.add(new Vec2(Float.NaN, Float.NaN), new Vec2(shootX, shootY));

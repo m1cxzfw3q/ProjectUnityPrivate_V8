@@ -17,6 +17,8 @@ import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.blocks.production.*;
 import mindustry.world.consumers.*;
+import unity.v8.V7Fx;
+import unity.v8.V7Sounds;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -55,14 +57,14 @@ public class ExplosiveSeparator extends Separator{
     }
 
     @Override
-    protected TextureRegion[] icons(){
+    public TextureRegion[] icons(){
         return new TextureRegion[]{region, topRegion};
     }
 
     @Override
     public void setBars(){
         super.setBars();
-        bars.add("heat", entity -> new Bar("bar.heat", Pal.lightOrange, () -> ((ExplosiveSeparatorBuild)entity).heat));
+        addBar("heat", entity -> new Bar("bar.heat", Pal.lightOrange, () -> ((ExplosiveSeparatorBuild)entity).heat));
     }
 
     public class ExplosiveSeparatorBuild extends SeparatorBuild{
@@ -72,7 +74,7 @@ public class ExplosiveSeparator extends Separator{
         public void updateTile(){
             super.updateTile();
 
-            ConsumeLiquid cliquid = consumes.<ConsumeLiquid>get(ConsumeType.liquid);
+            ConsumeLiquid cliquid = (ConsumeLiquid) consumeBuilder.select(cons -> cons instanceof ConsumeLiquidBase).get(0);
 
             int fuel = items.get(fuelItem);
             float fullness = (float)fuel / itemCapacity;
@@ -112,16 +114,16 @@ public class ExplosiveSeparator extends Separator{
         public void onDestroyed(){
             super.onDestroyed();
 
-            Sounds.explosionbig.at(tile);
+            V7Sounds.explosionbig.at(tile);
 
             int fuel = items.get(fuelItem);
 
             if((fuel < 5 && heat < 0.5f) || !state.rules.reactorExplosions) return;
 
             Effect.shake(6f, 16f, x, y);
-            Fx.nuclearShockwave.at(x, y);
+            V7Fx.nuclearShockwave.at(x, y);
             for(int i = 0; i < 6; i++){
-                Time.run(Mathf.random(40f), () -> Fx.nuclearcloud.at(x, y));
+                Time.run(Mathf.random(40f), () -> V7Fx.nuclearcloud.at(x, y));
             }
 
             Damage.damage(x, y, explosionRadius * tilesize, explosionDamage * 4f);
@@ -136,7 +138,7 @@ public class ExplosiveSeparator extends Separator{
             for(int i = 0; i < 70; i++){
                 Time.run(Mathf.random(80f), () -> {
                     tr.rnd(Mathf.random(120f));
-                    Fx.nuclearsmoke.at(tr.x + x, tr.y + y);
+                    V7Fx.nuclearsmoke.at(tr.x + x, tr.y + y);
                 });
             }
         }
@@ -144,7 +146,7 @@ public class ExplosiveSeparator extends Separator{
         @Override
         public void drawLight(){
             float fract = productionEfficiency;
-            Drawf.light(team, x, y, (90f + Mathf.absin(5f, 5f)) * fract, Tmp.c1.set(lightColor).lerp(Color.scarlet, heat), 0.6f * fract);
+            Drawf.light(x, y, (90f + Mathf.absin(5f, 5f)) * fract, Tmp.c1.set(lightColor).lerp(Color.scarlet, heat), 0.6f * fract);
         }
 
         @Override

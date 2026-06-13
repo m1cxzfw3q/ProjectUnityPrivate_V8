@@ -58,8 +58,7 @@ public class DesolationBulletType extends AntiCheatBulletTypeBase{
 
     @Override
     public void update(Bullet b){
-        if(b.timer(1, 5f) && b.data instanceof DesolationBulletData){
-            DesolationBulletData d = (DesolationBulletData)b.data;
+        if(b.timer(1, 5f) && b.data instanceof DesolationBulletData d){
             d.collided.clear();
             float width = Mathf.lerp(widthFrom, widthTo, Mathf.clamp(b.time / fadeInTime));
             float in = d.health / health;
@@ -97,8 +96,7 @@ public class DesolationBulletType extends AntiCheatBulletTypeBase{
 
     @Override
     public void draw(Bullet b){
-        if(b.data instanceof DesolationBulletData){
-            DesolationBulletData d = (DesolationBulletData)b.data;
+        if(b.data instanceof DesolationBulletData d){
             float width = Mathf.lerp(widthFrom, widthTo, Mathf.clamp(b.time / fadeInTime));
             float in = d.health / health;
             Vec2 v1 = Tmp.v1.trns(b.rotation(), length / 2f);

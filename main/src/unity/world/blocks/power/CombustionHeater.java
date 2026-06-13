@@ -26,7 +26,7 @@ public class CombustionHeater extends HeatGenerator{
 
     @Override
     public void init(){
-        consumes.add(new ConsumeItemFilter(item -> item.flammability >= 0.1f)).update(false).optional(true, false);
+        consume(new ConsumeItemFilter(item -> item.flammability >= 0.1f)).update(false).optional(true, false);
        
         super.init();
     }
@@ -41,7 +41,7 @@ public class CombustionHeater extends HeatGenerator{
 
         @Override
         public void updatePost(){
-            if(!consValid()){
+            if(!shouldConsume()){
                 productionEfficiency = 0f;
                 return;
             }

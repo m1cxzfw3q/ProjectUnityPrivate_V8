@@ -44,8 +44,8 @@ public class PowerWall extends Wall{
     @Override
     public void setBars(){
         super.setBars();
-        if(hasPower && outputsPower && !consumes.hasPower()){
-            bars.add("power", (PowerWallBuild entity) -> new Bar(
+        if(hasPower && outputsPower && consPower == null){
+            addBar("power", (PowerWallBuild entity) -> new Bar(
                 () -> Core.bundle.format("bar.poweroutput", Strings.fixed(entity.getPowerProduction() * 60f * entity.timeScale(), 1)),
                 () -> Pal.powerBar,
                 () -> entity.productionEfficiency)
@@ -95,7 +95,7 @@ public class PowerWall extends Wall{
                 , 1f);
 
             //reduce the production efficiency to 0 if healed by a friendly bullet
-            if(!bullet.team.isEnemy(team) && bullet.type.healPercent > 0f){
+            if(bullet.team != team && bullet.type.healPercent > 0f){
                 productionEfficiency = 0f;
             }
 

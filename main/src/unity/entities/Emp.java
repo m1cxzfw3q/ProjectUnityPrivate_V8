@@ -14,6 +14,8 @@ import mindustry.world.blocks.logic.MemoryBlock.*;
 import mindustry.world.blocks.power.*;
 import mindustry.world.blocks.power.ImpactReactor.*;
 import mindustry.world.blocks.power.PowerGenerator.*;
+import mindustry.world.consumers.Consume;
+import mindustry.world.consumers.ConsumePower;
 
 import static mindustry.Vars.*;
 
@@ -244,10 +246,13 @@ public class Emp{
                 irb.warmup = Mathf.clamp(irb.warmup - (duration * r.warmupSpeed));
             }
         }
-        if(build.block.consumes.hasPower() && build instanceof ReloadTurretBuild rtb){
-            rtb.reload = 0f;
+
+        Seq<Consume> consumes = Reflect.get(build.block, "consumeBuilder");
+
+        if(consumes.contains(cons -> cons instanceof ConsumePower) && build instanceof ReloadTurretBuild rtb){
+            rtb.reloadCounter = 0f;
         }
         build.enabled = false;
-        build.enabledControlTime = Math.max(duration, build.enabledControlTime);
+        //build.enabledControlTime = Math.max(duration, build.enabledControlTime);
     }
 }

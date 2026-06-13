@@ -14,6 +14,7 @@ import mindustry.world.*;
 import mindustry.world.blocks.payloads.*;
 import unity.content.*;
 import unity.graphics.*;
+import unity.v8.V7Sounds;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -141,7 +142,9 @@ public class TeleUnit extends Block{
         protected TeleUnitBuild getDest(){
             TeleUnitBuild temp = this;
             for(int i = 0, len = listSizes[previousTeam.id]; i < len; i++){
-                temp = temp.next;
+                if (temp != null) {
+                    temp = temp.next;
+                }
                 if(temp != null && temp.enabled && temp.power.graph == power.graph) return temp;
             }
             return temp;
@@ -186,11 +189,11 @@ public class TeleUnit extends Block{
 
         protected void effects(TeleUnitBuild dest, float hitSize, boolean isPlayer, Unit unit){
             if(isPlayer){
-                Sounds.plasmadrop.at(dest, Mathf.random() * 0.2f + 1f);
-                Sounds.lasercharge2.at(this, Mathf.random() * 0.2f + 0.7f);
+                V7Sounds.plasmadrop.at(dest, Mathf.random() * 0.2f + 1f);
+                V7Sounds.lasercharge2.at(this, Mathf.random() * 0.2f + 0.7f);
             }else{
-                Sounds.plasmadrop.at(this, Mathf.random() * 0.2f + 1f);
-                Sounds.lasercharge2.at(dest, Mathf.random() * 0.2f + 0.7f);
+                V7Sounds.plasmadrop.at(this, Mathf.random() * 0.2f + 1f);
+                V7Sounds.lasercharge2.at(dest, Mathf.random() * 0.2f + 0.7f);
             }
             UnityFx.tpOut.at(dest, hitSize);
             UnityFx.tpFlash.at(dest.x, dest.y, 0f, Color.white, unit);
@@ -204,7 +207,6 @@ public class TeleUnit extends Block{
             unit.apply(UnityStatusEffects.tpCoolDown, 120f);
         }
 
-        @Override
         public boolean consValid(){
             return power.status > 0.98f;
         }

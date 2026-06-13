@@ -67,7 +67,7 @@ public class Press extends GenericCrafter{
         public void updateTile(){
             super.updateTile();
 
-            if(efficiency() > 0.001f){
+            if(efficiency > 0.001f){
                 alphaValue += 0.01f;
             }else{
                 alphaValue -= 0.01f;

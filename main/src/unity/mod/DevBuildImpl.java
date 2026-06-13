@@ -1,7 +1,6 @@
 package unity.mod;
 
 import arc.util.*;
-import arc.util.async.*;
 import unity.util.*;
 
 import java.util.*;
@@ -12,7 +11,7 @@ import static mindustry.Vars.*;
 public class DevBuildImpl implements DevBuild{
     @Override
     public void init(){
-        enableConsole = true;
+        //enableConsole = true;
         JSBridge.importDefaults(JSBridge.defaultScope);
 
         if(!headless && !android){

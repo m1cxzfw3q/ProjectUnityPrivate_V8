@@ -5,6 +5,7 @@ import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.util.*;
+import mindustry.entities.Mover;
 import mindustry.entities.units.*;
 import mindustry.gen.*;
 import mindustry.type.*;
@@ -81,13 +82,13 @@ public class MortarWeapon extends Weapon{
     @Override
     public void update(Unit unit, WeaponMount mount){
         MortarMount mMount = (MortarMount)mount;
-        float r = bullet.range();
+        float r = bullet.range;
         mMount.incline = Mathf.approachDelta(mMount.incline, Mathf.clamp(unit.dst(mount.aimX, mount.aimY) / r), barrelSpeed / r);
         super.update(unit, mount);
     }
 
     @Override
-    protected void shoot(Unit unit, WeaponMount mount, float shootX, float shootY, float aimX, float aimY, float mountX, float mountY, float rotation, int side){
+    protected void shoot(Unit unit, WeaponMount mount, float shootX, float shootY, float rotation){
         MortarMount mMount = (MortarMount)mount;
         float incline = Mathf.sinDeg(Mathf.lerp(inclineOffset, maxIncline, mMount.incline)) * this.shootY;
         float weaponRotation = unit.rotation - 90 + (rotate ? mount.rotation : 0),
@@ -96,20 +97,29 @@ public class MortarWeapon extends Weapon{
         Tmp.v1.trns(weaponRotation - 90f, -incline + barrelOffset);
         shootX = mX + Tmp.v1.x;
         shootY = mY + Tmp.v1.y;
-        super.shoot(unit, mount, shootX, shootY, aimX, aimY, mountX, mountY, rotation, side);
+        super.shoot(unit, mount, shootX, shootY, rotation);
     }
 
     @Override
-    protected Bullet bullet(Unit unit, float shootX, float shootY, float angle, float lifescl){
+    protected void bullet(Unit unit, WeaponMount mount, float xOffset, float yOffset, float angleOffset, Mover mover){
         float xr = Mathf.range(xRand);
+        float
+                xSpread = Mathf.range(xRand),
+                ySpread = Mathf.range(yRand),
+                weaponRotation = unit.rotation - 90 + (rotate ? mount.rotation : baseRotation),
+                mountX = unit.x + Angles.trnsx(unit.rotation - 90, x, y),
+                mountY = unit.y + Angles.trnsy(unit.rotation - 90, x, y),
+                bulletX = mountX + Angles.trnsx(weaponRotation, this.shootX + xOffset + xSpread, this.shootY + yOffset + ySpread),
+                bulletY = mountY + Angles.trnsy(weaponRotation, this.shootX + xOffset + xSpread, this.shootY + yOffset + ySpread),
+                shootAngle = bulletRotation(unit, mount, bulletX, bulletY) + angleOffset;
+        float lifeScl = bullet.scaleLife ? Mathf.clamp(Mathf.dst(bulletX, bulletY, mount.aimX, mount.aimY) / bullet.range) : 1f,
+                angle = shootAngle + Mathf.range(inaccuracy + bullet.inaccuracy);
 
         Bullet b = bullet.create(unit, unit.team,
         shootX + Angles.trnsx(angle, 0, xr),
         shootY + Angles.trnsy(angle, 0, xr),
-        angle, (lifescl - velocityRnd) + Mathf.random(velocityRnd), 1f);
-        b.fdata = 1f - lifescl;
-
-        return b;
+        angle, (lifeScl - velocityRnd) + Mathf.random(velocityRnd), 1f);
+        b.fdata = 1f - lifeScl;
     }
 
     static class MortarMount extends WeaponMount{

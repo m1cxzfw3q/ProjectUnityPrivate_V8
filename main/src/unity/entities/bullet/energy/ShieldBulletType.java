@@ -89,7 +89,7 @@ public class ShieldBulletType extends BasicBulletType{
         }
 
         if(temp[0] > 0){
-            float hit = temp[1] - 1f - 0.2f * ((float)Time.delta);
+            float hit = temp[1] - 1f - 0.2f * Time.delta;
             temp[1] = hit;
         }
     }

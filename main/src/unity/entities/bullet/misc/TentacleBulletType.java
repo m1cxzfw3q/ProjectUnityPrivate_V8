@@ -37,11 +37,6 @@ public class TentacleBulletType extends BulletType{
     }
 
     @Override
-    public float range(){
-        return length / 1.4f;
-    }
-
-    @Override
     public float estimateDPS(){
         return damage * 100f / 5f * 3f;
     }

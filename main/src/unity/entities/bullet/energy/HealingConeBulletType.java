@@ -36,11 +36,6 @@ public class HealingConeBulletType extends BulletType{
     }
 
     @Override
-    public float range(){
-        return length;
-    }
-
-    @Override
     public float continuousDamage(){
         return damage / 30f * 60f;
     }

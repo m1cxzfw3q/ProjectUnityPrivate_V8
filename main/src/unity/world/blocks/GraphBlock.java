@@ -61,8 +61,8 @@ public class GraphBlock extends Block implements GraphBlockBase{
         }
 
         @Override
-        public float efficiency(){
-            return super.efficiency() * gms.efficiency();
+        public float efficiencyScale() {
+            return gms.efficiency();
         }
 
         @Override
@@ -127,6 +127,11 @@ public class GraphBlock extends Block implements GraphBlockBase{
         @Override
         public GraphModules gms(){
             return gms;
+        }
+
+        @Override
+        public int rotation() {
+            return rotation;
         }
 
         @Override

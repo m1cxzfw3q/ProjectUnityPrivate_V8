@@ -36,8 +36,7 @@ public class MultiTargetPointDefenceWeapon extends Weapon{
         controllable = false;
         autoTarget = true;
         rotate = true;
-        useAmmo = false;
-        shots = 5;
+        shoot.shots = 5;
     }
 
     @Override
@@ -57,8 +56,8 @@ public class MultiTargetPointDefenceWeapon extends Weapon{
                 Lines.stroke(2f);
                 Lines.lineAngle(mountX, mountY, ang, len, false);
                 Draw.alpha(0.3f);
-                Lines.lineAngle(mountX, mountY, ang - splitCone, bullet.range(), false);
-                Lines.lineAngle(mountX, mountY, ang + splitCone, bullet.range(), false);
+                Lines.lineAngle(mountX, mountY, ang - splitCone, bullet.range, false);
+                Lines.lineAngle(mountX, mountY, ang + splitCone, bullet.range, false);
             }
             Draw.reset();
         }
@@ -87,9 +86,9 @@ public class MultiTargetPointDefenceWeapon extends Weapon{
         if(ret){
             mount.retarget = 0f;
             cm.targets.clear();
-            Rect r = Tmp.r1.setCentered(mountX, mountY, bullet.range() * 2f);
+            Rect r = Tmp.r1.setCentered(mountX, mountY, bullet.range * 2f);
             Groups.bullet.intersect(r.x, r.y, r.x + r.width, r.y + r.height, b -> {
-                if(b.team != unit.team && b.type.hittable && b.within(mountX, mountY, bullet.range() + (b.hitSize / 2f))){
+                if(b.team != unit.team && b.type.hittable && b.within(mountX, mountY, bullet.range + (b.hitSize / 2f))){
                     cm.targets.add(b);
                 }
             });
@@ -102,7 +101,7 @@ public class MultiTargetPointDefenceWeapon extends Weapon{
             tmp.clear();
             f = -360f;
             cm.targets.removeAll(b -> {
-                boolean invalid = !b.isAdded() || Units.invalidateTarget(b, unit.team, mountX, mountY, bullet.range());
+                boolean invalid = !b.isAdded() || Units.invalidateTarget(b, unit.team, mountX, mountY, bullet.range);
                 if(!invalid){
                     //tmpf.add(Utils.angleDistSigned(bulletRotation, b.angleTo(mountX, mountY) + 180f));
                     //tmpf.add(b.x, b.y);
@@ -133,22 +132,17 @@ public class MultiTargetPointDefenceWeapon extends Weapon{
 
         if((mount.rotate = mount.shoot = !cm.targets.isEmpty()) && can){
             mount.targetRotation = cm.available.get(cm.targetIdx + 1) - unit.rotation;
-            mount.aimX = Angles.trnsx(mount.targetRotation + unit.rotation, bullet.range());
-            mount.aimY = Angles.trnsy(mount.targetRotation + unit.rotation, bullet.range());
+            mount.aimX = Angles.trnsx(mount.targetRotation + unit.rotation, bullet.range);
+            mount.aimY = Angles.trnsy(mount.targetRotation + unit.rotation, bullet.range);
             mount.rotation = Angles.moveToward(mount.rotation, mount.targetRotation, rotateSpeed * Time.delta);
         }
 
         if(mount.shoot && can &&
-        (!useAmmo || unit.ammo > 0 || !Vars.state.rules.unitAmmo || unit.team.rules().infiniteAmmo) &&
         (!alternate || mount.side == flipSprite) && mount.reload <= 0.0001f &&
         Angles.within(mount.rotation, mount.targetRotation, shootConeAlt)){
-            shoot(unit, mount, bulletX, bulletY, mount.aimX, mount.aimY, mountX, mountY, bulletRotation, Mathf.sign(x));
+            shoot(unit, mount, bulletX, bulletY, bulletRotation);
 
             mount.reload = reload;
-            if(useAmmo){
-                unit.ammo--;
-                if(unit.ammo < 0) unit.ammo = 0;
-            }
         }
     }
 
@@ -159,17 +153,19 @@ public class MultiTargetPointDefenceWeapon extends Weapon{
             y += (b.y - mY) / tmp.size;
         }
         float angle = Angles.angle(x, y);
-        float score = tmp.sumf(b -> b.damage) * Mathf.clamp(1f - (Utils.angleDist(rotation, angle) / 180f)) * Mathf.clamp(1f - (Mathf.dst(x, y) / bullet.range()));
+        float score = tmp.sumf(b -> b.damage) * Mathf.clamp(1f - (Utils.angleDist(rotation, angle) / 180f)) * Mathf.clamp(1f - (Mathf.dst(x, y) / bullet.range));
         tmp.clear();
 
         mount.available.add(score, angle);
     }
 
     @Override
-    protected void shoot(Unit unit, WeaponMount mount, float shootX, float shootY, float aimX, float aimY, float mountX, float mountY, float rotation, int side){
+    protected void shoot(Unit unit, WeaponMount mount, float shootX, float shootY, float rotation){
         MultiTargetPointDefenceMount cm = (MultiTargetPointDefenceMount)mount;
         cm.decideTime = 0f;
-        float range = bullet.range();
+        float range = bullet.range;
+        float mountX = unit.x + Angles.trnsx(unit.rotation - 90, x, y),
+                mountY = unit.y + Angles.trnsy(unit.rotation - 90, x, y);
 
         Rect r = Tmp.r1.setCentered(mountX, mountY, 0f);
         Utils.shotgunRange(3, shootCone, rotation, a ->
@@ -183,7 +179,7 @@ public class MultiTargetPointDefenceWeapon extends Weapon{
         });
         if(!tmp.isEmpty()){
             tmp.sort(b -> b.dst2(mountX, mountY));
-            for(int i = 0; i < Math.min(tmp.size, shots); i++){
+            for(int i = 0; i < Math.min(tmp.size, shoot.shots); i++){
                 Bullet b = tmp.get(i);
                 if(b == null) continue;
                 beamEffect.at(shootX, shootY, rotation, color, new Vec2().set(b));

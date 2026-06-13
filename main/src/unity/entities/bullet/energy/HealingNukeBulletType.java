@@ -31,11 +31,6 @@ public class HealingNukeBulletType extends BulletType{
     }
 
     @Override
-    public float range(){
-        return radius;
-    }
-
-    @Override
     public void init(){
         super.init();
         drawSize = radius * 2f;

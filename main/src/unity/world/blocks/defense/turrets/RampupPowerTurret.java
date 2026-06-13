@@ -39,7 +39,7 @@ public class RampupPowerTurret extends PowerTurret{
 
         @Override
         public void updateTile(){
-            if(!isShooting() || !consValid()){
+            if(!isShooting() || !canConsume()){
                 changeSpeed(-speedDec * Time.delta);
             }
             super.updateTile();
@@ -152,7 +152,7 @@ public class RampupPowerTurret extends PowerTurret{
 
         @Override
         protected float baseReloadSpeed(){
-            return efficiency() * speed;
+            return efficiency * speed;
         }
 
         public void changeSpeed(float amount){

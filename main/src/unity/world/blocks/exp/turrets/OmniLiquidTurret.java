@@ -16,8 +16,10 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.consumers.*;
+import mindustry.world.draw.DrawTurret;
 import mindustry.world.meta.*;
 import unity.entities.bullet.exp.*;
+import unity.v8.V7Sounds;
 import unity.world.blocks.exp.*;
 
 import static arc.Core.atlas;
@@ -32,9 +34,8 @@ public class OmniLiquidTurret extends ExpTurret {
 
     public OmniLiquidTurret(String name){
         super(name);
-        acceptCoolant = false;
         hasLiquids = true;
-        loopSound = Sounds.spray;
+        loopSound = V7Sounds.spray;
         shootSound = Sounds.none;
         smokeEffect = Fx.none;
         shootEffect = Fx.none;
@@ -56,7 +57,7 @@ public class OmniLiquidTurret extends ExpTurret {
 
     @Override
     public TextureRegion[] icons(){
-        if(topRegion.found()) return new TextureRegion[]{baseRegion, region, topRegion};
+        if(topRegion.found()) return new TextureRegion[]{((DrawTurret)drawer).base, region, topRegion};
         return super.icons();
     }
 
@@ -118,10 +119,14 @@ public class OmniLiquidTurret extends ExpTurret {
         public void draw(){
             super.draw();
 
+            float
+                    dX = x + Angles.trnsx(rotation - 90, shootX, shootY),
+                    dY = y + Angles.trnsy(rotation - 90, shootX, shootY);
+
             if(liquidRegion.found()){
-                Drawf.liquid(liquidRegion, x + tr2.x, y + tr2.y, liquids.total() / liquidCapacity, liquids.current().color, rotation - 90);
+                Drawf.liquid(liquidRegion, dX, dY, liquids.currentAmount() / liquidCapacity, liquids.current().color, rotation - 90);
             }
-            if(topRegion.found()) Draw.rect(topRegion, x + tr2.x, y + tr2.y, rotation - 90);
+            if(topRegion.found()) Draw.rect(topRegion, dX, dY, rotation - 90);
         }
 
         @Override
@@ -131,7 +136,7 @@ public class OmniLiquidTurret extends ExpTurret {
 
         @Override
         public void updateTile(){
-            unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
+            unit.ammo(1);
 
             super.updateTile();
         }
@@ -172,24 +177,6 @@ public class OmniLiquidTurret extends ExpTurret {
         }
 
         @Override
-        protected void effects(){
-            BulletType type = peekAmmo();
-
-            Effect fshootEffect = shootEffect == Fx.none ? type.shootEffect : shootEffect;
-            Effect fsmokeEffect = smokeEffect == Fx.none ? type.smokeEffect : smokeEffect;
-
-            fshootEffect.at(x + tr.x, y + tr.y, rotation, liquids.current().color);
-            fsmokeEffect.at(x + tr.x, y + tr.y, rotation, liquids.current().color);
-            shootSound.at(tile);
-
-            if(shootShake > 0){
-                Effect.shake(shootShake, shootShake, tile.build);
-            }
-
-            recoil = recoilAmount;
-        }
-
-        @Override
         public BulletType useAmmo(){
             if(cheating()) return shootType;
             liquids.remove(liquids.current(), shootAmount);
@@ -203,7 +190,7 @@ public class OmniLiquidTurret extends ExpTurret {
 
         @Override
         public boolean hasAmmo(){
-            return liquids.total() >= shootAmount;
+            return liquids.currentAmount() >= shootAmount;
         }
 
         @Override
@@ -218,11 +205,46 @@ public class OmniLiquidTurret extends ExpTurret {
         }
 
         @Override
-        protected void bullet(BulletType type, float angle){
-            Log.info("Shoot with " + liquids.current().name);
-            float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(x + tr.x, y + tr.y, targetPos.x, targetPos.y) / type.range(), minRange / type.range(), range / type.range()) : 1f;
+        protected void bullet(BulletType type, float xOffset, float yOffset, float angleOffset, Mover mover) {
+            queuedBullets --;
 
-            type.create(this, team, x + tr.x, y + tr.y, angle, -1f, 1f + Mathf.range(velocityInaccuracy), lifeScl, liquids.current());
+            if(dead || (!consumeAmmoOnce && !hasAmmo())) return;
+
+            float
+                    xSpread = Mathf.range(xRand),
+                    bulletX = x + Angles.trnsx(rotation - 90, shootX + xOffset + xSpread, shootY + yOffset),
+                    bulletY = y + Angles.trnsy(rotation - 90, shootX + xOffset + xSpread, shootY + yOffset),
+                    shootAngle = rotation + angleOffset + Mathf.range(inaccuracy + type.inaccuracy);
+
+            float lifeScl = type.scaleLife ? Mathf.clamp((1 + scaleLifetimeOffset) * Mathf.dst(bulletX, bulletY, targetPos.x, targetPos.y) / type.range, minRange() / type.range, range() / type.range) : 1f;
+
+            //TODO aimX / aimY for multi shot turrets?
+            handleBullet(type.create(this, team, bulletX, bulletY, shootAngle, -1f, (1f - velocityRnd) + Mathf.random(velocityRnd), lifeScl, liquids.current(), mover, targetPos.x, targetPos.y), xOffset, yOffset, shootAngle - rotation);
+
+            (shootEffect == null ? type.shootEffect : shootEffect).at(bulletX, bulletY, rotation + angleOffset, type.hitColor);
+            (smokeEffect == null ? type.smokeEffect : smokeEffect).at(bulletX, bulletY, rotation + angleOffset, type.hitColor);
+            (type.shootSound != Sounds.none ? type.shootSound : shootSound).at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax), shootSoundVolume);
+
+            ammoUseEffect.at(
+                    x - Angles.trnsx(rotation, ammoEjectBack),
+                    y - Angles.trnsy(rotation, ammoEjectBack),
+                    rotation * Mathf.sign(xOffset)
+            );
+
+            if(shake > 0){
+                Effect.shake(shake, shake, this);
+            }
+
+            curRecoil = 1f;
+            if(recoils > 0){
+                curRecoils[barrelCounter % recoils] = 1f;
+            }
+            heat = 1f;
+            totalShots++;
+
+            if(!consumeAmmoOnce){
+                useAmmo();
+            }
         }
     }
 }

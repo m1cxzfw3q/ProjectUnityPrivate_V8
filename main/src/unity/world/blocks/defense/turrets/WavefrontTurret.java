@@ -7,10 +7,12 @@ import arc.math.geom.*;
 import arc.util.*;
 import mindustry.entities.bullet.*;
 import mindustry.world.blocks.defense.turrets.*;
+import mindustry.world.draw.DrawTurret;
 import unity.assets.type.g3d.*;
 import unity.util.*;
 
 public class WavefrontTurret extends PowerTurret{
+    protected Vec2 tr2 = new Vec2();
     public Model model;
     public float scale = 2.4f;
 
@@ -18,13 +20,8 @@ public class WavefrontTurret extends PowerTurret{
 
     public WavefrontTurret(String name){
         super(name);
-        recoilAmount = 6f;
-    }
-
-    @Override
-    public void load(){
-        super.load();
-        baseRegion = Core.atlas.find(name + "-base");
+        recoil = 6f;
+        ((DrawTurret)drawer).base = Core.atlas.find(name + "-base");
     }
 
     public class WavefrontTurretBuild extends PowerTurretBuild{
@@ -48,10 +45,10 @@ public class WavefrontTurret extends PowerTurret{
         @Override
         public void updateTile(){
             super.updateTile();
-            if(isShooting() && consValid()){
+            if(isShooting() && canConsume()){
                 gap = Math.min(0.5f, gap + (0.005f * Time.delta));
-                angle += (reload / reloadTime) * objectRotationSpeed;
-                offset = (reload / reloadTime) * 0.25f;
+                angle += (reloadCounter / reload) * objectRotationSpeed;
+                offset = (reloadCounter / reload) * 0.25f;
 
                 animTime = Mathf.approach(animTime, 40f, Time.delta);
             }else{
@@ -97,7 +94,7 @@ public class WavefrontTurret extends PowerTurret{
 
         @Override
         public void draw(){
-            Draw.rect(baseRegion, x, y);
+            drawer.draw(this);
             Draw.color();
 
             Draw.draw(Draw.z(), inst::render);

@@ -7,6 +7,7 @@ import arc.util.*;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.entities.bullet.*;
+import mindustry.entities.pattern.ShootPattern;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
@@ -17,6 +18,7 @@ import unity.annotations.Annotations.*;
 import unity.gen.Expc.*;
 import unity.gen.*;
 import unity.gen.Turretc.*;
+import unity.v8.V7Bullets;
 
 //this is as if disappointment is interpreted through codes
 @SuppressWarnings({"unused", "unchecked"})
@@ -30,7 +32,7 @@ abstract class TurretComp extends Turret implements Stemc{
 
     /** Whether to accept ammo type of all kinds */
     boolean omni = false;
-    BulletType defaultBullet = Bullets.standardCopper;
+    BulletType defaultBullet = V7Bullets.standardCopper;
 
     float basicFieldRadius = -1f;
 
@@ -64,10 +66,10 @@ abstract class TurretComp extends Turret implements Stemc{
         @Replace
         public BulletType useAmmo(){
             if(self() instanceof LiquidTurretBuild && omni){
-                BulletType b = peekAmmo();
-                liquids.remove(liquids.current(), 1f / b.ammoMultiplier);
-
-                return b;
+                BulletType type = peekAmmo();
+                if(cheating()) return type;
+                liquids.remove(liquids.current(), 1f / type.ammoMultiplier);
+                return type;
             }else{
                 return super.useAmmo();
             }
@@ -88,7 +90,7 @@ abstract class TurretComp extends Turret implements Stemc{
         @Replace
         public boolean hasAmmo(){
             if(self() instanceof LiquidTurretBuild && omni){
-                return liquids.total() >= 1f / peekAmmo().ammoMultiplier;
+                return peekAmmo() != null && liquids.currentAmount() >= 1f / peekAmmo().ammoMultiplier;
             }else{
                 return super.hasAmmo();
             }
@@ -103,82 +105,39 @@ abstract class TurretComp extends Turret implements Stemc{
         @Override
         @Replace
         public void shoot(BulletType type){
-            if(chargeTime > 0f && this instanceof ExpBuildc){
+            if(shoot.firstShotDelay > 0f && this instanceof ExpBuildc){
                 var exp = (TurretBuild & ExpBuildc)this;
 
                 useAmmo();
-                float lvl = exp.levelf();
 
-                tr.trns(rotation, shootLength);
-                chargeBeginEffect.at(x + tr.x, y + tr.y, rotation, getShootColor(lvl));
-                chargeSound.at(x + tr.x, y + tr.y, 1f);
+                float bulletX = x + Angles.trnsx(rotation - 90, shootX, shootY),
+                        bulletY = y + Angles.trnsy(rotation - 90, shootX, shootY);
 
-                for(int i = 0; i < chargeEffects; i++){
-                    Time.run(Mathf.random(chargeMaxDelay), () -> {
-                        if(isValid()){
-                            tr.trns(rotation, shootLength);
-                            chargeEffect.at(x + tr.x, y + tr.y, rotation, getShootColor(lvl));
-                        }
-                    });
+                if(shoot.firstShotDelay > 0){
+                    chargeSound.at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax));
+                    type.chargeEffect.at(bulletX, bulletY, rotation, getShootColor(exp.levelf()));
                 }
 
-                charging = true;
+                ShootPattern pattern = type.shootPattern != null ? type.shootPattern : shoot;
 
-                for(var i = 0; i < shots; i++){
-                    Time.run(burstSpacing * i, () -> Time.run(chargeTime, () -> {
-                        if(isValid()){
-                            tr.trns(rotation, shootLength, Mathf.range(xRand));
-                            recoil = recoilAmount;
-                            heat = 1f;
+                pattern.shoot(barrelCounter, (xOffset, yOffset, angle, delay, mover) -> {
+                    queuedBullets++;
+                    int barrel = barrelCounter;
 
-                            bullet(type, rotation + Mathf.range(inaccuracy));
-                            effects();
-                            charging = false;
-                        }
-                    }));
-                }
+                    if(delay > 0f){
+                        Time.run(delay, () -> {
+                            //hack: make sure the barrel is the same as what it was when the bullet was queued to fire
+                            int prev = barrelCounter;
+                            barrelCounter = barrel;
+                            bullet1(type, xOffset, yOffset, angle, mover);
+                            barrelCounter = prev;
+                        });
+                    }else{
+                        bullet(type, xOffset, yOffset, angle, mover);
+                    }
+                }, () -> barrelCounter++);
             }else{
                 super.shoot(type);
-            }
-        }
-
-        @Override
-        @Replace
-        public void effects(){
-            if(this instanceof ExpBuildc && lerpColor){
-                var exp = (TurretBuild & ExpBuildc)this;
-
-                recoil = recoilAmount;
-                Effect shoot = shootEffect == Fx.none ? peekAmmo().shootEffect : shootEffect;
-                Effect smoke = smokeEffect == Fx.none ? peekAmmo().smokeEffect : smokeEffect;
-
-                shoot.at(x + tr.x, y + tr.y, rotation, getShootColor(exp.levelf()));
-                smoke.at(x + tr.x, y + tr.y, rotation);
-                shootSound.at(x + tr.x, y + tr.y, Mathf.random(0.9f, 1.1f));
-
-                if(shootShake > 0){
-                    Effect.shake(shootShake, shootShake, this);
-                }
-            }else{
-                super.effects();
-            }
-        }
-
-        @Override
-        @Replace
-        protected void bullet(BulletType type, float angle){
-            Bullet bullet = type.create(
-                this, team,
-                x + tr.x, y + tr.y, angle,
-                type.damage, 1f + Mathf.range(velocityInaccuracy),
-                type.scaleVelocity ? Mathf.clamp(Mathf.dst(x + tr.x, y + tr.y, targetPos.x, targetPos.y) / type.range(), minRange / type.range(), range / type.range()) : 1f,
-                bulletData()
-            );
-
-            bulletCons(type, bullet);
-            if(self() instanceof LaserTurretBuild laser && block instanceof LaserTurret turret){
-                laser.bullet = bullet;
-                laser.bulletLife = turret.shootDuration;
             }
         }
 
@@ -188,6 +147,48 @@ abstract class TurretComp extends Turret implements Stemc{
 
         public void bulletCons(BulletType type, Bullet b){
             bulletCons.get(type, b);
+        }
+
+        protected Bullet bullet1(BulletType type, float xOffset, float yOffset, float angleOffset, Mover mover){
+            queuedBullets --;
+            Bullet b = null;
+
+            if(!(dead || (!consumeAmmoOnce && !hasAmmo()))) {
+                float
+                        xSpread = Mathf.range(xRand),
+                        bulletX = x + Angles.trnsx(rotation - 90, shootX + xOffset + xSpread, shootY + yOffset),
+                        bulletY = y + Angles.trnsy(rotation - 90, shootX + xOffset + xSpread, shootY + yOffset),
+                        shootAngle = rotation + angleOffset + Mathf.range(inaccuracy + type.inaccuracy);
+
+                float lifeScl = type.scaleLife ? Mathf.clamp((1 + scaleLifetimeOffset) * Mathf.dst(bulletX, bulletY, targetPos.x, targetPos.y) / type.range, minRange() / type.range, range() / type.range) : 1f;
+
+                 b = type.create(this, team, bulletX, bulletY, shootAngle, -1f, (1f - velocityRnd) + Mathf.random(velocityRnd), lifeScl, null, mover, targetPos.x, targetPos.y);
+
+                //TODO aimX / aimY for multi shot turrets?
+                handleBullet(b, xOffset, yOffset, shootAngle - rotation);
+
+                (shootEffect == null ? type.shootEffect : shootEffect).at(bulletX, bulletY, rotation + angleOffset, type.hitColor);
+                (smokeEffect == null ? type.smokeEffect : smokeEffect).at(bulletX, bulletY, rotation + angleOffset, type.hitColor);
+                (type.shootSound != Sounds.none ? type.shootSound : shootSound).at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax), shootSoundVolume);
+
+                ammoUseEffect.at(x - Angles.trnsx(rotation, ammoEjectBack), y - Angles.trnsy(rotation, ammoEjectBack), rotation * Mathf.sign(xOffset));
+
+                if (shake > 0) {
+                    Effect.shake(shake, shake, this);
+                }
+
+                curRecoil = 1f;
+                if (recoils > 0) {
+                    curRecoils[barrelCounter % recoils] = 1f;
+                }
+                heat = 1f;
+                totalShots++;
+
+                if (!consumeAmmoOnce) {
+                    useAmmo();
+                }
+            }
+            return b;
         }
 
         public Color getShootColor(float progress){

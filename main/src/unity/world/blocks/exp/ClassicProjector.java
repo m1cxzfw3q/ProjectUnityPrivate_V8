@@ -114,7 +114,7 @@ public class ClassicProjector extends ExpForceProjector{
 
             phaseHeat = Mathf.lerpDelta(phaseHeat, Mathf.num(phaseValid), 0.1f);
 
-            if(phaseValid && !broken && timer(timerUse, phaseUseTime) && efficiency() > 0){
+            if(phaseValid && !broken && timer(timerUse, phaseUseTime) && efficiency > 0){
                 consume();
             }
 
@@ -124,7 +124,7 @@ public class ClassicProjector extends ExpForceProjector{
                 Fx.reactorsmoke.at(x + Mathf.range(tilesize / 2f), y + Mathf.range(tilesize / 2f));
             }
 
-            warmup = Mathf.lerpDelta(warmup, efficiency(), 0.1f);
+            warmup = Mathf.lerpDelta(warmup, efficiency, 0.1f);
 
             if(buildup > 0){
                 float scale = !broken ? cooldownNormal : cooldownBrokenBase;

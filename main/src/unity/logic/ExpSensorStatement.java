@@ -33,7 +33,7 @@ public class ExpSensorStatement extends LStatement{
             TextField tfield = field(t, cont.name(), text -> {
                 try{
                     cont = ExpContentList.valueOf(text);
-                }catch(Exception e){}
+                }catch(Exception ignored){}
             }).padRight(0f).get();
 
             Button b = new Button(Styles.logict);

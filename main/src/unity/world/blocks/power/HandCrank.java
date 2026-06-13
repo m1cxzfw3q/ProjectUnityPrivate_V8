@@ -5,6 +5,7 @@ import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.gen.*;
 import mindustry.ui.*;
+import unity.v8.V7Styles;
 import unity.world.blocks.*;
 import unity.world.modules.*;
 
@@ -39,7 +40,7 @@ public class HandCrank extends GraphBlock{
 
         @Override
         public void buildConfiguration(Table table){
-            table.button(Tex.whiteui, Styles.clearTransi, 50f, () -> configure(0))
+            table.button(Tex.whiteui, V7Styles.clearTransi, 50f, () -> configure(0))
                 .size(50f).disabled(b -> cooldown < 30f)
                 .get().getStyle().imageUp = Icon.redo;
         }

@@ -50,11 +50,11 @@ public class HeatRayTurret extends GenericTractorBeamTurret<Teamc>{
         @Override
         protected void apply(){
             if(target instanceof Healthc h){
-                h.damageContinuous((damage / 60f) * efficiency());
+                h.damageContinuous((damage / 60f) * efficiency);
             }
 
-            if(target instanceof Unitc unit){
-                unit.apply(status, statusDuration);
+            if(target instanceof Unitc unit1){
+                unit1.apply(status, statusDuration);
             }
         }
     }

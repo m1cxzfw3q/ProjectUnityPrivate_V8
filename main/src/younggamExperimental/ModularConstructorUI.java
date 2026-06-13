@@ -19,6 +19,7 @@ import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 import unity.graphics.*;
+import unity.v8.V7Styles;
 
 import static mindustry.Vars.*;
 
@@ -75,7 +76,7 @@ public class ModularConstructorUI extends Element{
                     butt.add(pinfo.name).size(170f, 45f).row();
                     butt.table(topTable -> {
                         topTable.add(new BorderImage(pinfo.texRegion, 2f)).size(36f).padTop(-4f).padLeft(-4f).padRight(4f);
-                        topTable.button(Tex.whiteui, Styles.clearTransi, 50f, () -> {
+                        topTable.button(Tex.whiteui, V7Styles.clearTransi, 50f, () -> {
                             displayPartInfo(pinfo);
                         }).size(50f).get().getStyle().imageUp = Icon.infoSmall;
                     }).marginLeft(4f).row();
@@ -98,7 +99,7 @@ public class ModularConstructorUI extends Element{
         Table catTable = new Table();
         catTable.margin(12f).top().left();
         for(var i : categories){
-            ImageButton catButt = new ImageButton(i.region, Styles.clearToggleTransi);
+            ImageButton catButt = new ImageButton(i.region, V7Styles.clearToggleTransi);
             catButt.clicked(() -> {
                 currentCat = i;
                 rebuildParts.run();

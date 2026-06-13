@@ -1,5 +1,6 @@
 package unity.v8;
 
+import arc.math.Mathf;
 import arc.util.Time;
 import mindustry.entities.Effect;
 
@@ -17,7 +18,7 @@ public class MoreEffect extends Effect {
     @Override
     public void render(EffectContainer e) {
         for (int i = 0; i < effects; i++) {
-            Time.run(delay * i, () -> effect.render(e));
+            Time.run(Mathf.random(delay), () -> effect.render(e));
         }
     }
 

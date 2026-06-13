@@ -95,7 +95,7 @@ public class MegalithPlanetGenerator extends PlanetGenerator{
 
     // The vertex color attribute, obtained from the block in the specific position.
     @Override
-    public Color getColor(Vec3 position){
+    public void getColor(Vec3 position, Color out){
         Block block = getBlock(position);
 
         Color base = Tmp.c1.set(block.mapColor);
@@ -104,7 +104,7 @@ public class MegalithPlanetGenerator extends PlanetGenerator{
             base.lerp(UnityPal.monolithLight, res);
         }
 
-        return base.a(1f - block.albedo);
+        out.set(base.a(1f - block.albedo));
     }
 
     @Override
@@ -293,7 +293,9 @@ public class MegalithPlanetGenerator extends PlanetGenerator{
 
         // Connect all rooms to the spawn room.
         for(Room r : rooms){
-            spawn[0].connect(r);
+            if (spawn[0] != null) {
+                spawn[0].connect(r);
+            }
         }
 
         cells(1);
@@ -398,7 +400,9 @@ public class MegalithPlanetGenerator extends PlanetGenerator{
 
         // Post-processing.
         trimDark();
-        inverseFloodFill(tiles.getn(spawn[0].x, spawn[0].y));
+        if (spawn[0] != null) {
+            inverseFloodFill(tiles.getn(spawn[0].x, spawn[0].y));
+        }
 
         // Generate random lore message block.
         if(!sector.hasEnemyBase()){

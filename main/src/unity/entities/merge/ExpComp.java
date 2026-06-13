@@ -23,6 +23,7 @@ import unity.gen.Expc.*;
 import unity.gen.*;
 import unity.type.*;
 import unity.util.*;
+import unity.v8.V7Sounds;
 import unity.world.meta.*;
 
 import static mindustry.Vars.*;
@@ -52,7 +53,7 @@ abstract class ExpComp extends Block implements Stemc{
     float sparkleChance = 0.08f;
     Effect sparkleEffect = UnityFx.sparkleFx;
     Effect upgradeEffect = UnityFx.upgradeBlockFx;
-    Sound upgradeSound = Sounds.message;
+    Sound upgradeSound = V7Sounds.message;
 
     boolean hasExp = false;
     boolean hub = false;
@@ -231,8 +232,8 @@ abstract class ExpComp extends Block implements Stemc{
                     checked = false;
                 }
 
-                if(!headless && control.input.frag.config.getSelectedTile() == this){
-                    control.input.frag.config.hideConfig();
+                if(!headless && control.input.config.getSelected() == this){
+                    control.input.config.hideConfig();
                 }
             }
         }
@@ -250,14 +251,14 @@ abstract class ExpComp extends Block implements Stemc{
 
         private void upgradeBlock(Block block){
             Tile tile = this.tile;
-            int[] links = power() == null ? new int[0] : power().links.toArray();
+            int[] links = power == null ? new int[0] : power.links.toArray();
 
             if(block.size > size){
                 tile = Utils.getBestTile(self(), block.size, size);
             }
             if(tile == null) return;
 
-            tile.setBlock(block, team(), rotation());
+            tile.setBlock(block, team(), rotation);
             upgradeSound.at(this);
             if(Mathf.chance(sparkleChance)){
                 sparkleEffect.at(tile.drawx(), tile.drawy(), block.size, upgradeColor);
@@ -348,7 +349,7 @@ abstract class ExpComp extends Block implements Stemc{
         private void upgradeButton(Table table, int index, int level){
             Integer i = index;
             table.button(Icon.up, Styles.emptyi, () -> {
-                control.input.frag.config.hideConfig();
+                control.input.config.hideConfig();
                 configure(i);
             }).size(40);
         }
@@ -390,7 +391,7 @@ abstract class ExpComp extends Block implements Stemc{
         @Override
         @Replace
         public Cursor getCursor(){
-            Cursor cursor = block().configurable && team() == player.team() ? SystemCursor.hand : SystemCursor.arrow;
+            Cursor cursor = block.configurable && team() == player.team() ? SystemCursor.hand : SystemCursor.arrow;
             if(!enableUpgrade){
                 return cursor;
             }else{

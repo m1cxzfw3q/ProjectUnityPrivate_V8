@@ -64,18 +64,18 @@ public class SweepWeapon extends Weapon{
         //find a new target
         if(!controllable && autoTarget){
             if((mount.retarget -= Time.delta) <= 0f){
-                mount.target = findTarget(unit, mountX, mountY, bullet.range(), bullet.collidesAir, bullet.collidesGround);
+                mount.target = findTarget(unit, mountX, mountY, bullet.range, bullet.collidesAir, bullet.collidesGround);
                 mount.retarget = mount.target == null ? targetInterval : targetSwitchInterval;
             }
 
-            if(mount.target != null && checkTarget(unit, mount.target, mountX, mountY, bullet.range())){
+            if(mount.target != null && checkTarget(unit, mount.target, mountX, mountY, bullet.range)){
                 mount.target = null;
             }
 
             boolean shoot = false;
 
             if(mount.target != null){
-                shoot = mount.target.within(mountX, mountY, bullet.range() + Math.abs(shootY) + (mount.target instanceof Sized s ? s.hitSize()/2f : 0f)) && can;
+                shoot = mount.target.within(mountX, mountY, bullet.range + Math.abs(shootY) + (mount.target instanceof Sized s ? s.hitSize()/2f : 0f)) && can;
 
                 if(predictTarget){
                     Vec2 to = Predict.intercept(unit, mount.target, bullet.speed);
@@ -127,28 +127,22 @@ public class SweepWeapon extends Weapon{
         //shoot if applicable
         if(mount.shoot && //must be shooting
         can && //must be able to shoot
-        (!useAmmo || unit.ammo > 0 || !Vars.state.rules.unitAmmo || unit.team.rules().infiniteAmmo) && //check ammo
         (!alternate || wasFlipped == flipSprite) &&
         unit.vel.len() >= minShootVelocity && //check velocity requirements
         mount.reload <= 0.0001f && //reload has to be 0
         Angles.within(rotate ? (mount.rotation - m.angle) : unit.rotation, mount.targetRotation, shootCone) //has to be within the cone
         ){
-            shoot(unit, mount, bulletX, bulletY, mount.aimX, mount.aimY, mountX, mountY, shootAngle, Mathf.sign(x));
+            shoot(unit, mount, bulletX, bulletY, shootAngle);
 
             mount.reload = reload;
-
-            if(useAmmo){
-                unit.ammo--;
-                if(unit.ammo < 0) unit.ammo = 0;
-            }
         }
     }
 
     @Override
-    protected void shoot(Unit unit, WeaponMount mount, float shootX, float shootY, float aimX, float aimY, float mountX, float mountY, float rotation, int side){
+    protected void shoot(Unit unit, WeaponMount mount, float shootX, float shootY, float rotation){
         SweepWeaponMount m = (SweepWeaponMount)mount;
         m.sweep = !m.sweep;
-        super.shoot(unit, mount, shootX, shootY, aimX, aimY, mountX, mountY, rotation, side);
+        super.shoot(unit, mount, shootX, shootY, rotation);
     }
 
     static class SweepWeaponMount extends WeaponMount{

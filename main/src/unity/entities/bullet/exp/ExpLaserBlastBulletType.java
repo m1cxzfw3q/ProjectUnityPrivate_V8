@@ -54,7 +54,7 @@ public class ExpLaserBlastBulletType extends LaserBulletType{
     public void handleExp(Bullet b, float x, float y, int amount){
         if(b.owner instanceof ExpTurret.ExpTurretBuild exp){
             if(exp.level() < exp.maxLevel() && Core.settings.getBool("hitexpeffect")){
-                for(int i = 0; i < Math.ceil(amount); i++){
+                for(int i = 0; i < (double) amount; i++){
                     UnityFx.expGain.at(x, y, 0f, b.owner);
                 }
             }
@@ -84,8 +84,7 @@ public class ExpLaserBlastBulletType extends LaserBulletType{
 
     public void setColors(Bullet b){
         float f = getLevelf(b);
-        Color[] data = {Tmp.c1.set(fromColors[0]).lerp(toColors[0], f).cpy(), Tmp.c2.set(fromColors[1]).lerp(toColors[1], f).cpy(), Tmp.c3.set(fromColors[2]).lerp(toColors[2], f).cpy()};
-        b.data = data;
+        b.data = new Color[]{Tmp.c1.set(fromColors[0]).lerp(toColors[0], f).cpy(), Tmp.c2.set(fromColors[1]).lerp(toColors[1], f).cpy(), Tmp.c3.set(fromColors[2]).lerp(toColors[2], f).cpy()};
     }
 
     public Color getLightningColor(Bullet b){
@@ -109,14 +108,9 @@ public class ExpLaserBlastBulletType extends LaserBulletType{
     }
 
     @Override
-    public float range(){
-        return Math.max(length, maxRange);
-    }
-
-    @Override
     public void init(Bullet b){
         setDamage(b);
-        float resultLength = Damage.collideLaser(b, getLength(b), largeHit), rot = b.rotation();
+        float resultLength = Damage.collideLaser(b, getLength(b), largeHit, laserAbsorb, pierceCap), rot = b.rotation();
 
         laserEffect.at(b.x, b.y, rot, resultLength * 0.75f);
 
@@ -144,9 +138,9 @@ public class ExpLaserBlastBulletType extends LaserBulletType{
     }
 
     @Override
-    public void hitTile(Bullet b, Building build, float initialHealth, boolean direct){
+    public void hitTile(Bullet b, Building build, float x, float y,float initialHealth, boolean direct){
         handleExp(b, build.x, build.y, hitBuildingExpGain);
-        super.hitTile(b, build, initialHealth, direct);
+        super.hitTile(b, build, x, y, initialHealth, direct);
     }
 
     @Override
@@ -182,11 +176,6 @@ public class ExpLaserBlastBulletType extends LaserBulletType{
         Draw.reset();
 
         Tmp.v1.trns(b.rotation(), baseLen * 1.1f);
-        Drawf.light(b.team, b.x, b.y, b.x + Tmp.v1.x, b.y + Tmp.v1.y, cwidth * 1.4f * b.fout(), ((Color[])b.data)[0], 0.6f);
-    }
-
-    @Override
-    public void drawLight(Bullet b){
-        //no light drawn here
+        Drawf.light(b.x, b.y, b.x + Tmp.v1.x, b.y + Tmp.v1.y, cwidth * 1.4f * b.fout(), ((Color[])b.data)[0], 0.6f);
     }
 }

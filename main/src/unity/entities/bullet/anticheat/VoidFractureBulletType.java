@@ -48,11 +48,6 @@ public class VoidFractureBulletType extends AntiCheatBulletTypeBase{
     }
 
     @Override
-    public float range(){
-        return trueSpeed * nextLifetime;
-    }
-
-    @Override
     public void init(){
         super.init();
         drawSize = (range() * 2f) + 30f;
@@ -92,7 +87,6 @@ public class VoidFractureBulletType extends AntiCheatBulletTypeBase{
                     b.time = 0f;
                     b.lifetime = nextLifetime;
                     b.fdata = 1f;
-                    b.drag = 0f;
                     b.vel.trns(b.rotation(), trueSpeed);
                     data.x = b.x;
                     data.y = b.y;

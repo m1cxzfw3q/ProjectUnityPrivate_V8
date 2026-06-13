@@ -18,6 +18,7 @@ import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 import unity.mod.*;
 import unity.mod.ContributorList.*;
+import unity.v8.V7Styles;
 
 public class CreditsDialog extends BaseDialog{
     static Func<String, String> stringf = value -> Core.bundle.get("mod." + value);
@@ -127,7 +128,7 @@ public class CreditsDialog extends BaseDialog{
                                 }
 
                                 bt.add(new FLabel("{wave}{rainbow}[lightgray]" + c)).left().pad(3f).padLeft(6f).padRight(6f);
-                            }, Styles.transt, () -> {
+                            }, V7Styles.transt, () -> {
                                 String name = noLang;
                                 if(ContributorList.githubAliases.containsKey(name)){
                                     name = ContributorList.githubAliases.get(name);

@@ -80,8 +80,8 @@ public class MechanicalExtractor extends SolidPump implements GraphBlockBase{
         }
 
         @Override
-        public float efficiency(){
-            return super.efficiency() * gms.efficiency() * gms.efficiency();
+        public float efficiencyScale(){
+            return gms.efficiency() * gms.efficiency();
         }
 
         @Override
@@ -149,6 +149,11 @@ public class MechanicalExtractor extends SolidPump implements GraphBlockBase{
         }
 
         @Override
+        public int rotation() {
+            return rotation;
+        }
+
+        @Override
         public void drawSelect(){
             super.drawSelect();
 
@@ -176,7 +181,7 @@ public class MechanicalExtractor extends SolidPump implements GraphBlockBase{
             Draw.rect(bottomRegions[variant], x, y);
 
             //liquid
-            Drawf.liquid(liquidRegions[variant], x, y, liquids.total() / liquidCapacity, liquids.current().color);
+            Drawf.liquid(liquidRegions[variant], x, y, liquids.currentAmount() / liquidCapacity, liquids.current().color);
 
             //bottom rotors
             Draw.rect(rotorRegion, x + offset.x * 4f, y + offset.y * 4f, rev, 24,-deg/2);

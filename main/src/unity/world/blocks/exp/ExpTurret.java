@@ -25,6 +25,7 @@ import unity.content.*;
 import unity.entities.*;
 import unity.graphics.*;
 import unity.ui.*;
+import unity.v8.V7Styles;
 import unity.world.draw.*;
 
 import static mindustry.Vars.*;
@@ -138,7 +139,7 @@ public class ExpTurret extends Turret {
         if(pregrade != null){
             stats.add(Stat.buildCost, "[#84ff00]" + Iconc.up + Core.bundle.format("exp.upgradefrom", pregradeLevel, pregrade.localizedName) + "[]");
             stats.add(Stat.buildCost, t -> {
-                t.button(Icon.infoCircleSmall, Styles.clearTransi, 20f, () -> ui.content.show(pregrade)).size(26).color(UnityPal.exp);
+                t.button(Icon.infoCircleSmall, V7Styles.clearTransi, 20f, () -> ui.content.show(pregrade)).size(26).color(UnityPal.exp);
             });
         }
 
@@ -160,7 +161,7 @@ public class ExpTurret extends Turret {
             c.toggle(false);
         };
         l.clicked(toggle);
-        t.button(Icon.downOpenSmall, Styles.clearToggleTransi, 20f, toggle).size(26f).color(UnityPal.exp).padLeft(8);
+        t.button(Icon.downOpenSmall, V7Styles.clearToggleTransi, 20f, toggle).size(26f).color(UnityPal.exp).padLeft(8);
         t.row();
         t.add(c).colspan(2).left(); //label + button
     }
@@ -168,7 +169,7 @@ public class ExpTurret extends Turret {
     @Override
     public void setBars(){
         super.setBars();
-        bars.remove("health");
+        removeBar("health");
     }
 
     @Override
@@ -357,24 +358,6 @@ public class ExpTurret extends Turret {
 
         @Override
         @Ignore
-        protected void effects(){
-            Effect fshootEffect = shootEffect == Fx.none ? peekAmmo().shootEffect : shootEffect;
-            Effect fsmokeEffect = smokeEffect == Fx.none ? peekAmmo().smokeEffect : smokeEffect;
-            Color effectc = effectColor();
-
-            fshootEffect.at(x + tr.x, y + tr.y, rotation, effectc);
-            fsmokeEffect.at(x + tr.x, y + tr.y, rotation, effectc);
-            shootSound.at(x + tr.x, y + tr.y, Mathf.random(0.9f, 1.1f));
-
-            if(shootShake > 0){
-                Effect.shake(shootShake, shootShake, this);
-            }
-
-            recoil = recoilAmount;
-        }
-
-        @Override
-        @Ignore
         public void drawSelect(){
             Drawf.dashCircle(x, y, rangeField == null ? range : rangeField.fromLevel(level()), team.color);
         }
@@ -484,13 +467,13 @@ public class ExpTurret extends Turret {
 
         @Override
         public String toString(){
-            return Core.bundle.format("field.linearreload", Strings.autoFixed(shots * 60f / start, 2), Strings.autoFixed(shots * 60f / (start + scale * maxLevel), 2));
+            return Core.bundle.format("field.linearreload", Strings.autoFixed(shoot.shots * 60f / start, 2), Strings.autoFixed(shoot.shots * 60f / (start + scale * maxLevel), 2));
         }
 
         @Override
         public void buildTable(Table table, int end){
             table.left();
-            Graph g = new Graph(i -> shots * 60f / fromLevel(i), end, UnityPal.exp);
+            Graph g = new Graph(i -> shoot.shots * 60f / fromLevel(i), end, UnityPal.exp);
             table.add(g).size(graphWidth, graphHeight).left();
             table.row();
             table.label(() -> g.lastMouseOver ? Core.bundle.format("ui.graph.label", g.lastMouseStep, Strings.autoFixed(g.mouseValue(), 2) + "/s") : Core.bundle.get("ui.graph.hover"));

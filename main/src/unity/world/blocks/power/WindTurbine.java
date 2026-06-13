@@ -37,12 +37,11 @@ public class WindTurbine extends TorqueGenerator{
         @Override
         protected float generateTorque(){
             float x = Time.time * 0.001f;
-            float mul = 0.4f * Math.max(
+
+            return 0.4f * Math.max(
                 0f,
                 Mathf.sin(x) + 0.5f * Mathf.sin(2f * x + 50f) + 0.2f * Mathf.sin(7f * x + 90f) + 0.1f * Mathf.sin(23f * x + 10f) + 0.55f
             ) + 0.15f;
-            
-            return mul;
         }
 
         @Override

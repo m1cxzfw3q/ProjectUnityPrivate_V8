@@ -41,9 +41,8 @@ public class CrucibleDialog extends BaseDialog{
             };
             
             set.run();
-            t.update(() -> { //TODO detect whether things have changed or not
-                set.run();
-            });
+            //TODO detect whether things have changed or not
+            t.update(set);
         }).width(w);
         
         addCloseButton();

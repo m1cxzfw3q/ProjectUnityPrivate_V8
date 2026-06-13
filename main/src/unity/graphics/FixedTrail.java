@@ -39,7 +39,7 @@ public class FixedTrail{
             Draw.color(color);
             float[] items = points.items;
             int i = points.size - 4;
-            float x1 = items[i], y1 = items[i + 1], w1 = items[i + 2], ai = items[i + 3], w = w1 * width / (points.size / 4) * i / 4f * 2f;
+            float x1 = items[i], y1 = items[i + 1], w1 = items[i + 2], ai = items[i + 3], w = w1 * width / (points.size / 4f) * i / 4f * 2f;
             if(w1 <= 0.001f) return;
             Draw.rect("hcircle", x1, y1, w, w, -Mathf.radDeg * ai + 180f);
             Draw.reset();
@@ -53,7 +53,7 @@ public class FixedTrail{
         for(int i = 0; i < points.size - 4; i+= 4){
             float x1 = items[i], y1 = items[i + 1], w1 = items[i + 2], a1 = items[i + 3],
                 x2 = items[i + 4], y2 = items[i + 5], w2 = items[i + 6], a2 = items[i + 7];
-            float size = width / (points.size / 4);
+            float size = width / (points.size / 4f);
             if(w1 <= 0.001f || w2 <= 0.001f) continue;
 
             float cx = Mathf.sin(a1) * i / 4f * size * w1, cy = Mathf.cos(a1) * i / 4f * size * w1,

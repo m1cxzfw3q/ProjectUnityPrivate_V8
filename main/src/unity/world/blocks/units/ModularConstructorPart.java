@@ -27,7 +27,7 @@ public class ModularConstructorPart extends Block{
         hasPower = true;
         hasItems = true;
 
-        consumes.power(120f);
+        consumePower(120f / 60);
     }
 
     @Override

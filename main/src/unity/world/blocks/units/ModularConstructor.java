@@ -21,6 +21,7 @@ import mindustry.world.*;
 import mindustry.world.blocks.units.UnitFactory.*;
 import mindustry.world.consumers.*;
 import unity.graphics.*;
+import unity.v8.V7Styles;
 import unity.world.blocks.units.ModularConstructorPart.*;
 import unity.world.modules.*;
 import unity.world.modules.ModularConstructorModule.*;
@@ -60,7 +61,7 @@ public class ModularConstructor extends Block{
             tile.progress = 0;
         });
 
-        consumes.add(new ConsumeItemDynamic((ModularConstructorBuild e) -> e.currentPlan != -1 ? plans.get(e.currentPlan).requirements : ItemStack.empty));
+        consume(new ConsumeItemDynamic((ModularConstructorBuild e) -> e.currentPlan != -1 ? plans.get(e.currentPlan).requirements : ItemStack.empty));
     }
 
     @Override
@@ -153,7 +154,7 @@ public class ModularConstructor extends Block{
                 for(Vec2 node : moduleNodes){
                     Tmp.r1.setCentered((node.x * Vars.tilesize) + x, (node.y * Vars.tilesize) + y, moduleSize * Vars.tilesize);
                     Tmp.r2.setCentered(other.x, other.y, (other.block.size * Vars.tilesize) - 1f);
-                    if(ang == other.rotation() && other.block.size == moduleSize && Tmp.r1.contains(Tmp.r2)){
+                    if(ang == other.rotation && other.block.size == moduleSize && Tmp.r1.contains(Tmp.r2)){
                         occupied[i] = other;
                         return true;
                     }
@@ -183,8 +184,8 @@ public class ModularConstructor extends Block{
                     table.add(cont);
                 }
                 if(cont != null){
-                    ImageButton button = cont.button(Tex.whiteui, Styles.clearToggleTransi, 24, () ->
-                    Vars.control.input.frag.config.hideConfig()).group(group).get();
+                    ImageButton button = cont.button(Tex.whiteui, V7Styles.clearToggleTransi, 24, () ->
+                    Vars.control.input.config.hideConfig()).group(group).get();
                     button.changed(() -> currentPlan = button.isChecked() ? plan.index : -1);
                     button.getStyle().imageUp = new TextureRegionDrawable(plan.unit.uiIcon);
                     button.update(() -> button.setChecked(currentPlan == plan.index));
@@ -255,7 +256,7 @@ public class ModularConstructor extends Block{
             module.update();
 
             for(int i = 0; i < occupied.length; i++){
-                if(occupied[i] != null && !occupied[i].added) occupied[i] = null;
+                if(occupied[i] != null && !occupied[i].isAdded()) occupied[i] = null;
             }
 
             ModularConstructorPlan plan = currentPlan != -1 ? plans.get(currentPlan) : null;
@@ -265,7 +266,7 @@ public class ModularConstructor extends Block{
                     if(Units.canCreate(team, plan.unit) && consValid()){
                         Unit unit = plan.unit.spawn(team, x, y);
                         unit.rotation = 90f;
-                        cons.trigger();
+                        consume();
                         progress = 0f;
                     }
                 }else if(consValid()){
@@ -277,19 +278,21 @@ public class ModularConstructor extends Block{
             }
         }
 
-        @Override
         public boolean consValid(){
             boolean valid = true;
             for(ModularConstructorPartBuild build : module.graph.all){
-                valid &= build.cons.canConsume();
+                valid &= build.block.nonOptionalConsumers.length == 0;
             }
-            return super.consValid() && valid;
+            return consumeBuilder.isEmpty() && valid;
         }
 
         @Override
         public boolean shouldConsume(){
             if(currentPlan == -1) return false;
-            return enabled && (!consumes.has(ConsumeType.item) || consumes.get(ConsumeType.item).valid(this));
+            return enabled && (
+                    !consumeBuilder.contains(cons -> cons instanceof ConsumeItems) ||
+                            consumeBuilder.contains(cons -> cons instanceof ConsumeItems con && con.items.length == 0)
+            );
         }
 
         @Override

@@ -106,7 +106,7 @@ abstract class SoulComp extends Block implements Stemc{
             @Resolve(Method.average)
             float result = 1f;
 
-            return (requireSoul && disabled()) ? 0f : (super.efficiency() * result * ((souls / (float)maxSouls) * (efficiencyTo - efficiencyFrom) + efficiencyFrom));
+            return (requireSoul && disabled()) ? 0f : (super.efficiency * result * ((souls / (float)maxSouls) * (efficiencyTo - efficiencyFrom) + efficiencyFrom));
         }
 
         @Override

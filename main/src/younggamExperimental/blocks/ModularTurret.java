@@ -23,6 +23,8 @@ import mindustry.world.meta.*;
 import mindustry.world.modules.*;
 import unity.graphics.*;
 import unity.util.*;
+import unity.v8.V7Bullets;
+import unity.v8.V7Styles;
 import unity.world.blocks.*;
 import unity.world.graphs.*;
 import unity.world.modules.*;
@@ -243,12 +245,12 @@ public class ModularTurret extends Turret implements GraphBlockBase{
 
         @Override
         public BulletType useAmmo(){
-            return Bullets.standardCopper;
+            return V7Bullets.standardCopper;
         }
 
         @Override
         public BulletType peekAmmo(){
-            return Bullets.standardCopper;
+            return V7Bullets.standardCopper;
         }
 
         void applyStats(){
@@ -297,7 +299,7 @@ public class ModularTurret extends Turret implements GraphBlockBase{
 
         @Override
         public void buildConfiguration(Table table){
-            table.button(Tex.whiteui, Styles.clearTransi, 50f, () -> {
+            table.button(Tex.whiteui, V7Styles.clearTransi, 50f, () -> {
                 BaseDialog dialog = new BaseDialog("Edit Blueprint");
                 dialog.setFillParent(false);
                 ModularConstructorUI mtd = ModularConstructorUI.applyModularConstructorUI(dialog.cont, partsRegion, Math.round(partsRegion.width / 32f), Math.round(partsRegion.height / 32f),
@@ -491,8 +493,8 @@ public class ModularTurret extends Turret implements GraphBlockBase{
         }
 
         @Override
-        public float efficiency(){
-            return super.efficiency() * gms.efficiency();
+        public float efficiencyScale(){
+            return gms.efficiency();
         }
 
         @Override
@@ -550,6 +552,11 @@ public class ModularTurret extends Turret implements GraphBlockBase{
         @Override
         public GraphModules gms(){
             return gms;
+        }
+
+        @Override
+        public int rotation() {
+            return (int) (rotation / 90);
         }
 
         @Override

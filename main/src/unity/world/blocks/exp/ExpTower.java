@@ -12,6 +12,7 @@ import mindustry.graphics.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
 import unity.graphics.*;
+import unity.v8.V7Sounds;
 
 import static arc.Core.atlas;
 import static arc.math.geom.Geometry.d4x;
@@ -29,7 +30,7 @@ public class ExpTower extends ExpTank {
     public TextureRegion laser, laserEnd;
     public float elevation = -1f;
 
-    public Sound shootSound = Sounds.plasmadrop;
+    public Sound shootSound = V7Sounds.plasmadrop;
     public float shootSoundVolume = 0.05f;
 
     public ExpTower(String name){
@@ -74,7 +75,7 @@ public class ExpTower extends ExpTank {
     }
 
     @Override
-    public void drawRequestRegion(BuildPlan req, Eachable<BuildPlan> list){
+    public void drawPlanRegion(BuildPlan req, Eachable<BuildPlan> list){
         Draw.rect(topRegion, req.drawx(), req.drawy());
         Draw.rect(region, req.drawx(), req.drawy(), req.rotation * 90 - 90);
     }

@@ -15,6 +15,7 @@ import mindustry.gen.*;
 import mindustry.graphics.Drawf;
 import unity.content.*;
 import unity.gen.Expc.*;
+import unity.v8.V7Sounds;
 import unity.world.blocks.exp.ExpTurret;
 
 import static unity.content.UnityBullets.smallDistField;
@@ -66,8 +67,8 @@ public class ExpLaserFieldBulletType extends ExpLaserBulletType{
         }
         else smallDistField.create(b.owner, b.team, vec.getX(), vec.getY(), 0f);
 
-        Sounds.spark.at(vec.getX(), vec.getY(),0.4f);
-        Sounds.spray.at(vec.getX(), vec.getY(),0.4f);
+        V7Sounds.spark.at(vec.getX(), vec.getY(),0.4f);
+        V7Sounds.spray.at(vec.getX(), vec.getY(),0.4f);
         UnityFx.chainLightning.at(b.x, b.y, 0, getColor(b), vec);
 
         Position finalVec = vec;
@@ -76,8 +77,8 @@ public class ExpLaserFieldBulletType extends ExpLaserBulletType{
                 float tx = finalVec.getX() + Mathf.range(8) * Vars.tilesize;
                 float ty = finalVec.getY() + Mathf.range(8) * Vars.tilesize;
                 UnityFx.smallChainLightning.at(finalVec.getX(), finalVec.getY(), 0, getColor(b), new Vec2(tx, ty));
-                Sounds.spark.at(tx, ty,0.4f);
-                Sounds.spray.at(tx, ty,0.4f);
+                V7Sounds.spark.at(tx, ty,0.4f);
+                V7Sounds.spray.at(tx, ty,0.4f);
                 smallDistField.create(b.owner, b.team, tx, ty, 0f);
             });
         }
