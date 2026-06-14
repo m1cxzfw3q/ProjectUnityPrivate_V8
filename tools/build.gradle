@@ -29,67 +29,66 @@ dependencies{
     implementation "Anuken:Mindustry:$mindustryVersion"
 }
 
-tasks.register('rearchive') {
+task rearchive{
     final def listStr = file(assetsDir).list()
 
-    tasks.register('archDexed', Jar) {
-        if (!dexedJar.exists() || taskNames.contains('main:dex')) ':main:dex'
+    task archDexed(type: Jar){
+        if(!dexedJar.exists() || taskNames.contains('main:dex')) ':main:dex'
 
         archiveFileName.set dexedJar.getName()
-        from files(assetsDir) { exclude 'sprites/vanilla/**' }
+        from files(assetsDir){ exclude 'sprites/vanilla/**' }
 
-        from(zipTree(dexedJar)) {
-            for (final def list : listStr) exclude "$list/**"
+        from(zipTree(dexedJar)){
+            for(final def list : listStr) exclude "$list/**"
         }
 
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        doLast {
+        doLast{
             new Fi(dexedJar).writeBytes(new Fi(file(archiveFile.get())).readBytes())
         }
     }
 
-    tasks.register('archDist', Jar) {
-        if (!distJar.exists() || taskNames.contains('main:deploy')) ':main:deploy'
+    task archDist(type: Jar){
+        if(!distJar.exists() || taskNames.contains('main:deploy')) ':main:deploy'
 
         archiveFileName.set distJar.getName()
-        from files(assetsDir) { exclude 'sprites/vanilla/**' }
+        from files(assetsDir){ exclude 'sprites/vanilla/**' }
 
-        from(zipTree(distJar)) {
-            for (final def list : listStr) exclude "$list/**"
+        from(zipTree(distJar)){
+            for(final def list : listStr) exclude "$list/**"
         }
 
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        doLast {
+        doLast{
             new Fi(distJar).writeBytes(new Fi(file(archiveFile.get())).readBytes())
         }
     }
 
     def finalize = []
-    if (distJar.exists() || taskNames.contains('main:deploy')) finalize += archDist
-    if (dexedJar.exists() || taskNames.contains('main:dex')) finalize += archDexed
+    if(distJar.exists() || taskNames.contains('main:deploy')) finalize += archDist
+    if(dexedJar.exists() || taskNames.contains('main:dex')) finalize += archDexed
 
     finalizedBy finalize
 }
 
-tasks.register('proc') {
-    dependsOn[classes, configurations.runtimeClasspath]
-    if (toolRearchive) {
+task proc(dependsOn: [classes, configurations.runtimeClasspath]){
+    if(toolRearchive){
         finalizedBy tasks.rearchive
-        if (taskNames.contains('tools:proc')) println '.jar files will be re-archived after processing sprites.'
+        if(taskNames.contains('tools:proc')) println '.jar files will be re-archived after processing sprites.'
     }
 
-    doLast {
-        delete { delete spritesDir }
+    doLast{
+        delete{ delete spritesDir }
         spritesDir.mkdirs()
 
-        copy {
+        copy{
             from spritesRawDir
             into spritesDir
         }
 
-        javaexec {
+        javaexec{
             workingDir = assetsDir
-            mainClass = 'unity.tools.Tools'
+            main = 'unity.tools.Tools'
             classpath = sourceSets.main.runtimeClasspath
         }
     }
