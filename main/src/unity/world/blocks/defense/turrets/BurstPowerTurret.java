@@ -6,6 +6,7 @@ import arc.util.*;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.entities.bullet.*;
+import mindustry.entities.pattern.ShootPattern;
 import mindustry.gen.*;
 import mindustry.world.blocks.defense.turrets.*;
 
@@ -25,50 +26,44 @@ public class BurstPowerTurret extends PowerTurret{
     public class BurstPowerTurretBuild extends PowerTurretBuild{
         @Override
         public void shoot(BulletType type){
-            if(chargeTime > 0f){
-                useAmmo();
-                tr.trns(rotation, size * tilesize / 2f);
-                
-                chargeBeginEffect.at(x + tr.x, y + tr.y, rotation);
-                chargeSound.at(x + tr.x, y + tr.y, 1f);
-                
-                for(int i = 0; i < chargeEffects; i++){
-                    Time.run(Mathf.random(chargeMaxDelay), () -> {
-                        if(!isValid()) return;
-                        tr.trns(rotation, size * tilesize / 2f);
-                        chargeEffect.at(x + tr.x, y + tr.y, rotation);
-                    });
-                }
-                charging = true;
-                
-                Time.run(chargeTime, () -> {
-                    if(!isValid()) return;
-                    tr.trns(rotation, size * tilesize / 2f);
-                    recoil = recoilAmount;
-                    heat = 1f;
-                    
-                    for(int i = 0; i < shots; i++){
-                        Time.run(burstSpacing * 2f, () -> {
-                            bullet(type, rotation + Mathf.range(inaccuracy));
-                        });
-                    }
-                    for(int i = 0; i < subShots; i++){
-                        Time.run(subBurstSpacing * i, () -> {
-                            bullet(subShootType, rotation + Mathf.range(subShootType.inaccuracy));
-                            subEffects();
-                        });
-                    }
-                    effects();
-                    charging = false;
-                });
-            }else{
-                super.shoot(type);
-            }
-        }
+            float
+                    bulletX = x + Angles.trnsx(rotation - 90, shootX, shootY),
+                    bulletY = y + Angles.trnsy(rotation - 90, shootX, shootY);
 
-        protected void subEffects(){
-            subShootEffect.at(x + tr.x, y + tr.y, rotation);
-            subShootSound.at(x + tr.x, y + tr.y, 1f);
+            if(shoot.firstShotDelay > 0){
+                chargeSound.at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax));
+                type.chargeEffect.at(bulletX, bulletY, rotation);
+            }
+
+            ShootPattern pattern = type.shootPattern != null ? type.shootPattern : shoot;
+
+            pattern.shoot(barrelCounter, (xOffset, yOffset, angle, delay, mover) -> {
+                queuedBullets++;
+                int barrel = barrelCounter;
+
+                if(delay > 0f){
+                    Time.run(delay, () -> {
+                        //hack: make sure the barrel is the same as what it was when the bullet was queued to fire
+                        int prev = barrelCounter;
+                        barrelCounter = barrel;
+                        bullet(type, xOffset, yOffset, angle, mover);
+                        barrelCounter = prev;
+                    });
+                }else{
+                    bullet(type, xOffset, yOffset, angle, mover);
+                }
+            }, () -> barrelCounter++);
+            for(int i = 0; i < subShots; i++){
+                Time.run(subBurstSpacing * i, () -> {
+                    bullet(subShootType, 0, 0, 0, null);
+                    subShootEffect.at(x + recoilOffset.x, y + recoilOffset.y, rotation);
+                    subShootSound.at(x + recoilOffset.x, y + recoilOffset.y, 1f);
+                });
+            }
+
+            if(consumeAmmoOnce){
+                useAmmo();
+            }
         }
     }
 }

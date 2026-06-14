@@ -27,7 +27,7 @@ public class AbsorberTurret extends GenericTractorBeamTurret<Teamc>{
 
     public boolean targetBullets, targetUnits, targetBuildings = false;
 
-    private Seq<Building> buildings = new Seq<>();
+    private final Seq<Building> buildings = new Seq<>();
 
     public AbsorberTurret(String name){
         super(name);
@@ -44,7 +44,7 @@ public class AbsorberTurret extends GenericTractorBeamTurret<Teamc>{
     public void setBars(){
         super.setBars();
 
-        bars.add("power", (AbsorberTurretBuild entity) -> new Bar(() ->
+        addBar("power", (AbsorberTurretBuild entity) -> new Bar(() ->
             Core.bundle.format("bar.poweroutput",
             Strings.fixed(entity.getPowerProduction() * 60f * entity.timeScale(), 1)),
             () -> Pal.powerBar,
@@ -64,7 +64,7 @@ public class AbsorberTurret extends GenericTractorBeamTurret<Teamc>{
         }
 
         protected void findTarget(float x, float y, float r){
-            Teamc tempTarget = null;
+            Teamc tempTarget;
             target = null;
             float distance = Float.MAX_VALUE;
 

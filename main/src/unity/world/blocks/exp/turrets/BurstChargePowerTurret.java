@@ -11,8 +11,6 @@ public class BurstChargePowerTurret extends ExpPowerTurret {
     }
 
     public class BurstChargeTurretBuild extends ExpPowerTurretBuild {
-        Vec2 tr = new Vec2();
-
         protected void shootCharge(BulletType type, float rotation){
             float rx = Mathf.range(xRand);
             tr.trns(rotation, shootLength, rx);
@@ -31,7 +29,6 @@ public class BurstChargePowerTurret extends ExpPowerTurret {
                 if(dead) return;
                 tr.trns(rotation, shootLength, rx);
                 heat = 1f;
-                effects();
                 useAmmo();
                 recoil = recoil;
                 bullet(type, rotation + Mathf.range(inaccuracy + type.inaccuracy));

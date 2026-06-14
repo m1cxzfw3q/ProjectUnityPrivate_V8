@@ -18,10 +18,15 @@ public class ShieldTurret extends PowerTurret{
         public boolean shield;
 
         @Override
-        public void bullet(BulletType type, float angle){
-            float spdScl = Mathf.clamp(Mathf.dst(x + tr.x, y + tr.y, targetPos.x, targetPos.y) / range, 0, 1);
+        public void bullet(BulletType type, float xOffset, float yOffset, float angleOffset, Mover mover){
+            float
+                    xSpread = Mathf.range(xRand),
+                    bulletX = x + Angles.trnsx(rotation - 90, shootX + xOffset + xSpread, shootY + yOffset),
+                    bulletY = y + Angles.trnsy(rotation - 90, shootX + xOffset + xSpread, shootY + yOffset),
+                    shootAngle = rotation + angleOffset + Mathf.range(inaccuracy + type.inaccuracy);
+            float spdScl = Mathf.clamp(Mathf.dst(bulletX, bulletY, targetPos.x, targetPos.y) / range, 0, 1);
 
-            type.create(this, team, x + tr.x, y + tr.y, angle, spdScl, 1);
+            type.create(this, team, bulletX, bulletY, shootAngle, spdScl, 1);
         }
 
         @Override

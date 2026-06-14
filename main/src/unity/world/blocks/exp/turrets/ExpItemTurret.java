@@ -33,20 +33,6 @@ public class ExpItemTurret extends ExpTurret {
         ammoTypes = ObjectMap.of(objects);
     }
 
-    /** Makes copies of all bullets and limits their range. */
-    public void limitRange(){
-        limitRange(1f);
-    }
-
-    /** Makes copies of all bullets and limits their range. */
-    public void limitRange(float margin){
-        for(var entry : ammoTypes.copy().entries()){
-            var copy = entry.value.copy();
-            copy.lifetime = (range + margin) / copy.speed;
-            ammoTypes.put(entry.key, copy);
-        }
-    }
-
     @Override
     public void setStats(){
         super.setStats();

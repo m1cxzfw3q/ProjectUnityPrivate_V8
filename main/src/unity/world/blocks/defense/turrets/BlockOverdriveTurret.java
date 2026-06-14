@@ -11,7 +11,6 @@ import arc.util.Tmp;
 import mindustry.gen.*;
 import mindustry.entities.Units;
 import mindustry.graphics.*;
-import mindustry.type.ItemStack;
 import mindustry.world.blocks.defense.turrets.ReloadTurret;
 import mindustry.world.meta.*;
 import unity.content.*;
@@ -20,7 +19,6 @@ import unity.graphics.UnityPal;
 import unity.world.blocks.exp.ExpHolder;
 
 import static mindustry.Vars.tilesize;
-import static mindustry.type.ItemStack.with;
 
 public class BlockOverdriveTurret extends ReloadTurret {
     public final int timerBullet = timers++;
@@ -93,7 +91,7 @@ public class BlockOverdriveTurret extends ReloadTurret {
                 Draw.color(isExp ? UnityPal.exp : Tmp.c2.set(Color.valueOf("feb380")).lerp(Pal.heal, Mathf.absin(10f, 1f)));
                 Draw.alpha(1f);
                 Draw.z(Layer.block + 1);
-                Drawf.laser(team, laserRegion, laserEndRegion, x + Angles.trnsx(angle, len), y + Angles.trnsy(angle, len), target.x, target.y, bullet.strength / 4f);
+                Drawf.laser(laserRegion, laserEndRegion, x + Angles.trnsx(angle, len), y + Angles.trnsy(angle, len), target.x, target.y, bullet.strength / 4f);
                 Draw.color();
             }
         }
@@ -108,7 +106,7 @@ public class BlockOverdriveTurret extends ReloadTurret {
                 isExp = target instanceof ExpHolder;
                 if (!targetValid(target)){
                     target = null;
-                }else if (consValid() && enabled){
+                }else if (shouldConsume() && enabled){
                     if (timer(timerBullet, buffReload)){
                         bullet.create(this, target.x, target.y, 0f);
                         timer.reset(timerBullet, 0);
@@ -119,7 +117,7 @@ public class BlockOverdriveTurret extends ReloadTurret {
                 targetTime = 0f;
             }
 
-            if (cons.optionalValid() && efficiency() > 0){
+            if (optionalConsumers.length == 0 && efficiency > 0){
                 buffingTime += edelta();
                 if (buffingTime >= buffReload) {
                     consume();
@@ -127,7 +125,7 @@ public class BlockOverdriveTurret extends ReloadTurret {
                 }
             }
 
-            if (consValid()){
+            if (shouldConsume()){
                 targetTime += edelta();
                 if (targetTime >= buffReload){
                     target = Units.closestBuilding(team, x, y, radius, this::targetValid);

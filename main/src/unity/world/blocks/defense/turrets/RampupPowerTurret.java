@@ -66,10 +66,6 @@ public class RampupPowerTurret extends PowerTurret{
             }
 
             Draw.rect(topRegion, x + tr2.x, y + tr2.y, rotation - 90);
-
-            if(heatRegion != Core.atlas.find("error")){
-                heatDrawer.get(this);
-            }
         }
 
         @Override
@@ -97,7 +93,7 @@ public class RampupPowerTurret extends PowerTurret{
                 Time.run(chargeTime, () -> {
                     if(!isValid()) return;
                     tr.trns(rotation, shootLength);
-                    recoil = recoilAmount;
+                    curRecoil = recoil;
                     heat = 1f;
                     if(lightning && speed < lightningThreshold) Lightning.create(team, lightningColor, baseLightningDamage - lightningDamageDec * speed, x + tr.x, y + tr.y, rotation, baseLightningLength - (int)((speed - 1) * lightningLengthDec));
                     bullet(type, rotation + Mathf.range(inaccuracy / (1f + Mathf.clamp(speed / accInc, 0, maxSpeedMul))));
@@ -107,18 +103,18 @@ public class RampupPowerTurret extends PowerTurret{
 
                 //when burst spacing is enabled, use the burst pattern
             }else if(burstSpacing > 0.0001f){
-                for(int i = 0; i < shots; i++){
+                for(int i = 0; i < shoot.shots; i++){
                     Time.run(burstSpacing * i, () -> {
                         if(!isValid() || !hasAmmo()) return;
 
-                        recoil = recoilAmount;
+                        curRecoil = recoil;
 
                         tr.trns(rotation, shootLength, Mathf.range(xRand));
                         if(lightning && speed < lightningThreshold) Lightning.create(team, lightningColor, baseLightningDamage - lightningDamageDec * speed, x + tr.x, y + tr.y, rotation, baseLightningLength - (int)((speed - 1) * lightningLengthDec));
                         bullet(type, rotation + Mathf.range(inaccuracy / (1f + Mathf.clamp(speed / accInc, 0, maxSpeedMul))));
                         effects();
                         useAmmo();
-                        recoil = recoilAmount;
+                        curRecoil = recoil;
                         heat = 1f;
                     });
                 }

@@ -6,9 +6,11 @@ import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.util.*;
 import arc.util.io.*;
+import mindustry.entities.Mover;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
 import mindustry.world.blocks.defense.turrets.*;
+import mindustry.world.draw.DrawTurret;
 import unity.gen.*;
 
 public class EndLaserTurret extends PowerTurret{
@@ -19,18 +21,21 @@ public class EndLaserTurret extends PowerTurret{
 
     public EndLaserTurret(String name){
         super(name);
-        drawer = tile -> {
-            Draw.rect(Regions.tenmeikiriBaseOutlineRegion, tile.x + tr2.x, tile.y + tr2.y, tile.rotation - 90f);
-            Draw.blend(Blending.additive);
-            for(int i = 0; i < lightRegions.length; i++){
-                float offset = Time.time + ((360f / lightRegions.length) * i);
-                float alpha = 1f;
-                if(tile instanceof EndLaserTurretBuild) alpha = ((EndLaserTurretBuild)tile).lightsAlpha;
-                Draw.color(1f, Mathf.absin(offset, 5f, 0.5f) + 0.5f, Mathf.absin(offset + (90f * Mathf.radDeg), 5f, 0.5f) + 0.5f, alpha);
-                Draw.rect(lightRegions[i], tile.x + tr2.x, tile.y + tr2.y, tile.rotation - 90f);
+        drawer = new DrawTurret("unity-block-") {
+            @Override
+            public void drawTurret(Turret block, TurretBuild build) {
+                Draw.rect(Regions.tenmeikiriBaseOutlineRegion, build.x + build.recoilOffset.x, build.y + build.recoilOffset.y, build.rotation - 90f);
+                Draw.blend(Blending.additive);
+                for(int i = 0; i < lightRegions.length; i++){
+                    float offset = Time.time + ((360f / lightRegions.length) * i);
+                    float alpha = 1f;
+                    if(build instanceof EndLaserTurretBuild) alpha = ((EndLaserTurretBuild)build).lightsAlpha;
+                    Draw.color(1f, Mathf.absin(offset, 5f, 0.5f) + 0.5f, Mathf.absin(offset + (90f * Mathf.radDeg), 5f, 0.5f) + 0.5f, alpha);
+                    Draw.rect(lightRegions[i], build.x + build.recoilOffset.x, build.y + build.recoilOffset.y, build.rotation - 90f);
+                }
+                Draw.blend();
+                Draw.color();
             }
-            Draw.blend();
-            Draw.color();
         };
         unitSort = (e, x, y) -> e.dst2(x, y) + (float)Math.pow(Angles.angleDist(e.rotation, turretRotation), 2);
     }
@@ -38,7 +43,6 @@ public class EndLaserTurret extends PowerTurret{
     @Override
     public void load(){
         super.load();
-        baseRegion = Core.atlas.find("unity-block-" + size);
         lightRegions = new TextureRegion[7];
         for(int i = 0; i < 7; i++){
             lightRegions[i] = Core.atlas.find(name + "-lights-" + i);
@@ -54,37 +58,6 @@ public class EndLaserTurret extends PowerTurret{
         private float invFrame = 0f;
 
         @Override
-        protected void shoot(BulletType type){
-            if(chargeTime > 0){
-                useAmmo();
-
-                tr.trns(rotation, shootLength);
-                chargeBeginEffect.at(x + tr.x, y + tr.y, 0f, this);
-                chargeSound.at(x + tr.x, y + tr.y, 1);
-
-                for(int i = 0; i < chargeEffects; i++){
-                    Time.run(Mathf.random(chargeMaxDelay), () -> {
-                        if(!isValid()) return;
-                        tr.trns(rotation, shootLength);
-                        chargeEffect.at(x + tr.x, y + tr.y, rotation);
-                    });
-                }
-
-                charging = true;
-
-                Time.run(chargeTime, () -> {
-                    if(!isValid()) return;
-                    tr.trns(rotation, shootLength);
-                    recoil = recoilAmount;
-                    heat = 1f;
-                    bullet(type, rotation + Mathf.range(inaccuracy));
-                    effects();
-                    charging = false;
-                });
-            }
-        }
-
-        @Override
         public void updateTile(){
             if(health < lastHealth) health = lastHealth;
             if(invFrame < 30f) invFrame += Time.delta;
@@ -97,11 +70,10 @@ public class EndLaserTurret extends PowerTurret{
 
             if(bullet != null){
                 rotate = false;
-                tr.trns(rotation, shootLength);
                 bullet.rotation(rotation);
-                bullet.set(x + tr.x, y + tr.y);
+                bullet.set(x + recoilOffset.x, y + recoilOffset.y);
                 heat = 1f;
-                recoil = recoilAmount;
+                curRecoil = recoil;
                 if(bullet.time >= bullet.lifetime || bullet.owner != this) bullet = null;
             }else{
                 rotate = true;
@@ -148,8 +120,13 @@ public class EndLaserTurret extends PowerTurret{
         }
 
         @Override
-        protected void bullet(BulletType type, float angle){
-            bullet = type.create(tile.build, team, x + tr.x, y + tr.y, angle);
+        protected void bullet(BulletType type, float xOffset, float yOffset, float angleOffset, Mover mover){
+            float
+                    xSpread = Mathf.range(xRand),
+                    bulletX = x + Angles.trnsx(rotation - 90, shootX + xOffset + xSpread, shootY + yOffset),
+                    bulletY = y + Angles.trnsy(rotation - 90, shootX + xOffset + xSpread, shootY + yOffset),
+                    shootAngle = rotation + angleOffset + Mathf.range(inaccuracy + type.inaccuracy);
+            bullet = type.create(tile.build, team, bulletX, bulletY, shootAngle);
         }
 
         @Override
@@ -165,7 +142,7 @@ public class EndLaserTurret extends PowerTurret{
 
         @Override
         protected void updateShooting(){
-            if(consValid() && !charging){
+            if(shouldConsume() && queuedBullets <= 0){
                 super.updateShooting();
             }
         }
