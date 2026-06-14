@@ -240,13 +240,13 @@ public class StructProcessor extends BaseProcessor{
                                     ("set" + Strings.capitalize(simpleName(p))).equals(simpleName(m))
                                 ) &&
                                 (
-                                    (m.getParameters().size() == 0 && types.isSameType(p.asType(), m.getReturnType())) ||
+                                    (m.getParameters().isEmpty() && types.isSameType(p.asType(), m.getReturnType())) ||
                                     (m.getParameters().size() == 1 && types.isSameType(p.asType(), m.getParameters().get(0).asType()))
                                 )
                             ) ||
 
                             // Try to avoid copy function, value-types are copied between function passes anyway
-                            ((simpleName(m).equals("cpy") || simpleName(m).equals("copy")) && m.getParameters().size() == 0) ||
+                            ((simpleName(m).equals("cpy") || simpleName(m).equals("copy")) && m.getParameters().isEmpty()) ||
 
                             // Try to avoid functions with params as the declared type representative of this struct
                             mparams.contains(p -> types.isSameType(type.asType(), compOf(p.asType())))

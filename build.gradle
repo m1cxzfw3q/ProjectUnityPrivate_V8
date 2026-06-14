@@ -84,7 +84,8 @@ allprojects{
         }
     }
 
-    task sourcesJar(type: Jar, dependsOn: classes){
+    tasks.register('sourcesJar', Jar) {
+        dependsOn classes
         archiveClassifier.set 'sources'
         from sourceSets.main.allSource
     }
@@ -106,26 +107,28 @@ allprojects{
         }
     }
 
-    tasks.withType(JavaCompile){
+    tasks.withType(JavaCompile).configureEach {
         options.incremental = true
         options.encoding = 'UTF-8'
         options.compilerArgs += '-Xlint:deprecation'
 
         options.fork = true
         options.forkOptions.jvmArgs += [
-            '--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-            '--add-opens=java.base/sun.reflect.annotation=ALL-UNNAMED'
+                '--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+                '--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+                '--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
+                '--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+                '--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+                '--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+                '--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+                '--add-opens=java.base/sun.reflect.annotation=ALL-UNNAMED'
         ]
     }
 
-    tasks.withType(Javadoc){
-        options.addStringOption('Xdoclint:none', '-quiet')
-        options.addStringOption('-release', '16')
+    tasks.withType(Javadoc).tap {
+        configureEach {
+            options.addStringOption('Xdoclint:none', '-quiet')
+            options.addStringOption('-release', '16')
+        }
     }
 }

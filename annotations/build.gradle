@@ -13,7 +13,7 @@ dependencies {
     api "com.squareup:javapoet:$javapoetVersion"
 }
 
-tasks.withType(JavaCompile){
+tasks.withType(JavaCompile).configureEach {
     sourceCompatibility = 8
     targetCompatibility = 8
 }

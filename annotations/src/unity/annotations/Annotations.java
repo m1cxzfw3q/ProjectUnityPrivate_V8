@@ -613,7 +613,7 @@ public class Annotations{
                 Name var2 = ((ArrayType)var1.type).elemtype.tsym.getQualifiedName();
                 int var6;
                 if(var2.equals(var2.table.names.java_lang_Class)){
-                    ListBuffer var14 = new ListBuffer();
+                    ListBuffer<Type> var14 = new ListBuffer<Type>();
                     Attribute[] var15 = var1.values;
                     int var16 = var15.length;
 
@@ -626,7 +626,7 @@ public class Annotations{
                     this.value = mirrorProxy(var14.toList());
                 }else{
                     int var3 = var1.values.length;
-                    Class var4 = this.returnClass;
+                    Class<?> var4 = this.returnClass;
                     this.returnClass = this.returnClass.getComponentType();
 
                     try{
